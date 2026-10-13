@@ -27,14 +27,14 @@
   </header>
 
   <main id="appContainer">
-    <!-- PANTALLA 1: HUB CENTRAL (Selector visual sin necesidad de leer) -->
+    <!-- PANTALLA 1: HUB CENTRAL (Selector visual de 6 juegos) -->
     <section id="screen-hub" class="screen active">
       <div class="hub-header">
         <div class="cinna-mascot-box">
           <img src="cinnamoroll_sprite.png" class="cinna-mascot-img" alt="Cinnamoroll" />
         </div>
         <h1>¡El Mundo de Cinnamoroll!</h1>
-        <p class="subtitle">¡Elige un juego para divertirte con Cinnamoroll y sus amigos!</p>
+        <p class="subtitle">¡6 divertidos juegos para jugar con Cinnamoroll y sus amigos!</p>
       </div>
 
       <div class="game-cards-grid">
@@ -47,7 +47,7 @@
             <span class="card-deco deco-cloud">☁️</span>
           </div>
           <h2>¡A Volar!</h2>
-          <p>Vuela con Cinnamoroll por las nubes y junta estrellas mágicas.</p>
+          <p>Vuela con Cinnamoroll por las nubes usando voz, giroscopio o teclas.</p>
           <div class="card-play-tag">▶ ¡Jugar!</div>
         </article>
 
@@ -59,8 +59,8 @@
             <span class="card-deco deco-cookie">🍪</span>
             <span class="card-deco deco-milk">🍼</span>
           </div>
-          <h2>Pastelería de Sumas</h2>
-          <p>Cuenta deliciosos rollitos de canela y dulces con Cinnamoroll y Milk.</p>
+          <h2>Pastelería de Números</h2>
+          <p>Sumas y restas con Milk contando ricos rollitos con tu dedo.</p>
           <div class="card-play-tag">▶ ¡Contar!</div>
         </article>
 
@@ -72,9 +72,48 @@
             <span class="card-deco deco-sparkle">✨</span>
             <span class="card-deco deco-flower">🌸</span>
           </div>
-          <h2>Taller de Pintura</h2>
-          <p>Pinta a Cinnamoroll, Milk, Mocha y Pompompurin con colores pastel.</p>
+          <h2>Taller de Dibujo</h2>
+          <p>Láminas en blanco y negro para rayar con crayones, pintar y estampar.</p>
           <div class="card-play-tag">▶ ¡Pintar!</div>
+        </article>
+
+        <!-- Tarjeta 4: Memorice de Sanrio -->
+        <article class="game-card card-memory" data-game="memory">
+          <div class="card-badge">🃏 Memoria</div>
+          <div class="card-illustration">
+            <span class="card-hero-emoji">🃏</span>
+            <span class="card-deco deco-star">⭐</span>
+            <span class="card-deco deco-flower">💖</span>
+          </div>
+          <h2>Memorice de Sanrio</h2>
+          <p>Encuentra las parejas de cartas 3D de Cinnamoroll, Milk, Purin y Mocha.</p>
+          <div class="card-play-tag">▶ ¡Emparejar!</div>
+        </article>
+
+        <!-- Tarjeta 5: Super Cinnamoroll Run -->
+        <article class="game-card card-platformer" data-game="platformer">
+          <div class="card-badge">🏃 Aventura</div>
+          <div class="card-illustration">
+            <span class="card-hero-emoji">🪽</span>
+            <span class="card-deco deco-star">⭐</span>
+            <span class="card-deco deco-cookie">🍓</span>
+          </div>
+          <h2>Super Cinnamoroll Run</h2>
+          <p>Aventura de plataformas: salta, planea con tus orejitas y llega al picnic.</p>
+          <div class="card-play-tag">▶ ¡Correr!</div>
+        </article>
+
+        <!-- Tarjeta 6: Cinnamon Treat-Shooter 2.5D -->
+        <article class="game-card card-doom" data-game="doom">
+          <div class="card-badge">🍥 Mágico 3D</div>
+          <div class="card-illustration">
+            <span class="card-hero-emoji">🐾</span>
+            <span class="card-deco deco-star">🍥</span>
+            <span class="card-deco deco-cookie">🍭</span>
+          </div>
+          <h2>Repartidor de Rollitos 3D</h2>
+          <p>Laberinto estilo DOOM: reparte rollitos y paletas para que nadie tenga hambre.</p>
+          <div class="card-play-tag">▶ ¡Repartir!</div>
         </article>
       </div>
     </section>
@@ -125,24 +164,42 @@
       </div>
     </section>
 
-    <!-- PANTALLA 3: PASTELERÍA DE SUMAS -->
+    <!-- PANTALLA 3: PASTELERÍA DE NÚMEROS -->
     <section id="screen-math" class="screen">
       <div id="math-mount"></div>
     </section>
 
-    <!-- PANTALLA 4: TALLER DE PINTURA -->
+    <!-- PANTALLA 4: TALLER DE DIBUJO -->
     <section id="screen-coloring" class="screen">
       <div id="coloring-mount"></div>
     </section>
+
+    <!-- PANTALLA 5: MEMORICE DE SANRIO -->
+    <section id="screen-memory" class="screen">
+      <div id="memory-mount"></div>
+    </section>
+
+    <!-- PANTALLA 6: SUPER CINNAMOROLL RUN -->
+    <section id="screen-platformer" class="screen">
+      <div id="platformer-mount"></div>
+    </section>
+
+    <!-- PANTALLA 7: REPARTIDOR DE ROLLITOS 3D (DOOM) -->
+    <section id="screen-doom" class="screen">
+      <div id="doom-mount"></div>
+    </section>
   </main>
 
-  <!-- MÓDULOS DEL JUEGO -->
+  <!-- MÓDULOS DE LA SUITE -->
   <script src="js/audio.js"></script>
   <script src="js/input.js"></script>
   <script src="js/character.js"></script>
   <script src="js/game.js"></script>
   <script src="js/math.js"></script>
   <script src="js/coloring.js"></script>
+  <script src="js/memory.js"></script>
+  <script src="js/platformer.js"></script>
+  <script src="js/doom.js"></script>
   <script src="js/hub.js"></script>
 </body>
 </html>

@@ -81,72 +81,113 @@
   }
 
   /* ---------------- Comandos de voz (Web Speech API) ---------------- */
-  // Orden importa: 'vuelta' debe matchear 'spin' antes que 'vuel' (volar) matchee 'up'.
   const COMMANDS = [
-    ['spin', ['vuelta', 'gir', 'gira', 'rueda', 'salt', 'pirueta']],
-    ['up', ['arriba', 'sub', 'vuel', 'vol', 'alto', 'cielo', 'up']],
-    ['down', ['abaj', 'baj', 'suelo', 'piso', 'down']],
-    ['hello', ['hola', 'cinna', 'canel', 'chau', 'chao', 'hello']],
+    ['spin', ['vuelta', 'gir', 'gira', 'girar', 'rueda', 'rodar', 'pirueta', 'spin', 'trompo', 'voltereta']],
+    ['up', ['arriba', 'sub', 'sube', 'subir', 'vuel', 'vol', 'vuela', 'volar', 'alto', 'cielo', 'salta', 'saltar', 'trepa', 'up', 'ariba', 'ariva', 'arriva']],
+    ['down', ['abaj', 'abajo', 'baj', 'baja', 'bajar', 'suelo', 'piso', 'cae', 'down']],
+    ['hello', ['hola', 'cinna', 'canel', 'amanda', 'chau', 'chao', 'hello', 'lindo', 'bebe', 'amigo']],
   ];
   const strip = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
   class VoiceCommands {
     static supported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
-    constructor(m) { this.m = m; this.active = false; this.rec = null; this.fired = new Map(); }
+    constructor(m) {
+      this.m = m;
+      this.active = false;
+      this.rec = null;
+      this.lastActionTime = 0;
+      this.lastActionType = null;
+    }
 
     start() {
       if (!VoiceCommands.supported()) return Promise.reject(new Error('Este navegador no soporta reconocimiento de voz (usá Chrome o Edge).'));
       const R = window.SpeechRecognition || window.webkitSpeechRecognition;
       const r = new R();
       const nav = (navigator.language || '').toLowerCase();
-      r.lang = nav.startsWith('es') ? navigator.language : 'es-AR';
+      r.lang = nav.startsWith('es') ? navigator.language : 'es-ES';
       r.continuous = true;
-      r.interimResults = true;   // reacción rápida: no esperamos a que termine la frase
+      r.interimResults = true;
       r.maxAlternatives = 3;
-      r.onstart = () => { this.fired = new Map(); };
+
+      r.onstart = () => { 
+        this.m.emit('status', { source: 'voice', ok: true, msg: 'Escuchando: ¡decí "arriba", "abajo", "gira"!' });
+      };
+
       r.onresult = e => {
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          const res = e.results[i];
-          const text = Array.from(res).map(a => a.transcript).join(' ');
-          this.handle(i, res[0].transcript, text, res.isFinal);
+        try {
+          for (let i = e.resultIndex; i < e.results.length; i++) {
+            const res = e.results[i];
+            const text = Array.from(res).map(a => a.transcript).join(' ');
+            this.handle(res[0].transcript, text, res.isFinal);
+          }
+        } catch (err) {
+          console.warn('Voice onresult handler error:', err);
         }
       };
+
       r.onerror = e => {
+        // Silently ignore no-speech or aborted errors; they naturally happen during pauses
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
           this.active = false;
           this.m.emit('status', { source: 'voice', ok: false, msg: 'Permiso de micrófono denegado.' });
         }
       };
-      r.onend = () => { if (this.active) setTimeout(() => { try { r.start(); } catch (_) {} }, 200); };
+
+      r.onend = () => { 
+        if (this.active) {
+          setTimeout(() => {
+            if (this.active) {
+              try { r.start(); } catch (_) {}
+            }
+          }, 250);
+        }
+      };
+
       this.rec = r;
       this.active = true;
-      r.start();
+      try {
+        r.start();
+      } catch (err) {
+        return Promise.reject(err);
+      }
       return Promise.resolve();
     }
 
-    handle(idx, display, allAlternatives, isFinal) {
-      if (window.Cinnamo.audio && window.Cinnamo.audio.isSelfTalking()) return;
-      // Usamos sólo la mejor alternativa para contar, pero si no hay match probamos las otras.
-      let hits = this.match(display);
-      if (!hits.length) hits = this.match(allAlternatives).slice(0, 1);
-      const done = this.fired.get(idx) || 0;
-      for (let j = done; j < hits.length; j++) this.m.emit('action', { type: hits[j], source: 'voice' });
-      this.fired.set(idx, Math.max(done, hits.length));
+    handle(display, allAlternatives, isFinal) {
+      const hits = this.match(display) || this.match(allAlternatives);
+      const nowMs = performance.now();
+      if (hits.length > 0) {
+        const action = hits[0];
+        // Permite repetir el mismo comando si pasaron más de 450ms, o inmediatamente si es otro comando
+        if (action !== this.lastActionType || (nowMs - this.lastActionTime) > 450) {
+          this.lastActionType = action;
+          this.lastActionTime = nowMs;
+          this.m.emit('action', { type: action, source: 'voice' });
+        }
+      }
       this.m.emit('heard', { text: display, final: isFinal });
     }
 
     match(text) {
+      if (!text) return [];
       const hits = [];
-      for (const w of strip(text).split(/[^a-zñ]+/)) {
+      const words = strip(text).split(/[^a-zñ]+/);
+      for (const w of words) {
         if (!w) continue;
         for (const [action, keys] of COMMANDS) {
-          if (keys.some(k => w.startsWith(k))) { hits.push(action); break; }
+          if (keys.some(k => w.startsWith(k) || k.startsWith(w) && w.length >= 3)) {
+            hits.push(action);
+            break;
+          }
         }
       }
       return hits;
     }
 
-    stop() { this.active = false; try { this.rec && this.rec.stop(); } catch (_) {} }
+    stop() {
+      this.active = false;
+      try { this.rec && this.rec.stop(); } catch (_) {}
+    }
   }
 
   /* ---------------- Volumen del micrófono: soplar / cantar = subir ---------------- */

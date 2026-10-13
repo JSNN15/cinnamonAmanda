@@ -1,264 +1,257 @@
-/* El Taller de Pintura de Cinnamoroll & Amigos
- * Colorear con un toque (tap-to-fill), paleta pastel Sanrio y sellitos mágicos de brillos.
+/* El Taller de Pintura & Dibujo de Cinnamoroll y Amigos
+ * Permite tanto rellenar zonas con toque mágico como rayar/colorear libremente con crayones
+ * sobre láminas claras en blanco y negro oficiales de Cinnamoroll, Milk, Mocha, Pompompurin y Chiffon.
  */
 (function () {
   const { audio: A } = window.Cinnamo;
 
   const PALETTE = [
-    { name: 'Celeste Cinnamoroll', color: '#aee0ff' },
-    { name: 'Rosa Pastel', color: '#ffb6d2' },
-    { name: 'Amarillo Vainilla', color: '#fff099' },
-    { name: 'Marrón Moka', color: '#c49a6c' },
-    { name: 'Blanco Algodón', color: '#ffffff' },
-    { name: 'Lila Lavanda', color: '#dfc2fe' },
-    { name: 'Verde Menta', color: '#b8f3d6' },
-    { name: 'Caramelo Purin', color: '#7a4b26' },
+    { name: 'Celeste Cinnamoroll', color: '#9fd3ff' },
+    { name: 'Rosa Pastel', color: '#ffb3d1' },
+    { name: 'Amarillo Vainilla', color: '#ffe680' },
+    { name: 'Marrón Moka', color: '#a67c52' },
+    { name: 'Lila Lavanda', color: '#d8b4fe' },
+    { name: 'Verde Menta', color: '#a7f3d0' },
+    { name: 'Caramelo Purin', color: '#f59e0b' },
+    { name: 'Blanco Nube', color: '#ffffff' },
+    { name: 'Chocolate Sanrio', color: '#5c3d2e' },
   ];
 
-  // 4 Láminas oficiales: Cinnamoroll, Milk, Mocha, Pompompurin
+  const STAMPS = ['⭐', '💖', '🌸', '🍥', '🧁'];
+
+  // 5 Láminas nítidas en blanco y negro con trazo grueso y claro
   const TEMPLATES = [
     {
       id: 'cinnamoroll',
-      label: 'Cinnamoroll',
-      name: 'Cinnamoroll en las Nubes',
+      label: 'Cinnamoroll 🪽',
+      title: 'Cinnamoroll en las Nubes',
       svg: `
-        <svg viewBox="0 0 600 500" class="coloring-svg">
-          <!-- Fondo y nubes -->
-          <rect id="bg" class="color-zone" x="10" y="10" width="580" height="480" rx="30" fill="#eaf4ff" />
-          <path id="nube1" class="color-zone" d="M 80,450 C 60,400 120,360 170,390 C 220,350 300,360 330,410 C 370,380 440,390 460,450 Z" fill="#ffffff" />
-          <path id="sol" class="color-zone" d="M 500,90 A 45,45 0 1,1 410,90 A 45,45 0 1,1 500,90" fill="#fff5b8" />
-          <path id="estrella" class="color-zone" d="M 120,80 L 128,102 L 152,102 L 133,116 L 140,138 L 120,124 L 100,138 L 107,116 L 88,102 L 112,102 Z" fill="#ffe066" />
+        <svg viewBox="0 0 600 500" class="bw-art-svg" id="bwSvgArt">
+          <!-- Fondo de nubes -->
+          <rect class="paint-zone" x="0" y="0" width="600" height="500" fill="#ffffff" />
+          <path class="paint-zone" d="M 60,440 C 40,390 110,350 160,380 C 220,330 310,340 340,400 C 390,360 480,380 500,440 Z" fill="#ffffff" stroke="#222" stroke-width="6" stroke-linejoin="round" />
+          <path class="paint-zone" d="M 490,90 A 45,45 0 1,1 400,90 A 45,45 0 1,1 490,90" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <path class="paint-zone" d="M 120,80 L 130,105 L 155,105 L 135,120 L 142,145 L 120,130 L 98,145 L 105,120 L 85,105 L 110,105 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
 
-          <!-- Oreja Izquierda -->
-          <path id="oreja-izq" class="color-zone" d="M 230,170 C 180,140 70,160 50,220 C 30,270 90,290 140,280 C 190,270 230,230 240,210 Z" fill="#ffffff" />
-          
-          <!-- Oreja Derecha -->
-          <path id="oreja-der" class="color-zone" d="M 370,170 C 420,140 530,160 550,220 C 570,270 510,290 460,280 C 410,270 370,230 360,210 Z" fill="#ffffff" />
+          <!-- Oreja Izquierda Cinnamoroll -->
+          <path class="paint-zone" d="M 230,170 C 170,130 50,150 40,225 C 30,285 100,300 155,290 C 205,275 235,230 240,205 Z" fill="#ffffff" stroke="#222" stroke-width="7" stroke-linejoin="round" />
 
-          <!-- Colita enrulada -->
-          <path id="cola" class="color-zone" d="M 230,340 C 200,340 180,365 190,390 C 200,415 240,415 250,390 C 255,375 240,360 225,375" fill="#ffffff" />
+          <!-- Oreja Derecha Cinnamoroll -->
+          <path class="paint-zone" d="M 370,170 C 430,130 550,150 560,225 C 570,285 500,300 445,290 C 395,275 365,230 360,205 Z" fill="#ffffff" stroke="#222" stroke-width="7" stroke-linejoin="round" />
 
-          <!-- Cuerpo y patitas -->
-          <path id="cuerpo" class="color-zone" d="M 240,260 C 220,320 220,380 270,390 C 300,395 330,395 350,380 C 380,360 380,310 360,260 Z" fill="#ffffff" />
-          <ellipse id="pata-izq" class="color-zone" cx="265" cy="390" rx="18" ry="12" fill="#ffffff" />
-          <ellipse id="pata-der" class="color-zone" cx="335" cy="390" rx="18" ry="12" fill="#ffffff" />
+          <!-- Colita enrollada -->
+          <path class="paint-zone" d="M 230,350 C 190,350 170,380 185,410 C 200,435 245,430 255,400 C 260,380 240,365 225,380" fill="#ffffff" stroke="#222" stroke-width="6" stroke-linecap="round" />
 
-          <!-- Bracitos -->
-          <ellipse id="brazo-izq" class="color-zone" cx="225" cy="275" rx="16" ry="24" transform="rotate(25 225 275)" fill="#ffffff" />
-          <ellipse id="brazo-der" class="color-zone" cx="375" cy="275" rx="16" ry="24" transform="rotate(-25 375 275)" fill="#ffffff" />
+          <!-- Cuerpo -->
+          <path class="paint-zone" d="M 240,265 C 220,330 225,395 270,405 C 305,410 335,410 355,395 C 390,370 385,315 360,265 Z" fill="#ffffff" stroke="#222" stroke-width="7" />
+          <!-- Patitas -->
+          <ellipse class="paint-zone" cx="265" cy="405" rx="20" ry="14" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="335" cy="405" rx="20" ry="14" fill="#ffffff" stroke="#222" stroke-width="6" />
 
-          <!-- Cabeza -->
-          <path id="cabeza" class="color-zone" d="M 300,120 C 380,120 420,160 420,205 C 420,255 370,275 300,275 C 230,275 180,255 180,205 C 180,160 220,120 300,120 Z" fill="#ffffff" />
+          <!-- Brazos -->
+          <ellipse class="paint-zone" cx="220" cy="285" rx="18" ry="26" transform="rotate(25 220 285)" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="380" cy="285" rx="18" ry="26" transform="rotate(-25 380 285)" fill="#ffffff" stroke="#222" stroke-width="6" />
 
-          <!-- Cachetitos -->
-          <ellipse id="mejilla-izq" class="color-zone" cx="225" cy="225" rx="18" ry="10" fill="#ffb6d2" />
-          <ellipse id="mejilla-der" class="color-zone" cx="375" cy="225" rx="18" ry="10" fill="#ffb6d2" />
+          <!-- Cabeza grande -->
+          <path class="paint-zone" d="M 300,115 C 390,115 435,160 435,210 C 435,265 380,285 300,285 C 220,285 165,265 165,210 C 165,160 210,115 300,115 Z" fill="#ffffff" stroke="#222" stroke-width="7" />
 
-          <!-- Ojos celestes -->
-          <ellipse id="ojo-izq" class="color-zone" cx="250" cy="195" rx="9" ry="14" fill="#2aa8e6" />
-          <ellipse id="ojo-der" class="color-zone" cx="350" cy="195" rx="9" ry="14" fill="#2aa8e6" />
+          <!-- Mejillas -->
+          <ellipse class="paint-zone" cx="225" cy="225" rx="20" ry="12" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <ellipse class="paint-zone" cx="375" cy="225" rx="20" ry="12" fill="#ffffff" stroke="#222" stroke-width="5" />
 
-          <!-- Boca simpática -->
-          <path id="boca" class="color-zone" d="M 285,215 Q 300,240 315,215 Z" fill="#ff9eb5" />
-          <path d="M 285,215 Q 300,240 315,215 Z" fill="none" stroke="#5c3d2e" stroke-width="4" stroke-linecap="round" />
+          <!-- Ojos grandes de Cinnamoroll -->
+          <ellipse class="paint-zone" cx="250" cy="190" rx="11" ry="16" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="350" cy="190" rx="11" ry="16" fill="#ffffff" stroke="#222" stroke-width="6" />
 
-          <!-- Contornos oficiales (estilo chocolate Sanrio) -->
-          <g fill="none" stroke="#5c3d2e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none">
-            <path d="M 230,170 C 180,140 70,160 50,220 C 30,270 90,290 140,280 C 190,270 230,230 240,210 Z" />
-            <path d="M 370,170 C 420,140 530,160 550,220 C 570,270 510,290 460,280 C 410,270 370,230 360,210 Z" />
-            <path d="M 230,340 C 200,340 180,365 190,390 C 200,415 240,415 250,390 C 255,375 240,360 225,375" />
-            <path d="M 240,260 C 220,320 220,380 270,390 C 300,395 330,395 350,380 C 380,360 380,310 360,260 Z" />
-            <ellipse cx="265" cy="390" rx="18" ry="12" />
-            <ellipse cx="335" cy="390" rx="18" ry="12" />
-            <ellipse cx="225" cy="275" rx="16" ry="24" transform="rotate(25 225 275)" />
-            <ellipse cx="375" cy="275" rx="16" ry="24" transform="rotate(-25 375 275)" />
-            <path d="M 300,120 C 380,120 420,160 420,205 C 420,255 370,275 300,275 C 230,275 180,255 180,205 C 180,160 220,120 300,120 Z" />
-            <path d="M 285,215 C 290,222 297,222 300,218 C 303,222 310,222 315,215" stroke-width="4" />
-          </g>
+          <!-- Boca en W tierna -->
+          <path class="paint-zone" d="M 285,215 Q 300,238 315,215" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round" />
         </svg>
       `
     },
     {
       id: 'milk',
       label: 'Milk 🍼',
-      name: 'El Bebé Milk con su Chupete',
+      title: 'El Pequeño Bebé Milk',
       svg: `
-        <svg viewBox="0 0 600 500" class="coloring-svg">
-          <rect id="bg" class="color-zone" x="10" y="10" width="580" height="480" rx="30" fill="#fff5fa" />
-          <path id="corazon1" class="color-zone" d="M 120,90 C 100,50 50,70 70,110 C 90,140 120,160 120,160 C 120,160 150,140 170,110 C 190,70 140,50 120,90 Z" fill="#ffd1e3" />
-          <path id="corazon2" class="color-zone" d="M 470,90 C 450,50 400,70 420,110 C 440,140 470,160 470,160 C 470,160 500,140 520,110 C 540,70 490,50 470,90 Z" fill="#ffd1e3" />
-
-          <!-- Orejitas caídas de Milk -->
-          <path id="oreja-izq" class="color-zone" d="M 210,180 C 150,160 100,210 110,280 C 120,330 170,330 190,280 C 205,240 215,200 210,180 Z" fill="#ffffff" />
-          <path id="oreja-der" class="color-zone" d="M 390,180 C 450,160 500,210 490,280 C 480,330 430,330 410,280 C 395,240 385,200 390,180 Z" fill="#ffffff" />
+        <svg viewBox="0 0 600 500" class="bw-art-svg" id="bwSvgArt">
+          <rect class="paint-zone" x="0" y="0" width="600" height="500" fill="#ffffff" />
+          <!-- Corazones de fondo -->
+          <path class="paint-zone" d="M 110,90 C 90,50 40,70 60,110 C 80,140 110,160 110,160 C 110,160 140,140 160,110 C 180,70 130,50 110,90 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <path class="paint-zone" d="M 480,90 C 460,50 410,70 430,110 C 450,140 480,160 480,160 C 480,160 510,140 530,110 C 550,70 500,50 480,90 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
 
           <!-- Biberón -->
-          <rect id="botella" class="color-zone" x="160" y="320" width="40" height="70" rx="8" fill="#e0f3ff" />
-          <path id="tetina" class="color-zone" d="M 170,320 L 175,300 L 185,300 L 190,320 Z" fill="#ffe082" />
+          <rect class="paint-zone" x="140" y="310" width="50" height="85" rx="10" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <path class="paint-zone" d="M 152,310 L 158,285 L 172,285 L 178,310 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
+
+          <!-- Orejas caídas de Milk -->
+          <path class="paint-zone" d="M 215,190 C 150,165 95,215 105,295 C 115,355 175,355 195,295 C 210,250 220,210 215,190 Z" fill="#ffffff" stroke="#222" stroke-width="7" stroke-linejoin="round" />
+          <path class="paint-zone" d="M 385,190 C 450,165 505,215 495,295 C 485,355 425,355 405,295 C 390,250 380,210 385,190 Z" fill="#ffffff" stroke="#222" stroke-width="7" stroke-linejoin="round" />
 
           <!-- Cuerpo bebé -->
-          <ellipse id="cuerpo" class="color-zone" cx="300" cy="340" rx="70" ry="60" fill="#ffffff" />
-          <ellipse id="pañal" class="color-zone" cx="300" cy="365" rx="60" ry="30" fill="#e8f4ff" />
-
-          <!-- Patitas -->
-          <circle id="pata-izq" class="color-zone" cx="260" cy="395" r="16" fill="#ffffff" />
-          <circle id="pata-der" class="color-zone" cx="340" cy="395" r="16" fill="#ffffff" />
+          <ellipse class="paint-zone" cx="300" cy="355" rx="75" ry="60" fill="#ffffff" stroke="#222" stroke-width="7" />
+          <ellipse class="paint-zone" cx="260" cy="405" rx="20" ry="14" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="340" cy="405" rx="20" ry="14" fill="#ffffff" stroke="#222" stroke-width="6" />
 
           <!-- Cabeza de Milk -->
-          <circle id="cabeza" class="color-zone" cx="300" cy="210" r="95" fill="#ffffff" />
+          <ellipse class="paint-zone" cx="300" cy="205" rx="110" ry="85" fill="#ffffff" stroke="#222" stroke-width="7" />
 
-          <!-- Rizo característico en la frente -->
-          <path id="rizo" class="color-zone" d="M 300,125 C 290,115 305,95 320,105 C 330,115 315,130 305,125 Z" fill="#ffffff" />
+          <!-- Rulito de pelo en la cabeza -->
+          <path class="paint-zone" d="M 300,120 C 285,105 305,85 320,100 C 330,110 315,125 300,120 Z" fill="#ffffff" stroke="#222" stroke-width="6" />
 
-          <!-- Ojos grandes y tiernos -->
-          <ellipse id="ojo-izq" class="color-zone" cx="255" cy="205" rx="10" ry="15" fill="#2aa8e6" />
-          <ellipse id="ojo-der" class="color-zone" cx="345" cy="205" rx="10" ry="15" fill="#2aa8e6" />
+          <!-- Ojos de Milk -->
+          <ellipse class="paint-zone" cx="255" cy="190" rx="12" ry="18" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="345" cy="190" rx="12" ry="18" fill="#ffffff" stroke="#222" stroke-width="6" />
 
-          <!-- Cachetes -->
-          <ellipse id="mejilla-izq" class="color-zone" cx="230" cy="235" rx="16" ry="10" fill="#ffb6d2" />
-          <ellipse id="mejilla-der" class="color-zone" cx="370" cy="235" rx="16" ry="10" fill="#ffb6d2" />
+          <!-- Mejillas -->
+          <ellipse class="paint-zone" cx="225" cy="225" rx="18" ry="12" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <ellipse class="paint-zone" cx="375" cy="225" rx="18" ry="12" fill="#ffffff" stroke="#222" stroke-width="5" />
 
-          <!-- Chupete azul de Milk -->
-          <circle id="chupete-base" class="color-zone" cx="300" cy="245" r="22" fill="#81d4fa" />
-          <circle id="chupete-anillo" class="color-zone" cx="300" cy="256" r="12" fill="#ffffff" />
-
-          <g fill="none" stroke="#5c3d2e" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none">
-            <path d="M 210,180 C 150,160 100,210 110,280 C 120,330 170,330 190,280 C 205,240 215,200 210,180 Z" />
-            <path d="M 390,180 C 450,160 500,210 490,280 C 480,330 430,330 410,280 C 395,240 385,200 390,180 Z" />
-            <circle cx="300" cy="210" r="95" />
-            <path d="M 300,125 C 290,115 305,95 320,105 C 330,115 315,130 305,125 Z" />
-            <circle cx="300" cy="245" r="22" />
-            <circle cx="300" cy="256" r="12" stroke-width="4" />
-            <ellipse cx="300" cy="340" rx="70" ry="60" />
-            <circle cx="260" cy="395" r="16" />
-            <circle cx="340" cy="395" r="16" />
-          </g>
+          <!-- Chupete de Milk -->
+          <ellipse class="paint-zone" cx="300" cy="235" rx="26" ry="19" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <circle class="paint-zone" cx="300" cy="250" r="12" fill="#ffffff" stroke="#222" stroke-width="5" />
         </svg>
       `
     },
     {
       id: 'mocha',
-      label: 'Mocha 🌸',
-      name: 'Mocha con su Flor',
+      label: 'Mocha 🎀',
+      title: 'Mocha con sus Lazos Rosados',
       svg: `
-        <svg viewBox="0 0 600 500" class="coloring-svg">
-          <rect id="bg" class="color-zone" x="10" y="10" width="580" height="480" rx="30" fill="#fff9f0" />
-          <circle id="burbuja1" class="color-zone" cx="100" cy="120" r="40" fill="#ffe3ed" />
-          <circle id="burbuja2" class="color-zone" cx="500" cy="130" r="35" fill="#ffe3ed" />
+        <svg viewBox="0 0 600 500" class="bw-art-svg" id="bwSvgArt">
+          <rect class="paint-zone" x="0" y="0" width="600" height="500" fill="#ffffff" />
+          <!-- Estrellas y flores -->
+          <circle class="paint-zone" cx="100" cy="110" r="24" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <circle class="paint-zone" cx="500" cy="110" r="24" fill="#ffffff" stroke="#222" stroke-width="5" />
 
-          <!-- Orejas onduladas color café -->
-          <path id="oreja-izq" class="color-zone" d="M 210,160 C 130,140 80,210 90,290 C 100,350 160,350 180,300 C 195,260 215,190 210,160 Z" fill="#c49a6c" />
-          <path id="oreja-der" class="color-zone" d="M 390,160 C 470,140 520,210 510,290 C 500,350 440,350 420,300 C 405,260 385,190 390,160 Z" fill="#c49a6c" />
+          <!-- Orejas largas de Mocha -->
+          <path class="paint-zone" d="M 230,170 C 160,130 50,160 40,240 C 30,310 100,320 160,300 C 210,280 235,230 240,205 Z" fill="#ffffff" stroke="#222" stroke-width="7" />
+          <path class="paint-zone" d="M 370,170 C 440,130 550,160 560,240 C 570,310 500,320 440,300 C 390,280 365,230 360,205 Z" fill="#ffffff" stroke="#222" stroke-width="7" />
 
-          <!-- Flor icónica en la oreja -->
-          <g id="flor">
-            <circle id="petalo1" class="color-zone" cx="390" cy="120" r="16" fill="#ff80ab" />
-            <circle id="petalo2" class="color-zone" cx="420" cy="120" r="16" fill="#ff80ab" />
-            <circle id="petalo3" class="color-zone" cx="430" cy="145" r="16" fill="#ff80ab" />
-            <circle id="petalo4" class="color-zone" cx="410" cy="170" r="16" fill="#ff80ab" />
-            <circle id="petalo5" class="color-zone" cx="380" cy="155" r="16" fill="#ff80ab" />
-            <circle id="centro-flor" class="color-zone" cx="405" cy="142" r="12" fill="#fff59d" />
+          <!-- Lazos de flores en las orejas -->
+          <g class="paint-zone">
+            <circle cx="160" cy="180" r="14" fill="#ffffff" stroke="#222" stroke-width="5" />
+            <path d="M 135,170 C 130,150 160,150 160,170 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
+            <path d="M 185,170 C 190,150 160,150 160,170 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
+          </g>
+          <g class="paint-zone">
+            <circle cx="440" cy="180" r="14" fill="#ffffff" stroke="#222" stroke-width="5" />
+            <path d="M 415,170 C 410,150 440,150 440,170 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
+            <path d="M 465,170 C 470,150 440,150 440,170 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
           </g>
 
-          <!-- Cuerpo café -->
-          <ellipse id="cuerpo" class="color-zone" cx="300" cy="340" rx="65" ry="55" fill="#c49a6c" />
+          <!-- Cuerpo -->
+          <path class="paint-zone" d="M 240,265 C 220,330 225,395 270,405 C 305,410 335,410 355,395 C 390,370 385,315 360,265 Z" fill="#ffffff" stroke="#222" stroke-width="7" />
+          <ellipse class="paint-zone" cx="265" cy="405" rx="20" ry="14" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="335" cy="405" rx="20" ry="14" fill="#ffffff" stroke="#222" stroke-width="6" />
 
-          <!-- Moño coqueto en el cuello -->
-          <path id="moño-izq" class="color-zone" d="M 300,285 L 265,270 L 265,300 Z" fill="#ff4081" />
-          <path id="moño-der" class="color-zone" d="M 300,285 L 335,270 L 335,300 Z" fill="#ff4081" />
-          <circle id="moño-centro" class="color-zone" cx="300" cy="285" r="8" fill="#ffd54f" />
+          <!-- Cabeza de Mocha -->
+          <path class="paint-zone" d="M 300,115 C 390,115 435,160 435,210 C 435,265 380,285 300,285 C 220,285 165,265 165,210 C 165,160 210,115 300,115 Z" fill="#ffffff" stroke="#222" stroke-width="7" />
 
-          <!-- Patitas -->
-          <ellipse id="pata-izq" class="color-zone" cx="265" cy="390" rx="16" ry="12" fill="#c49a6c" />
-          <ellipse id="pata-der" class="color-zone" cx="335" cy="390" rx="16" ry="12" fill="#c49a6c" />
+          <!-- Ojos coquetos y pestañas de Mocha -->
+          <ellipse class="paint-zone" cx="250" cy="190" rx="11" ry="16" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <path d="M 240,175 L 232,168" stroke="#222" stroke-width="5" stroke-linecap="round" />
+          <ellipse class="paint-zone" cx="350" cy="190" rx="11" ry="16" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <path d="M 360,175 L 368,168" stroke="#222" stroke-width="5" stroke-linecap="round" />
 
-          <!-- Cabeza café moka -->
-          <ellipse id="cabeza" class="color-zone" cx="300" cy="210" rx="95" ry="75" fill="#c49a6c" />
+          <!-- Mejillas sonrosadas -->
+          <ellipse class="paint-zone" cx="225" cy="225" rx="20" ry="12" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <ellipse class="paint-zone" cx="375" cy="225" rx="20" ry="12" fill="#ffffff" stroke="#222" stroke-width="5" />
 
-          <!-- Ojos -->
-          <ellipse id="ojo-izq" class="color-zone" cx="255" cy="205" rx="8" ry="13" fill="#3e2723" />
-          <ellipse id="ojo-der" class="color-zone" cx="345" cy="205" rx="8" ry="13" fill="#3e2723" />
-
-          <!-- Cachetes -->
-          <ellipse id="mejilla-izq" class="color-zone" cx="230" cy="235" rx="16" ry="10" fill="#ff80ab" />
-          <ellipse id="mejilla-der" class="color-zone" cx="370" cy="235" rx="16" ry="10" fill="#ff80ab" />
-
-          <!-- Boquita en 'w' -->
-          <path id="boca" d="M 290,225 C 295,232 298,232 300,228 C 302,232 305,232 310,225" stroke="#3e2723" stroke-width="4" fill="none" stroke-linecap="round" />
-
-          <g fill="none" stroke="#3e2723" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none">
-            <path d="M 210,160 C 130,140 80,210 90,290 C 100,350 160,350 180,300 C 195,260 215,190 210,160 Z" />
-            <path d="M 390,160 C 470,140 520,210 510,290 C 500,350 440,350 420,300 C 405,260 385,190 390,160 Z" />
-            <ellipse cx="300" cy="210" rx="95" ry="75" />
-            <ellipse cx="300" cy="340" rx="65" ry="55" />
-          </g>
+          <path class="paint-zone" d="M 285,215 Q 300,238 315,215" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round" />
         </svg>
       `
     },
     {
       id: 'pompompurin',
       label: 'Pompompurin 🍮',
-      name: 'Pompompurin y su Pudín',
+      title: 'Pompompurin con su Boina Marrón',
       svg: `
-        <svg viewBox="0 0 600 500" class="coloring-svg">
-          <rect id="bg" class="color-zone" x="10" y="10" width="580" height="480" rx="30" fill="#fffde7" />
+        <svg viewBox="0 0 600 500" class="bw-art-svg" id="bwSvgArt">
+          <rect class="paint-zone" x="0" y="0" width="600" height="500" fill="#ffffff" />
+          <!-- Huesito y pudín -->
+          <path class="paint-zone" d="M 80,120 C 65,100 95,90 110,110 L 150,110 C 165,90 195,100 180,120 C 195,140 165,150 150,130 L 110,130 C 95,150 65,140 80,120 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
 
-          <!-- Plato y Flan de Purin -->
-          <ellipse id="plato" class="color-zone" cx="470" cy="390" rx="60" ry="20" fill="#ffffff" />
-          <path id="flan-base" class="color-zone" d="M 435,385 L 445,335 L 495,335 L 505,385 Z" fill="#fff9c4" />
-          <ellipse id="caramelo" class="color-zone" cx="470" cy="335" rx="26" ry="10" fill="#6d4c41" />
-          <circle id="cereza" class="color-zone" cx="470" cy="318" r="9" fill="#e91e63" />
+          <!-- Boina marrón de Purin -->
+          <path class="paint-zone" d="M 240,110 C 240,75 360,75 360,110 Z" fill="#ffffff" stroke="#222" stroke-width="7" />
+          <ellipse class="paint-zone" cx="300" cy="72" rx="10" ry="8" fill="#ffffff" stroke="#222" stroke-width="5" />
 
-          <!-- Orejitas caídas -->
-          <ellipse id="oreja-izq" class="color-zone" cx="180" cy="220" rx="24" ry="48" transform="rotate(-15 180 220)" fill="#fff59d" />
-          <ellipse id="oreja-der" class="color-zone" cx="370" cy="220" rx="24" ry="48" transform="rotate(15 370 220)" fill="#fff59d" />
+          <!-- Orejas caídas de Purin -->
+          <ellipse class="paint-zone" cx="190" cy="210" rx="28" ry="55" transform="rotate(25 190 210)" fill="#ffffff" stroke="#222" stroke-width="7" />
+          <ellipse class="paint-zone" cx="410" cy="210" rx="28" ry="55" transform="rotate(-25 410 210)" fill="#ffffff" stroke="#222" stroke-width="7" />
 
-          <!-- Cuerpo regordete y panza -->
-          <ellipse id="cuerpo" class="color-zone" cx="275" cy="340" rx="100" ry="85" fill="#fff59d" />
+          <!-- Gran cuerpo redondito y tierno -->
+          <ellipse class="paint-zone" cx="300" cy="300" rx="145" ry="135" fill="#ffffff" stroke="#222" stroke-width="8" />
 
-          <!-- Patitas -->
-          <circle id="pata-izq" class="color-zone" cx="215" cy="415" r="22" fill="#fff59d" />
-          <circle id="pata-der" class="color-zone" cx="335" cy="415" r="22" fill="#fff59d" />
+          <!-- Patitas cortas -->
+          <ellipse class="paint-zone" cx="240" cy="425" rx="30" ry="20" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="360" cy="425" rx="30" ry="20" fill="#ffffff" stroke="#222" stroke-width="6" />
 
-          <!-- Cabeza grande redonda -->
-          <circle id="cabeza" class="color-zone" cx="275" cy="210" r="90" fill="#fff59d" />
+          <!-- Manitas -->
+          <ellipse class="paint-zone" cx="170" cy="310" rx="24" ry="18" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="430" cy="310" rx="24" ry="18" fill="#ffffff" stroke="#222" stroke-width="6" />
 
-          <!-- Boina marrón clásica de Purin -->
-          <ellipse id="boina" class="color-zone" cx="275" cy="120" rx="42" ry="18" fill="#5d4037" />
-          <circle id="boina-tope" class="color-zone" cx="275" cy="102" r="7" fill="#5d4037" />
+          <!-- Ojos redondos pequeños -->
+          <circle class="paint-zone" cx="265" cy="220" r="9" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <circle class="paint-zone" cx="335" cy="220" r="9" fill="#ffffff" stroke="#222" stroke-width="5" />
 
-          <!-- Cara -->
-          <circle id="ojo-izq" class="color-zone" cx="235" cy="195" r="8" fill="#4e342e" />
-          <circle id="ojo-der" class="color-zone" cx="315" cy="195" r="8" fill="#4e342e" />
-          <ellipse id="mejilla-izq" class="color-zone" cx="210" cy="220" rx="15" ry="10" fill="#ffab91" />
-          <ellipse id="mejilla-der" class="color-zone" cx="340" cy="220" rx="15" ry="10" fill="#ffab91" />
-          <circle id="nariz" class="color-zone" cx="275" cy="205" r="7" fill="#4e342e" />
+          <!-- Nariz de perrito y boquita -->
+          <ellipse class="paint-zone" cx="300" cy="235" rx="9" ry="6" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <path class="paint-zone" d="M 285,248 C 295,258 300,250 300,248 C 300,250 305,258 315,248" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round" />
 
-          <!-- Boquita en estrella / trípode -->
-          <path id="boca" d="M 275,212 L 275,224 M 275,224 C 270,230 263,228 260,224 M 275,224 C 280,230 287,228 290,224" stroke="#4e342e" stroke-width="4" stroke-linecap="round" fill="none" />
+          <!-- Mejillas -->
+          <ellipse class="paint-zone" cx="230" cy="245" rx="16" ry="10" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <ellipse class="paint-zone" cx="370" cy="245" rx="16" ry="10" fill="#ffffff" stroke="#222" stroke-width="5" />
+        </svg>
+      `
+    },
+    {
+      id: 'chiffon',
+      label: 'Chiffon 🌸',
+      title: 'Chiffon con sus Orejas Esponjosas',
+      svg: `
+        <svg viewBox="0 0 600 500" class="bw-art-svg" id="bwSvgArt">
+          <rect class="paint-zone" x="0" y="0" width="600" height="500" fill="#ffffff" />
+          <!-- Flores flotantes -->
+          <path class="paint-zone" d="M 120,110 C 100,80 150,70 140,100 C 170,90 170,140 140,130 C 150,160 100,150 120,110 Z" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <circle class="paint-zone" cx="480" cy="110" r="26" fill="#ffffff" stroke="#222" stroke-width="5" />
 
-          <g fill="none" stroke="#5d4037" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" pointer-events="none">
-            <ellipse cx="180" cy="220" rx="24" ry="48" transform="rotate(-15 180 220)" />
-            <ellipse cx="370" cy="220" rx="24" ry="48" transform="rotate(15 370 220)" />
-            <circle cx="275" cy="210" r="90" />
-            <ellipse cx="275" cy="120" rx="42" ry="18" />
-            <circle cx="275" cy="102" r="7" />
-            <ellipse cx="275" cy="340" rx="100" ry="85" />
-            <circle cx="215" cy="415" r="22" />
-            <circle cx="335" cy="415" r="22" />
-            <ellipse cx="470" cy="390" rx="60" ry="20" stroke-width="4" />
-          </g>
+          <!-- Orejas rizadas/esponjosas de Chiffon -->
+          <path class="paint-zone" d="M 220,170 C 170,120 70,140 70,210 C 65,250 100,270 120,290 C 150,305 190,280 230,220 Z" fill="#ffffff" stroke="#222" stroke-width="7" />
+          <path class="paint-zone" d="M 380,170 C 430,120 530,140 530,210 C 535,250 500,270 480,290 C 450,305 410,280 370,220 Z" fill="#ffffff" stroke="#222" stroke-width="7" />
+
+          <!-- Cuerpo -->
+          <ellipse class="paint-zone" cx="300" cy="340" rx="70" ry="65" fill="#ffffff" stroke="#222" stroke-width="7" />
+          <ellipse class="paint-zone" cx="260" cy="405" rx="20" ry="14" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="340" cy="405" rx="20" ry="14" fill="#ffffff" stroke="#222" stroke-width="6" />
+
+          <!-- Cabeza -->
+          <ellipse class="paint-zone" cx="300" cy="195" rx="100" ry="80" fill="#ffffff" stroke="#222" stroke-width="7" />
+
+          <!-- Ojos alegres de Chiffon -->
+          <ellipse class="paint-zone" cx="255" cy="185" rx="11" ry="16" fill="#ffffff" stroke="#222" stroke-width="6" />
+          <ellipse class="paint-zone" cx="345" cy="185" rx="11" ry="16" fill="#ffffff" stroke="#222" stroke-width="6" />
+
+          <!-- Nariz y boquita -->
+          <path class="paint-zone" d="M 285,210 Q 300,230 315,210" fill="none" stroke="#222" stroke-width="6" stroke-linecap="round" />
+
+          <!-- Mejillas -->
+          <ellipse class="paint-zone" cx="225" cy="215" rx="18" ry="11" fill="#ffffff" stroke="#222" stroke-width="5" />
+          <ellipse class="paint-zone" cx="375" cy="215" rx="18" ry="11" fill="#ffffff" stroke="#222" stroke-width="5" />
         </svg>
       `
     }
   ];
 
-  class ColoringGame {
+  class ColoringStudio {
     constructor() {
-      this.currentTemplateIdx = 0;
-      this.selectedColor = PALETTE[0].color;
-      this.sparkleMode = false;
       this.container = null;
+      this.currentTemplate = TEMPLATES[0];
+      this.selectedColor = PALETTE[0].color;
+      this.currentTool = 'crayon'; // 'crayon', 'bucket', 'eraser', 'stamp'
+      this.brushSize = 18; // 8 (fino), 18 (medio), 34 (grueso)
+      this.selectedStamp = STAMPS[0];
+      this.isDrawing = false;
+      this.lastPos = { x: 0, y: 0 };
     }
 
     init(containerEl) {
@@ -267,39 +260,82 @@
     }
 
     render() {
-      const tmpl = TEMPLATES[this.currentTemplateIdx];
       this.container.innerHTML = `
-        <div class="coloring-wrap">
-          <!-- Selector superior de personajes -->
-          <div class="char-tabs">
-            ${TEMPLATES.map((t, idx) => `
-              <button class="char-tab ${idx === this.currentTemplateIdx ? 'active' : ''}" data-idx="${idx}">
-                ${t.label || t.name.split(' ')[0]}
+        <div class="color-studio-wrap">
+          <!-- Barra de navegación de láminas (Cinnamoroll y sus amigos) -->
+          <div class="templates-scroll-bar">
+            ${TEMPLATES.map(tmpl => `
+              <button class="sheet-tab-btn ${tmpl.id === this.currentTemplate.id ? 'active' : ''}" data-id="${tmpl.id}">
+                ${tmpl.label}
               </button>
             `).join('')}
           </div>
 
-          <!-- Lienzo principal SVG -->
-          <div class="canvas-box" id="svgHolder">
-            ${tmpl.svg}
-            <div id="sparkleLayer" class="sparkle-layer"></div>
+          <!-- Lienzo principal: lámina en B&W + capa de dibujo para rayar -->
+          <div class="coloring-board-stage" id="boardStage">
+            <div class="sheet-title-tag">${this.currentTemplate.title}</div>
+            
+            <div class="interactive-canvas-box" id="canvasBox">
+              <!-- Capa 1: Vector SVG en Blanco y Negro -->
+              <div class="svg-sheet-layer" id="svgSheetLayer">
+                ${this.currentTemplate.svg}
+              </div>
+
+              <!-- Capa 2: Canvas HTML5 transparente para rayar libremente con crayones y sellos -->
+              <canvas class="freehand-draw-canvas" id="freehandCanvas" width="600" height="500"></canvas>
+            </div>
           </div>
 
-          <!-- Paleta pastel y herramientas -->
-          <div class="palette-bar">
-            <div class="color-swatches">
-              ${PALETTE.map(p => `
-                <button class="swatch ${p.color === this.selectedColor && !this.sparkleMode ? 'active' : ''}" 
-                        style="background: ${p.color}" 
-                        data-color="${p.color}" 
-                        title="${p.name}"></button>
+          <!-- Paleta de herramientas y colores adaptada para deditos de 5 años -->
+          <div class="coloring-controls-bar">
+            <!-- Selector de herramientas -->
+            <div class="tools-selector">
+              <button class="tool-btn ${this.currentTool === 'crayon' ? 'active' : ''}" data-tool="crayon" title="Crayón para rayar">
+                🖍️ Rayar
+              </button>
+              <button class="tool-btn ${this.currentTool === 'bucket' ? 'active' : ''}" data-tool="bucket" title="Relleno Mágico">
+                🪄 Pintar
+              </button>
+              <button class="tool-btn ${this.currentTool === 'eraser' ? 'active' : ''}" data-tool="eraser" title="Borrador">
+                🧽 Borrar
+              </button>
+              <button class="tool-btn ${this.currentTool === 'stamp' ? 'active' : ''}" data-tool="stamp" title="Sellos mágicos">
+                ⭐ Sellitos
+              </button>
+            </div>
+
+            <!-- Tamaños de trazo -->
+            <div class="brush-size-selector" id="sizeSelector">
+              <button class="size-pill ${this.brushSize === 8 ? 'active' : ''}" data-size="8">✏️ Fino</button>
+              <button class="size-pill ${this.brushSize === 18 ? 'active' : ''}" data-size="18">🖍️ Medio</button>
+              <button class="size-pill ${this.brushSize === 34 ? 'active' : ''}" data-size="34">🖌️ Grueso</button>
+            </div>
+
+            <!-- Sellitos kawaii (visible si herramienta = stamp) -->
+            <div class="stamps-picker ${this.currentTool === 'stamp' ? '' : 'hidden'}" id="stampsPicker">
+              ${STAMPS.map(st => `
+                <button class="stamp-opt-btn ${st === this.selectedStamp ? 'active' : ''}" data-stamp="${st}">
+                  ${st}
+                </button>
               `).join('')}
             </div>
 
-            <div class="tools-bar">
-              <button id="btnSparkle" class="tool-btn ${this.sparkleMode ? 'active' : ''}">✨ Purpurina</button>
-              <button id="btnReset" class="tool-btn">🧹 Limpiar</button>
-              <button id="btnSave" class="tool-btn">💾 Guardar</button>
+            <!-- Paleta de colores Sanrio -->
+            <div class="color-swatches-row">
+              ${PALETTE.map(p => `
+                <button class="swatch-btn ${p.color === this.selectedColor ? 'active' : ''}" 
+                        data-color="${p.color}" 
+                        style="background-color: ${p.color};" 
+                        title="${p.name}" 
+                        aria-label="${p.name}">
+                </button>
+              `).join('')}
+            </div>
+
+            <!-- Acciones auxiliares: Limpiar y Guardar -->
+            <div class="aux-actions-row">
+              <button class="aux-btn" id="btnClearSheet">📄 Hoja Nueva</button>
+              <button class="aux-btn special" id="btnDownloadArt">📸 Guardar Foto</button>
             </div>
           </div>
         </div>
@@ -309,128 +345,210 @@
     }
 
     bindEvents() {
-      // Cambio de personaje
-      this.container.querySelectorAll('.char-tab').forEach(tab => {
-        tab.addEventListener('click', (e) => {
+      const canvas = this.container.querySelector('#freehandCanvas');
+      const ctx = canvas.getContext('2d');
+
+      // Cambio de lámina
+      this.container.querySelectorAll('.sheet-tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
           A.unlock();
           A.bubblePop(1);
-          this.currentTemplateIdx = parseInt(e.currentTarget.dataset.idx, 10);
-          this.render();
+          const found = TEMPLATES.find(t => t.id === e.currentTarget.dataset.id);
+          if (found) {
+            this.currentTemplate = found;
+            this.render();
+          }
         });
       });
 
-      // Selección de color
-      this.container.querySelectorAll('.swatch').forEach(sw => {
-        sw.addEventListener('click', (e) => {
+      // Cambio de herramienta
+      this.container.querySelectorAll('.tool-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
           A.unlock();
-          A.bubblePop(2);
-          this.sparkleMode = false;
-          this.selectedColor = e.currentTarget.dataset.color;
-          this.container.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-          this.container.querySelector('#btnSparkle').classList.remove('active');
+          A.kawaiiChirp('chirp');
+          this.currentTool = e.currentTarget.dataset.tool;
+          this.container.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+
+          const stampsPicker = this.container.querySelector('#stampsPicker');
+          const sizeSelector = this.container.querySelector('#sizeSelector');
+          if (this.currentTool === 'stamp') {
+            stampsPicker.classList.remove('hidden');
+            sizeSelector.classList.add('hidden');
+          } else {
+            stampsPicker.classList.add('hidden');
+            sizeSelector.classList.remove('hidden');
+          }
+        });
+      });
+
+      // Selección de tamaño
+      this.container.querySelectorAll('.size-pill').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          A.unlock();
+          A.bubblePop(1);
+          this.brushSize = parseInt(e.currentTarget.dataset.size, 10);
+          this.container.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
           e.currentTarget.classList.add('active');
         });
       });
 
-      // Modo Purpurina
-      const sparkleBtn = this.container.querySelector('#btnSparkle');
-      sparkleBtn.addEventListener('click', () => {
-        A.unlock();
-        this.sparkleMode = !this.sparkleMode;
-        sparkleBtn.classList.toggle('active', this.sparkleMode);
-        if (this.sparkleMode) {
-          this.container.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+      // Selección de sello
+      this.container.querySelectorAll('.stamp-opt-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          A.unlock();
+          A.bubblePop(2);
+          this.selectedStamp = e.currentTarget.dataset.stamp;
+          this.container.querySelectorAll('.stamp-opt-btn').forEach(b => b.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+        });
+      });
+
+      // Selección de color
+      this.container.querySelectorAll('.swatch-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          A.unlock();
           A.colorSplat();
+          this.selectedColor = e.currentTarget.dataset.color;
+          this.container.querySelectorAll('.swatch-btn').forEach(b => b.classList.remove('active'));
+          e.currentTarget.classList.add('active');
+        });
+      });
+
+      // Relleno mágico sobre zonas vectoriales de la lámina
+      const svg = this.container.querySelector('#bwSvgArt');
+      svg.addEventListener('click', (e) => {
+        if (this.currentTool !== 'bucket') return;
+        const target = e.target.closest('.paint-zone');
+        if (target) {
+          A.unlock();
+          A.colorSplat();
+          target.setAttribute('fill', this.selectedColor);
         }
       });
 
-      // Limpiar
-      this.container.querySelector('#btnReset').addEventListener('click', () => {
+      // Dibujo táctil y libre sobre el Canvas (Crayones y Rayar)
+      const getPos = (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      };
+
+      const startDraw = (e) => {
+        if (this.currentTool === 'bucket') return;
+        A.unlock();
+        this.isDrawing = true;
+        this.lastPos = getPos(e);
+
+        if (this.currentTool === 'stamp') {
+          // Estampar sello kawaii
+          A.bubblePop(3);
+          ctx.font = '40px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(this.selectedStamp, this.lastPos.x, this.lastPos.y);
+          this.isDrawing = false;
+        } else {
+          // Trazo inicial de crayón o borrador
+          ctx.beginPath();
+          ctx.arc(this.lastPos.x, this.lastPos.y, this.brushSize / 2, 0, Math.PI * 2);
+          if (this.currentTool === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fill();
+          } else {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = this.selectedColor;
+            ctx.fill();
+          }
+        }
+      };
+
+      const moveDraw = (e) => {
+        if (!this.isDrawing || this.currentTool === 'bucket' || this.currentTool === 'stamp') return;
+        e.preventDefault();
+        const pos = getPos(e);
+
+        ctx.beginPath();
+        ctx.moveTo(this.lastPos.x, this.lastPos.y);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = this.brushSize;
+
+        if (this.currentTool === 'eraser') {
+          ctx.globalCompositeOperation = 'destination-out';
+        } else {
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.strokeStyle = this.selectedColor;
+        }
+
+        ctx.stroke();
+        this.lastPos = pos;
+      };
+
+      const stopDraw = () => {
+        this.isDrawing = false;
+      };
+
+      canvas.addEventListener('mousedown', startDraw);
+      canvas.addEventListener('mousemove', moveDraw);
+      window.addEventListener('mouseup', stopDraw);
+
+      canvas.addEventListener('touchstart', startDraw, { passive: false });
+      canvas.addEventListener('touchmove', moveDraw, { passive: false });
+      window.addEventListener('touchend', stopDraw);
+
+      // Botón Limpiar Hoja
+      this.container.querySelector('#btnClearSheet').addEventListener('click', () => {
         A.unlock();
         A.softBoing();
-        this.render();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Reset SVG fills to white
+        this.container.querySelectorAll('#bwSvgArt .paint-zone').forEach(el => {
+          el.setAttribute('fill', '#ffffff');
+        });
       });
 
-      // Guardar imagen (descarga PNG o abre)
-      this.container.querySelector('#btnSave').addEventListener('click', () => {
+      // Botón Guardar / Descargar Foto de la obra
+      this.container.querySelector('#btnDownloadArt').addEventListener('click', () => {
         A.unlock();
         A.celebrate();
-        this.exportImage();
-      });
-
-      // Pintar zonas o estampar brillos
-      const svgHolder = this.container.querySelector('#svgHolder');
-      svgHolder.addEventListener('pointerdown', (e) => {
-        A.unlock();
-        const rect = svgHolder.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        if (this.sparkleMode) {
-          this.addSparkle(x, y);
-          A.colorSplat();
-          return;
-        }
-
-        const zone = e.target.closest('.color-zone');
-        if (zone) {
-          zone.setAttribute('fill', this.selectedColor);
-          A.colorSplat();
-          this.addMiniBurst(x, y, this.selectedColor);
-        }
+        this.exportArtwork(canvas, svg);
       });
     }
 
-    addMiniBurst(x, y, color) {
-      const layer = this.container.querySelector('#sparkleLayer');
-      for (let i = 0; i < 6; i++) {
-        const star = document.createElement('span');
-        star.className = 'mini-star';
-        star.textContent = '★';
-        star.style.left = x + 'px';
-        star.style.top = y + 'px';
-        star.style.color = color === '#ffffff' ? '#ffe066' : color;
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 30 + Math.random() * 40;
-        star.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
-        star.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
-        layer.appendChild(star);
-        setTimeout(() => star.remove(), 700);
-      }
-    }
+    exportArtwork(canvas, svg) {
+      // Combina el SVG de fondo y el canvas en una imagen final para guardar
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = canvas.width;
+      exportCanvas.height = canvas.height;
+      const expCtx = exportCanvas.getContext('2d');
 
-    addSparkle(x, y) {
-      const layer = this.container.querySelector('#sparkleLayer');
-      const star = document.createElement('div');
-      star.className = 'stamped-sparkle';
-      star.textContent = ['✨', '💖', '⭐', '🌸'][Math.floor(Math.random() * 4)];
-      star.style.left = (x - 16) + 'px';
-      star.style.top = (y - 16) + 'px';
-      layer.appendChild(star);
-    }
-
-    exportImage() {
-      const svg = this.container.querySelector('svg');
       const xml = new XMLSerializer().serializeToString(svg);
       const svg64 = btoa(unescape(encodeURIComponent(xml)));
+      const b64Start = 'data:image/svg+xml;base64,';
+      const image64 = b64Start + svg64;
+
       const img = new Image();
-      img.src = 'data:image/svg+xml;base64,' + svg64;
       img.onload = () => {
-        const c = document.createElement('canvas');
-        c.width = 1200;
-        c.height = 1000;
-        const ctx = c.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, c.width, c.height);
-        ctx.drawImage(img, 0, 0, c.width, c.height);
+        expCtx.drawImage(img, 0, 0);
+        expCtx.drawImage(canvas, 0, 0);
+
         const a = document.createElement('a');
-        a.download = `cinnamoroll-amigos-${TEMPLATES[this.currentTemplateIdx].id}.png`;
-        a.href = c.toDataURL('image/png');
+        a.download = `Cinnamoroll_Dibujo_Amanda_${this.currentTemplate.id}.png`;
+        a.href = exportCanvas.toDataURL('image/png');
         a.click();
       };
+      img.src = image64;
     }
   }
 
   window.Cinnamo = window.Cinnamo || {};
-  window.Cinnamo.coloringGame = new ColoringGame();
+  window.Cinnamo.coloringGame = new ColoringStudio();
 })();

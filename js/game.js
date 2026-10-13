@@ -121,14 +121,30 @@
     }
     switch (type) {
       case 'up':
-        IN.setTarget('voice', currentPointer() - 0.35, 1600); A.whoosh(true); break;
+        S.p.vy = -1.9;
+        IN.setTarget('voice', Math.max(0.06, currentPointer() - 0.4), 1800);
+        floatText(px, playToY(S.p.y) - size * 0.45, '¡Arriba! 🪽');
+        setMood('happy', 0.8);
+        A.whoosh(true);
+        break;
       case 'down':
-        IN.setTarget('voice', currentPointer() + 0.35, 1600); A.whoosh(false); break;
+        S.p.vy = 1.5;
+        IN.setTarget('voice', Math.min(0.94, currentPointer() + 0.4), 1800);
+        floatText(px, playToY(S.p.y) - size * 0.45, '¡Abajo! ☁️');
+        A.whoosh(false);
+        break;
       case 'spin':
-        if (S.p.spinT <= 0) { S.p.spinT = 0.8; A.spin(); setMood('wow', 0.9); } break;
+        if (S.p.spinT <= 0) {
+          S.p.spinT = 0.8;
+          A.spin();
+          setMood('wow', 0.9);
+          floatText(px, playToY(S.p.y) - size * 0.45, '¡Pirueta! ✨');
+        }
+        break;
       case 'hello':
         setMood('happy', 1.4); S.p.wiggle = 1.4;
         burst(px, playToY(S.p.y) - size * 0.4, 8, ['#ff8fbf', '#ffb3d1'], 120, 'heart');
+        floatText(px, playToY(S.p.y) - size * 0.45, '¡Hola Amanda! 💖');
         A.kawaiiChirp('cheer');
         break;
     }

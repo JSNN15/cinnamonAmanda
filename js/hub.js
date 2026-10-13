@@ -1,5 +1,5 @@
 /* Gestor del Hub Central y Navegación de la Suite Cinnamoroll Land
- * Permite cambiar sin problemas entre los 3 juegos y controla la música relajante global.
+ * Permite cambiar sin problemas entre los 6 juegos y controla la música relajante global.
  */
 (function () {
   const { audio: A } = window.Cinnamo;
@@ -21,7 +21,10 @@
         hub: document.getElementById('screen-hub'),
         flight: document.getElementById('screen-flight'),
         math: document.getElementById('screen-math'),
-        coloring: document.getElementById('screen-coloring')
+        coloring: document.getElementById('screen-coloring'),
+        memory: document.getElementById('screen-memory'),
+        platformer: document.getElementById('screen-platformer'),
+        doom: document.getElementById('screen-doom')
       };
 
       this.btnHome = document.getElementById('globalBtnHome');
@@ -34,7 +37,7 @@
       this.btnHome.addEventListener('click', () => {
         A.unlock();
         A.bubblePop(1);
-        if (window.Cinnamo.pauseFlightGame) window.Cinnamo.pauseFlightGame();
+        this.stopActiveGames();
         this.showScreen('hub');
       });
 
@@ -65,6 +68,12 @@
       });
     }
 
+    stopActiveGames() {
+      if (window.Cinnamo.pauseFlightGame) window.Cinnamo.pauseFlightGame();
+      if (window.Cinnamo.platformerGame && window.Cinnamo.platformerGame.stop) window.Cinnamo.platformerGame.stop();
+      if (window.Cinnamo.doomGame && window.Cinnamo.doomGame.stop) window.Cinnamo.doomGame.stop();
+    }
+
     showScreen(screenName) {
       this.currentScreen = screenName;
       Object.keys(this.screens).forEach(key => {
@@ -78,6 +87,7 @@
     }
 
     launchGame(gameKey) {
+      this.stopActiveGames();
       this.showScreen(gameKey);
 
       if (gameKey === 'flight') {
@@ -93,6 +103,21 @@
         const colorMount = document.getElementById('coloring-mount');
         if (window.Cinnamo.coloringGame) {
           window.Cinnamo.coloringGame.init(colorMount);
+        }
+      } else if (gameKey === 'memory') {
+        const memoryMount = document.getElementById('memory-mount');
+        if (window.Cinnamo.memoryGame) {
+          window.Cinnamo.memoryGame.init(memoryMount);
+        }
+      } else if (gameKey === 'platformer') {
+        const platMount = document.getElementById('platformer-mount');
+        if (window.Cinnamo.platformerGame) {
+          window.Cinnamo.platformerGame.init(platMount);
+        }
+      } else if (gameKey === 'doom') {
+        const doomMount = document.getElementById('doom-mount');
+        if (window.Cinnamo.doomGame) {
+          window.Cinnamo.doomGame.init(doomMount);
         }
       }
     }
