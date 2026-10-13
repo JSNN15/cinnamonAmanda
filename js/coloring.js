@@ -1,6 +1,10 @@
 /* El Taller de Dibujo de Cinnamoroll & Amigos
  * Láminas OFICIALES en blanco y negro de Cinnamoroll, Milk, Mocha, Pompompurin y Chiffon.
- * Permite rayar con crayones de verdad, borrar, estampar sellos kawaii y descargar la obra de arte.
+ * - Capa de contorno siempre visible SOBRE el color (mix-blend-mode: multiply).
+ * - Cursor dinámico sobre la pizarra que muestra el grosor exacto del pincel y el color.
+ * - Sellitos kawaii funcionales con efectos sonoros, partículas y trazo continuo.
+ * - Borrador que sólo borra los colores sin dañar el dibujo.
+ * - Exportación de alta resolución a PNG.
  */
 (function () {
   const { audio: A } = window.Cinnamo;
@@ -14,10 +18,22 @@
     { name: 'Verde Menta', color: '#a7f3d0' },
     { name: 'Caramelo Purin', color: '#f59e0b' },
     { name: 'Blanco Nube', color: '#ffffff' },
-    { name: 'Chocolate Sanrio', color: '#5c3d2e' },
+    { name: 'Rojo Fresa', color: '#fb7185' },
+    { name: 'Chocolate Sanrio', color: '#5c3d2e' }
   ];
 
-  const STAMPS = ['⭐', '💖', '🌸', '🍥', '🧁'];
+  const STAMPS = [
+    { emoji: '⭐', label: 'Estrella' },
+    { emoji: '💖', label: 'Corazón' },
+    { emoji: '🌸', label: 'Flor' },
+    { emoji: '🎀', label: 'Lazo' },
+    { emoji: '🧁', label: 'Pastelito' },
+    { emoji: '🍥', label: 'Rollito' },
+    { emoji: '🍼', label: 'Biberón' },
+    { emoji: '🍮', label: 'Flan' },
+    { emoji: '🍓', label: 'Frutilla' },
+    { emoji: '✨', label: 'Brillito' }
+  ];
 
   const SHEETS = [
     { id: 'cinna', label: 'Cinnamoroll 🪽', title: 'Cinnamoroll Volando en el Cielo', src: 'assets/sheet_cinnamoroll.png' },
@@ -33,10 +49,11 @@
       this.currentSheet = SHEETS[0];
       this.selectedColor = PALETTE[0].color;
       this.currentTool = 'crayon'; // 'crayon', 'eraser', 'stamp'
-      this.brushSize = 18;
-      this.selectedStamp = STAMPS[0];
+      this.brushSize = 20;
+      this.selectedStamp = STAMPS[0].emoji;
       this.isDrawing = false;
-      this.lastPos = { x: 0, y: 0 };
+      this.lastPos = null;
+      this.lastStampPos = null;
     }
 
     init(containerEl) {
@@ -56,16 +73,19 @@
             `).join('')}
           </div>
 
-          <!-- Pizarra de Dibujo con Lámina de Fondo -->
+          <!-- Pizarra de Dibujo: Capas Superpuestas -->
           <div class="coloring-board-stage" id="boardStage">
             <div class="sheet-title-tag">${this.currentSheet.title}</div>
             
             <div class="interactive-canvas-box" id="canvasBox">
-              <!-- Imagen de Lámina en Blanco y Negro -->
-              <img src="${this.currentSheet.src}" class="bw-sheet-img" id="sheetImg" alt="${this.currentSheet.title}" />
-
-              <!-- Lienzo transparente superior para rayar con crayones -->
+              <!-- Capa 1 (Fondo/Pintura): Lienzo inferior donde se pinta y se estampan sellos -->
               <canvas class="freehand-draw-canvas" id="freehandCanvas" width="600" height="500"></canvas>
+
+              <!-- Capa 2 (Contorno Superior): Imagen en B&W multiplicada para que las líneas NUNCA se tapen -->
+              <img src="${this.currentSheet.src}" class="bw-sheet-overlay" id="sheetImg" alt="${this.currentSheet.title}" />
+
+              <!-- Cursor flotante interactivo que muestra el grosor y color del pincel -->
+              <div class="brush-cursor-indicator" id="brushCursor"></div>
             </div>
           </div>
 
@@ -84,18 +104,20 @@
               </button>
             </div>
 
-            <!-- Tamaños -->
-            <div class="brush-size-selector" id="sizeSelector">
-              <button class="size-pill ${this.brushSize === 8 ? 'active' : ''}" data-size="8">✏️ Fino</button>
-              <button class="size-pill ${this.brushSize === 18 ? 'active' : ''}" data-size="18">🖍️ Medio</button>
-              <button class="size-pill ${this.brushSize === 34 ? 'active' : ''}" data-size="34">🖌️ Grueso</button>
+            <!-- Selector de Grosores de Pincel -->
+            <div class="brush-size-selector ${this.currentTool === 'stamp' ? 'hidden' : ''}" id="sizeSelector">
+              <button class="size-pill ${this.brushSize === 8 ? 'active' : ''}" data-size="8">✏️ Fino (8px)</button>
+              <button class="size-pill ${this.brushSize === 20 ? 'active' : ''}" data-size="20">🖍️ Medio (20px)</button>
+              <button class="size-pill ${this.brushSize === 40 ? 'active' : ''}" data-size="40">🖌️ Grueso (40px)</button>
             </div>
 
-            <!-- Sellos -->
+            <!-- Selector de Sellitos Kawaii -->
             <div class="stamps-picker ${this.currentTool === 'stamp' ? '' : 'hidden'}" id="stampsPicker">
               ${STAMPS.map(st => `
-                <button class="stamp-opt-btn ${st === this.selectedStamp ? 'active' : ''}" data-stamp="${st}">
-                  ${st}
+                <button class="stamp-opt-btn ${st.emoji === this.selectedStamp ? 'active' : ''}" 
+                        data-stamp="${st.emoji}" 
+                        title="${st.label}">
+                  ${st.emoji}
                 </button>
               `).join('')}
             </div>
@@ -112,7 +134,7 @@
               `).join('')}
             </div>
 
-            <!-- Acciones -->
+            <!-- Acciones auxiliares -->
             <div class="aux-actions-row">
               <button class="aux-btn" id="btnClearSheet">📄 Hoja Nueva</button>
               <button class="aux-btn special" id="btnDownloadArt">📸 Guardar Foto</button>
@@ -128,8 +150,10 @@
       const canvas = this.container.querySelector('#freehandCanvas');
       const ctx = canvas.getContext('2d');
       const sheetImg = this.container.querySelector('#sheetImg');
+      const canvasBox = this.container.querySelector('#canvasBox');
+      const brushCursor = this.container.querySelector('#brushCursor');
 
-      // Cambio de lámina
+      // 1. Cambio de lámina
       this.container.querySelectorAll('.sheet-tab-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
@@ -142,7 +166,7 @@
         });
       });
 
-      // Cambio de herramienta
+      // 2. Cambio de herramienta
       this.container.querySelectorAll('.tool-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
@@ -160,10 +184,11 @@
             stampsPicker.classList.add('hidden');
             sizeSelector.classList.remove('hidden');
           }
+          updateCursorVisual();
         });
       });
 
-      // Tamaños
+      // 3. Cambio de tamaño de pincel
       this.container.querySelectorAll('.size-pill').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
@@ -171,10 +196,11 @@
           this.brushSize = parseInt(e.currentTarget.dataset.size, 10);
           this.container.querySelectorAll('.size-pill').forEach(b => b.classList.remove('active'));
           e.currentTarget.classList.add('active');
+          updateCursorVisual();
         });
       });
 
-      // Sellos
+      // 4. Cambio de sello
       this.container.querySelectorAll('.stamp-opt-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
@@ -182,10 +208,11 @@
           this.selectedStamp = e.currentTarget.dataset.stamp;
           this.container.querySelectorAll('.stamp-opt-btn').forEach(b => b.classList.remove('active'));
           e.currentTarget.classList.add('active');
+          updateCursorVisual();
         });
       });
 
-      // Colores
+      // 5. Cambio de color
       this.container.querySelectorAll('.swatch-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
@@ -193,37 +220,129 @@
           this.selectedColor = e.currentTarget.dataset.color;
           this.container.querySelectorAll('.swatch-btn').forEach(b => b.classList.remove('active'));
           e.currentTarget.classList.add('active');
+
+          // Si estaba en borrador o sello, volver al crayón automáticamente
+          if (this.currentTool === 'eraser') {
+            this.currentTool = 'crayon';
+            this.container.querySelectorAll('.tool-btn').forEach(b => {
+              b.classList.toggle('active', b.dataset.tool === 'crayon');
+            });
+            this.container.querySelector('#stampsPicker').classList.add('hidden');
+            this.container.querySelector('#sizeSelector').classList.remove('hidden');
+          }
+          updateCursorVisual();
         });
       });
 
-      // Dibujo con crayones
+      // 6. Indicador de Cursor Visual con grosor dinámico
+      const updateCursorVisual = () => {
+        if (!brushCursor) return;
+        const rect = canvasBox.getBoundingClientRect();
+        const scale = rect.width / canvas.width;
+        const screenDiameter = Math.max(8, this.brushSize * scale);
+
+        if (this.currentTool === 'crayon') {
+          brushCursor.style.width = `${screenDiameter}px`;
+          brushCursor.style.height = `${screenDiameter}px`;
+          brushCursor.style.borderRadius = '50%';
+          brushCursor.style.border = `2.5px solid ${this.selectedColor}`;
+          brushCursor.style.backgroundColor = `${this.selectedColor}55`;
+          brushCursor.style.boxShadow = `0 0 0 1.5px rgba(255, 255, 255, 0.95), 0 2px 8px rgba(0, 0, 0, 0.25)`;
+          brushCursor.textContent = '';
+        } else if (this.currentTool === 'eraser') {
+          brushCursor.style.width = `${screenDiameter}px`;
+          brushCursor.style.height = `${screenDiameter}px`;
+          brushCursor.style.borderRadius = '50%';
+          brushCursor.style.border = '2.5px dashed #444444';
+          brushCursor.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+          brushCursor.style.boxShadow = '0 0 0 1.5px rgba(255, 255, 255, 0.95), 0 2px 8px rgba(0, 0, 0, 0.2)';
+          brushCursor.textContent = '';
+        } else if (this.currentTool === 'stamp') {
+          brushCursor.style.width = '46px';
+          brushCursor.style.height = '46px';
+          brushCursor.style.borderRadius = '50%';
+          brushCursor.style.border = '2px dashed #ff69b4';
+          brushCursor.style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
+          brushCursor.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.15)';
+          brushCursor.style.fontSize = '28px';
+          brushCursor.style.lineHeight = '42px';
+          brushCursor.style.textAlign = 'center';
+          brushCursor.textContent = this.selectedStamp;
+        }
+      };
+
+      const setCursorPos = (clientX, clientY) => {
+        if (!brushCursor) return;
+        const rect = canvasBox.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        brushCursor.style.left = `${x}px`;
+        brushCursor.style.top = `${y}px`;
+        brushCursor.style.display = 'block';
+      };
+
+      canvasBox.addEventListener('pointerenter', (e) => {
+        updateCursorVisual();
+        setCursorPos(e.clientX, e.clientY);
+      });
+
+      canvasBox.addEventListener('pointermove', (e) => {
+        setCursorPos(e.clientX, e.clientY);
+      });
+
+      canvasBox.addEventListener('pointerleave', () => {
+        if (brushCursor) brushCursor.style.display = 'none';
+      });
+
+      // 7. Lógica de Dibujo y Sellos sobre el Lienzo
       const getPos = (e) => {
         const rect = canvas.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const clientX = e.clientX;
+        const clientY = e.clientY;
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
         return {
-          x: (clientX - rect.left) * scaleX,
-          y: (clientY - rect.top) * scaleY
+          x: Math.max(0, Math.min(canvas.width, (clientX - rect.left) * scaleX)),
+          y: Math.max(0, Math.min(canvas.height, (clientY - rect.top) * scaleY)),
+          clientX,
+          clientY
         };
       };
 
-      const startDraw = (e) => {
+      const stampAt = (x, y) => {
+        A.unlock();
+        A.bubblePop(3);
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.font = '48px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.selectedStamp, x, y);
+        ctx.restore();
+
+        // Efecto visual de pequeñas estrellitas saltando
+        const rect = canvasBox.getBoundingClientRect();
+        const screenX = x * (rect.width / canvas.width);
+        const screenY = y * (rect.height / canvas.height);
+        this.spawnStampBurst(canvasBox, screenX, screenY);
+      };
+
+      const onPointerDown = (e) => {
+        e.preventDefault();
         A.unlock();
         this.isDrawing = true;
-        this.lastPos = getPos(e);
+        const pos = getPos(e);
+        this.lastPos = pos;
+        setCursorPos(pos.clientX, pos.clientY);
 
         if (this.currentTool === 'stamp') {
-          A.bubblePop(3);
-          ctx.font = '44px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(this.selectedStamp, this.lastPos.x, this.lastPos.y);
-          this.isDrawing = false;
+          stampAt(pos.x, pos.y);
+          this.lastStampPos = { ...pos };
         } else {
+          // Trazo inicial de punto
           ctx.beginPath();
-          ctx.arc(this.lastPos.x, this.lastPos.y, this.brushSize / 2, 0, Math.PI * 2);
+          ctx.arc(pos.x, pos.y, this.brushSize / 2, 0, Math.PI * 2);
           if (this.currentTool === 'eraser') {
             ctx.globalCompositeOperation = 'destination-out';
             ctx.fill();
@@ -235,54 +354,82 @@
         }
       };
 
-      const moveDraw = (e) => {
-        if (!this.isDrawing || this.currentTool === 'stamp') return;
-        e.preventDefault();
+      const onPointerMove = (e) => {
         const pos = getPos(e);
+        setCursorPos(pos.clientX, pos.clientY);
 
-        ctx.beginPath();
-        ctx.moveTo(this.lastPos.x, this.lastPos.y);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.lineWidth = this.brushSize;
+        if (!this.isDrawing) return;
+        e.preventDefault();
 
-        if (this.currentTool === 'eraser') {
-          ctx.globalCompositeOperation = 'destination-out';
+        if (this.currentTool === 'stamp') {
+          if (this.lastStampPos) {
+            const dist = Math.hypot(pos.x - this.lastStampPos.x, pos.y - this.lastStampPos.y);
+            if (dist > 52) {
+              stampAt(pos.x, pos.y);
+              this.lastStampPos = { ...pos };
+            }
+          }
         } else {
-          ctx.globalCompositeOperation = 'source-over';
-          ctx.strokeStyle = this.selectedColor;
+          ctx.beginPath();
+          ctx.moveTo(this.lastPos.x, this.lastPos.y);
+          ctx.lineTo(pos.x, pos.y);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = this.brushSize;
+
+          if (this.currentTool === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+          } else {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.strokeStyle = this.selectedColor;
+          }
+          ctx.stroke();
+          this.lastPos = pos;
         }
-
-        ctx.stroke();
-        this.lastPos = pos;
       };
 
-      const stopDraw = () => {
+      const onPointerUp = () => {
         this.isDrawing = false;
+        this.lastPos = null;
+        this.lastStampPos = null;
       };
 
-      canvas.addEventListener('mousedown', startDraw);
-      canvas.addEventListener('mousemove', moveDraw);
-      window.addEventListener('mouseup', stopDraw);
+      canvasBox.addEventListener('pointerdown', onPointerDown);
+      canvasBox.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
 
-      canvas.addEventListener('touchstart', startDraw, { passive: false });
-      canvas.addEventListener('touchmove', moveDraw, { passive: false });
-      window.addEventListener('touchend', stopDraw);
-
-      // Limpiar hoja
+      // 8. Limpiar hoja (deja el dibujo en blanco manteniendo el contorno)
       this.container.querySelector('#btnClearSheet').addEventListener('click', () => {
         A.unlock();
         A.softBoing();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       });
 
-      // Guardar foto
+      // 9. Guardar foto (combina el color con el contorno multiplicado)
       this.container.querySelector('#btnDownloadArt').addEventListener('click', () => {
         A.unlock();
         A.celebrate();
         this.exportArtwork(canvas, sheetImg);
       });
+
+      updateCursorVisual();
+    }
+
+    spawnStampBurst(container, x, y) {
+      for (let i = 0; i < 4; i++) {
+        const star = document.createElement('span');
+        star.className = 'stamp-pop-particle';
+        star.textContent = ['✨', '💖', '⭐', '🌸'][i % 4];
+        const angle = (i / 4) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+        const dist = 24 + Math.random() * 16;
+        star.style.left = `${x}px`;
+        star.style.top = `${y}px`;
+        star.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
+        star.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
+        container.appendChild(star);
+        setTimeout(() => { try { star.remove(); } catch (_) {} }, 600);
+      }
     }
 
     exportArtwork(canvas, sheetImg) {
@@ -291,10 +438,17 @@
       exportCanvas.height = canvas.height;
       const expCtx = exportCanvas.getContext('2d');
 
+      // 1. Fondo blanco de hoja
       expCtx.fillStyle = '#ffffff';
       expCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-      expCtx.drawImage(sheetImg, 0, 0, exportCanvas.width, exportCanvas.height);
+
+      // 2. Colores y sellos dibujados por Amanda
       expCtx.drawImage(canvas, 0, 0);
+
+      // 3. Contorno del personaje por encima (con multiply para preservar líneas y ojos intactos)
+      expCtx.globalCompositeOperation = 'multiply';
+      expCtx.drawImage(sheetImg, 0, 0, exportCanvas.width, exportCanvas.height);
+      expCtx.globalCompositeOperation = 'source-over';
 
       const a = document.createElement('a');
       a.download = `Dibujo_Amanda_${this.currentSheet.id}.png`;
