@@ -1,6 +1,13 @@
 /* Audio Engine 100% sintetizado con Web Audio API:
- *  - Música relajante procedural de Caja de Música / Celesta (tipo cuna / Sanrio lullaby)
- *  - Efectos kawaii y tiernos (burbujas para contar, arpas mágicas, risitas y campanitas)
+ *  - Sistema de Música Relajante de Alta Calidad (Lofi Lullaby, Celesta Aterciopelada y Warm Pads)
+ *  - ARQUITECTURA ROBUSTA ANTI-SUPERPOSICIÓN:
+ *      * Bus dinámico exclusivo por pista con desvanecimiento inmediato de 35ms al cambiar o pausar.
+ *      * Rastreo y corte inmediato de osciladores activos (cero colas de audio superpuestas).
+ *  - RITMOS CALMANTES Y TRANQUILOS:
+ *      * Tempo pausado de 50 a 56 BPM, compases largos de 3.8 a 4.5 segundos con silencios para respirar.
+ *      * Frecuencias cálidas y redondas (filtro lowpass en 1400 Hz) que eliminan cualquier estridencia.
+ *      * Colchón armónico envolvente (warm pad) que transmite paz y seguridad a las niñas.
+ *  - Efectos kawaii y tiernos (burbujas para contar, arpas mágicas, risitas y campanitas).
  *  - CERO voces robóticas espeluznantes.
  */
 (function () {
@@ -16,11 +23,17 @@
       this.ctx = null;
       this.masterGain = null;
       this.musicGain = null;
+      this.musicFilter = null;
+      this.musicDelay = null;
+      this.musicDelayGain = null;
+      this.activeMusicBus = null;
+      this.activeMusicOscillators = [];
       this.sfxGain = null;
       this.musicPlaying = false;
       this.musicTimer = null;
       this.muted = false;
-      this.currentMelodyIndex = 0;
+      this.currentTrackIndex = 0;
+      this.currentMeasureIndex = 0;
     }
 
     init() {
@@ -34,34 +47,39 @@
 
       // Master bus
       this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.value = 0.4;
+      this.masterGain.gain.value = 0.35;
       this.masterGain.connect(this.ctx.destination);
 
       // SFX bus
       this.sfxGain = this.ctx.createGain();
-      this.sfxGain.gain.value = 0.7;
+      this.sfxGain.gain.value = 0.55;
       this.sfxGain.connect(this.masterGain);
 
-      // Music bus (con filtro cálido tipo caja de música de cuerda)
+      // Music master bus (con filtro cálido tipo lofi / celesta aterciopelada)
       this.musicGain = this.ctx.createGain();
-      this.musicGain.gain.value = 0.28;
+      this.musicGain.gain.value = 0.20;
 
-      // Filtro para sonido aterciopelado
+      // Filtro de calidez acústica (elimina cualquier frecuencia aguda o estridente)
       this.musicFilter = this.ctx.createBiquadFilter();
       this.musicFilter.type = 'lowpass';
-      this.musicFilter.frequency.value = 2400;
+      this.musicFilter.frequency.value = 1400;
 
-      // Eco sutil (delay / reverb cálido)
+      // Eco / reverb espacial sutil y relajante
       this.musicDelay = this.ctx.createDelay();
-      this.musicDelay.delayTime.value = 0.28;
+      this.musicDelay.delayTime.value = 0.45;
       this.musicDelayGain = this.ctx.createGain();
-      this.musicDelayGain.gain.value = 0.25;
+      this.musicDelayGain.gain.value = 0.20;
 
       this.musicGain.connect(this.musicFilter);
       this.musicFilter.connect(this.masterGain);
       this.musicFilter.connect(this.musicDelay);
       this.musicDelay.connect(this.musicDelayGain);
       this.musicDelayGain.connect(this.musicFilter);
+
+      // Bus de música dedicado para la pista activa
+      this.activeMusicBus = this.ctx.createGain();
+      this.activeMusicBus.gain.value = 1.0;
+      this.activeMusicBus.connect(this.musicGain);
     }
 
     unlock() {
@@ -71,45 +89,95 @@
 
     setMuted(m) {
       this.muted = m;
-      if (this.masterGain) {
-        this.masterGain.gain.setValueAtTime(m ? 0 : 0.4, this.ctx.currentTime);
+      if (this.masterGain && this.ctx) {
+        this.masterGain.gain.setValueAtTime(m ? 0 : 0.35, this.ctx.currentTime);
       }
     }
 
-    /* ---------- SÍNTESIS DE INSTRUMENTOS ---------- */
+    /* ---------- SÍNTESIS DE INSTRUMENTOS MUSICALES CALMANTES ---------- */
 
-    // Campana de caja de música (Music box tine)
-    playMusicBoxTine(freq, time, vol = 0.5, dur = 1.4) {
-      if (!this.ctx || this.muted) return;
+    // Nota melódica cálida y aterciopelada (Felt Piano / Celesta suave)
+    playCalmNote(freq, time, vol = 0.18, dur = 2.4) {
+      if (!this.ctx || this.muted || !this.activeMusicBus) return;
       const t = time || this.ctx.currentTime;
 
-      const osc1 = this.ctx.createOscillator();
-      const osc2 = this.ctx.createOscillator();
+      const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
+      const filter = this.ctx.createBiquadFilter();
 
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(freq, t);
+      // Sine pura para suavidad celestial y cero estridencia
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
 
-      // Armónico sutil metálico agudo característico de las láminas de acero
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(freq * 3.01, t);
+      // Filtro dinámico de calidez (corta agudos duros)
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(Math.min(920, freq * 1.5), t);
+      filter.frequency.exponentialRampToValueAtTime(320, t + dur);
 
-      const g2 = this.ctx.createGain();
-      g2.gain.value = 0.15;
-      osc2.connect(g2).connect(gain);
-      osc1.connect(gain);
-
-      // Envolvente percusiva de campana de música
+      // Envolvente de cuna: ataque suave de 35ms (sin "click"), caída orgánica
       gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.exponentialRampToValueAtTime(vol, t + 0.005);
+      gain.gain.linearRampToValueAtTime(vol, t + 0.035);
+      gain.gain.exponentialRampToValueAtTime(vol * 0.42, t + 0.7);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
 
-      gain.connect(this.musicGain);
-      osc1.start(t);
-      osc2.start(t);
-      osc1.stop(t + dur + 0.05);
-      osc2.stop(t + dur + 0.05);
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.activeMusicBus);
+
+      osc.start(t);
+      osc.stop(t + dur + 0.08);
+
+      this.activeMusicOscillators.push(osc);
+      osc.onended = () => {
+        const idx = this.activeMusicOscillators.indexOf(osc);
+        if (idx !== -1) this.activeMusicOscillators.splice(idx, 1);
+      };
     }
+
+    // Colchón armónico envolvente (Pad cálido de ensueño)
+    playWarmPadChord(freqs, time, vol = 0.065, dur = 4.2) {
+      if (!this.ctx || this.muted || !this.activeMusicBus) return;
+      const t = time || this.ctx.currentTime;
+
+      freqs.forEach((freq, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t);
+        // Desafinación micrométrica orgánica (chorus cálido y acogedor)
+        osc.detune.setValueAtTime(i % 2 === 0 ? 3.5 : -3.5, t);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(380, t);
+
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.linearRampToValueAtTime(vol, t + 0.75); // Ataque ultra suave de 750ms
+        gain.gain.setValueAtTime(vol * 0.85, t + dur - 0.85);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.activeMusicBus);
+
+        osc.start(t);
+        osc.stop(t + dur + 0.08);
+
+        this.activeMusicOscillators.push(osc);
+        osc.onended = () => {
+          const idx = this.activeMusicOscillators.indexOf(osc);
+          if (idx !== -1) this.activeMusicOscillators.splice(idx, 1);
+        };
+      });
+    }
+
+    // Compatibilidad para campanitas tradicionales
+    playMusicBoxTine(freq, time, vol = 0.18, dur = 2.0) {
+      this.playCalmNote(freq, time, vol, dur);
+    }
+
+    /* ---------- EFECTOS DE SONIDO KAWAII ---------- */
 
     // Efecto Kawaii de formantes (sonido tierno tipo "¡Waaai!" o "¡Kyu!")
     kawaiiChirp(type = 'cheer') {
@@ -119,7 +187,6 @@
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
-      // Doble filtro de formantes para simular fonética tierna
       const f1 = this.ctx.createBiquadFilter();
       f1.type = 'bandpass';
       f1.Q.value = 4.0;
@@ -132,19 +199,17 @@
 
       osc.type = 'triangle';
       if (type === 'cheer') {
-        // Barrido ascendente alegre
         osc.frequency.setValueAtTime(520, t);
         osc.frequency.exponentialRampToValueAtTime(980, t + 0.15);
         osc.frequency.exponentialRampToValueAtTime(1180, t + 0.28);
       } else {
-        // Suspiro curioso
         osc.frequency.setValueAtTime(700, t);
         osc.frequency.exponentialRampToValueAtTime(540, t + 0.12);
         osc.frequency.exponentialRampToValueAtTime(880, t + 0.26);
       }
 
       gain.gain.setValueAtTime(0.001, t);
-      gain.gain.linearRampToValueAtTime(0.3, t + 0.04);
+      gain.gain.linearRampToValueAtTime(0.25, t + 0.04);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
 
       osc.connect(f1);
@@ -164,7 +229,6 @@
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
-      // Frecuencia que escala según el número que se cuenta
       const base = 440 * Math.pow(1.08, step % 12);
       osc.type = 'sine';
       osc.frequency.setValueAtTime(base, t);
@@ -172,7 +236,7 @@
       osc.frequency.exponentialRampToValueAtTime(base * 0.8, t + 0.09);
 
       gain.gain.setValueAtTime(0.001, t);
-      gain.gain.linearRampToValueAtTime(0.45, t + 0.015);
+      gain.gain.linearRampToValueAtTime(0.40, t + 0.015);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.11);
 
       osc.connect(gain).connect(this.sfxGain);
@@ -211,7 +275,7 @@
       osc.frequency.exponentialRampToValueAtTime(260, t + 0.22);
 
       gain.gain.setValueAtTime(0.001, t);
-      gain.gain.linearRampToValueAtTime(0.3, t + 0.02);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
 
       osc.connect(gain).connect(this.sfxGain);
@@ -230,14 +294,13 @@
         o.type = i % 2 ? 'triangle' : 'sine';
         o.frequency.setValueAtTime(freq, t + i * 0.06);
         g.gain.setValueAtTime(0.001, t + i * 0.06);
-        g.gain.linearRampToValueAtTime(0.35, t + i * 0.06 + 0.01);
+        g.gain.linearRampToValueAtTime(0.32, t + i * 0.06 + 0.01);
         g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.06 + 0.45);
         o.connect(g).connect(this.sfxGain);
         o.start(t + i * 0.06);
         o.stop(t + i * 0.06 + 0.5);
       });
 
-      // Risita alegre de fondo
       setTimeout(() => this.kawaiiChirp('cheer'), 280);
     }
 
@@ -251,7 +314,7 @@
       o.type = 'sine';
       o.frequency.setValueAtTime(f, t);
       g.gain.setValueAtTime(0.001, t);
-      g.gain.linearRampToValueAtTime(0.35, t + 0.01);
+      g.gain.linearRampToValueAtTime(0.30, t + 0.01);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
       o.connect(g).connect(this.sfxGain);
       o.start(t);
@@ -267,7 +330,7 @@
       o.frequency.setValueAtTime(420, t);
       o.frequency.exponentialRampToValueAtTime(1400, t + 0.5);
       g.gain.setValueAtTime(0.001, t);
-      g.gain.linearRampToValueAtTime(0.3, t + 0.02);
+      g.gain.linearRampToValueAtTime(0.28, t + 0.02);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
       o.connect(g).connect(this.sfxGain);
       o.start(t);
@@ -284,7 +347,7 @@
       o.frequency.setValueAtTime(up ? 350 : 700, t);
       o.frequency.exponentialRampToValueAtTime(up ? 850 : 320, t + 0.22);
       g.gain.setValueAtTime(0.001, t);
-      g.gain.linearRampToValueAtTime(0.2, t + 0.01);
+      g.gain.linearRampToValueAtTime(0.18, t + 0.01);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
       o.connect(g).connect(this.sfxGain);
       o.start(t);
@@ -303,7 +366,7 @@
       osc.frequency.exponentialRampToValueAtTime(freq * 1.02, t + 0.08);
 
       gain.gain.setValueAtTime(0.001, t);
-      gain.gain.linearRampToValueAtTime(0.32, t + 0.015);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.015);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
 
       osc.connect(gain).connect(this.sfxGain);
@@ -323,7 +386,7 @@
         osc.frequency.setValueAtTime(f, t + idx * 0.04);
 
         gain.gain.setValueAtTime(0.001, t + idx * 0.04);
-        gain.gain.linearRampToValueAtTime(0.2, t + idx * 0.04 + 0.01);
+        gain.gain.linearRampToValueAtTime(0.18, t + idx * 0.04 + 0.01);
         gain.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.04 + 0.28);
 
         osc.connect(gain).connect(this.sfxGain);
@@ -332,7 +395,7 @@
       });
     }
 
-    /* ---------- MÚSICA PROCEDURAL DE CAJA DE MÚSICA ---------- */
+    /* ---------- SISTEMA DE MÚSICA ANTI-SUPERPOSICIÓN ---------- */
 
     getTracks() {
       return TRACKS;
@@ -342,36 +405,67 @@
       return TRACKS[this.currentTrackIndex % TRACKS.length];
     }
 
+    // Detiene todos los sonidos de la música anterior sin pops ni colas
+    stopAllMusicVoices() {
+      if (this.musicTimer) {
+        clearTimeout(this.musicTimer);
+        this.musicTimer = null;
+      }
+
+      if (this.ctx && this.activeMusicBus) {
+        const now = this.ctx.currentTime;
+        try {
+          this.activeMusicBus.gain.cancelScheduledValues(now);
+          this.activeMusicBus.gain.setValueAtTime(this.activeMusicBus.gain.value, now);
+          this.activeMusicBus.gain.linearRampToValueAtTime(0.0001, now + 0.035);
+        } catch (_) {}
+      }
+
+      if (this.activeMusicOscillators && this.activeMusicOscillators.length) {
+        const now = this.ctx ? this.ctx.currentTime : 0;
+        this.activeMusicOscillators.forEach(osc => {
+          try {
+            osc.stop(now + 0.04);
+            osc.disconnect();
+          } catch (_) {}
+        });
+        this.activeMusicOscillators = [];
+      }
+
+      // Crear bus de música limpio para la próxima pista
+      if (this.ctx && this.musicGain) {
+        this.activeMusicBus = this.ctx.createGain();
+        this.activeMusicBus.gain.value = 1.0;
+        this.activeMusicBus.connect(this.musicGain);
+      }
+    }
+
     setTrack(index) {
+      this.stopAllMusicVoices();
       this.currentTrackIndex = ((index % TRACKS.length) + TRACKS.length) % TRACKS.length;
-      this.currentMelodyIndex = 0;
-      this.loopsInCurrentTrack = 0;
+      this.currentMeasureIndex = 0;
       if (this.musicPlaying) {
-        if (this.musicTimer) clearTimeout(this.musicTimer);
         this.tickMusic();
       }
       return this.getCurrentTrack();
     }
 
     nextTrack() {
-      const next = this.setTrack(this.currentTrackIndex + 1);
-      this.kawaiiChirp('cheer');
-      return next;
+      this.unlock();
+      return this.setTrack(this.currentTrackIndex + 1);
     }
 
     startMusic() {
       this.unlock();
       if (this.musicPlaying) return;
       this.musicPlaying = true;
+      this.stopAllMusicVoices();
       this.tickMusic();
     }
 
     stopMusic() {
       this.musicPlaying = false;
-      if (this.musicTimer) {
-        clearTimeout(this.musicTimer);
-        this.musicTimer = null;
-      }
+      this.stopAllMusicVoices();
     }
 
     toggleMusic() {
@@ -385,106 +479,309 @@
     }
 
     tickMusic() {
-      if (!this.musicPlaying) return;
+      if (!this.musicPlaying || !this.ctx) return;
 
       const track = this.getCurrentTrack();
-      const bars = track.bars;
-      const barIndex = this.currentMelodyIndex % bars.length;
-      const bar = bars[barIndex];
+      const measures = track.measures;
+      const measureIdx = this.currentMeasureIndex % measures.length;
+      const measure = measures[measureIdx];
       const now = this.ctx.currentTime;
-      const stepTime = track.stepTime;
+      const dur = measure.dur || 4.0;
 
-      bar.forEach((note, idx) => {
-        // La nota principal suena con campanita dulce de caja de música
-        this.playMusicBoxTine(note, now + idx * stepTime, idx === 0 ? 0.35 : 0.22, 1.2);
-        // En el primer tiempo de cada compás, nota baja de bajo
-        if (idx === 0) {
-          this.playMusicBoxTine(note / 2, now, 0.26, 1.6);
-        }
-      });
-
-      this.currentMelodyIndex++;
-      // Si completó 2 vueltas de la canción, pasar suavemente a la siguiente melodía
-      if (this.currentMelodyIndex >= bars.length * 2) {
-        this.currentTrackIndex = (this.currentTrackIndex + 1) % TRACKS.length;
-        this.currentMelodyIndex = 0;
+      // 1. Colchón armónico envolvente (Pad de cuna cálido)
+      if (measure.pad && measure.pad.length) {
+        this.playWarmPadChord(measure.pad, now, 0.065, dur + 0.6);
       }
 
-      this.musicTimer = setTimeout(() => this.tickMusic(), bar.length * stepTime * 1000 - 45);
+      // 2. Notas melódicas pausadas y tranquilas (Felt Piano / Celesta)
+      if (measure.melody && measure.melody.length) {
+        measure.melody.forEach(([offset, freq, vol, noteDur]) => {
+          this.playCalmNote(freq, now + offset, vol || 0.18, noteDur || 2.4);
+        });
+      }
+
+      this.currentMeasureIndex++;
+
+      // Programar el siguiente compás pausado
+      this.musicTimer = setTimeout(() => {
+        if (this.musicPlaying) this.tickMusic();
+      }, dur * 1000 - 35);
     }
   }
 
+  /* 4 MELODÍAS TRANQUILAS, SERENAS Y NO REPETITIVAS PARA NIÑAS (50 - 56 BPM) */
   const TRACKS = [
     {
       id: 'lullaby',
       name: 'Nubes de Algodón',
       icon: '🌸',
-      stepTime: 0.38,
-      bars: [
-        // C - Am (3/4 dulce de cuna)
-        [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25],
-        [440.00, 523.25, 659.25, 880.00, 659.25, 523.25],
-        // F - G
-        [349.23, 440.00, 523.25, 698.46, 523.25, 440.00],
-        [392.00, 493.88, 587.33, 783.99, 987.77, 783.99],
-        // C - Em
-        [523.25, 659.25, 783.99, 1318.51, 1046.50, 783.99],
-        [329.63, 392.00, 493.88, 659.25, 493.88, 392.00],
-        // Dm - G (resolución dulce)
-        [293.66, 349.23, 440.00, 587.33, 523.25, 440.00],
-        [392.00, 493.88, 587.33, 783.99, 659.25, 523.25]
+      measures: [
+        // Compás 1: Cmaj7 - Calma y vaivén suave
+        {
+          dur: 3.8,
+          pad: [130.81, 196.00, 246.94, 329.63], // C3, G3, B3, E4
+          melody: [
+            [0.1, 392.00, 0.18, 2.6],  // G4
+            [1.2, 329.63, 0.16, 2.2],  // E4
+            [2.3, 493.88, 0.17, 2.4]   // B4
+          ]
+        },
+        // Compás 2: Fmaj7 - Brisa cálida
+        {
+          dur: 3.8,
+          pad: [174.61, 220.00, 261.63, 329.63], // F3, A3, C4, E4
+          melody: [
+            [0.1, 523.25, 0.18, 2.5],  // C5
+            [1.3, 440.00, 0.15, 2.2],  // A4
+            [2.4, 392.00, 0.16, 2.4]   // G4
+          ]
+        },
+        // Compás 3: Am9 - Dulzura de cuna
+        {
+          dur: 3.8,
+          pad: [110.00, 164.81, 261.63, 392.00], // A2, E3, C4, G4
+          melody: [
+            [0.1, 493.88, 0.17, 2.5],  // B4
+            [1.2, 440.00, 0.15, 2.2],  // A4
+            [2.3, 329.63, 0.16, 2.4]   // E4
+          ]
+        },
+        // Compás 4: Gsus4 ➔ G - Reposo
+        {
+          dur: 4.2,
+          pad: [98.00, 146.83, 196.00, 261.63], // G2, D3, G3, C4
+          melody: [
+            [0.1, 293.66, 0.16, 2.8],  // D4
+            [1.4, 392.00, 0.17, 2.6],  // G4
+            [2.8, 329.63, 0.15, 2.4]   // E4
+          ]
+        },
+        // Compás 5: Cmaj7 - Frase de descanso (aire y silencio relajante)
+        {
+          dur: 4.0,
+          pad: [130.81, 196.00, 329.63], // C3, G3, E4
+          melody: [
+            [0.2, 523.25, 0.16, 3.0],  // C5
+            [1.8, 392.00, 0.14, 2.8]   // G4
+          ]
+        },
+        // Compás 6: Fmaj7 - Paseo de nubes
+        {
+          dur: 3.8,
+          pad: [174.61, 261.63, 329.63, 440.00], // F3, C4, E4, A4
+          melody: [
+            [0.1, 440.00, 0.16, 2.4],  // A4
+            [1.2, 523.25, 0.18, 2.5],  // C5
+            [2.4, 493.88, 0.15, 2.4]   // B4
+          ]
+        },
+        // Compás 7: Dm7 - Respiro nocturno
+        {
+          dur: 3.8,
+          pad: [146.83, 220.00, 261.63, 349.23], // D3, A3, C4, F4
+          melody: [
+            [0.1, 349.23, 0.15, 2.4],  // F4
+            [1.3, 440.00, 0.16, 2.4],  // A4
+            [2.4, 523.25, 0.17, 2.5]   // C5
+          ]
+        },
+        // Compás 8: G7sus2 ➔ C - Final sereno
+        {
+          dur: 4.5,
+          pad: [98.00, 146.83, 246.94, 293.66], // G2, D3, B3, D4
+          melody: [
+            [0.1, 493.88, 0.16, 2.8],  // B4
+            [1.5, 392.00, 0.15, 2.6],  // G4
+            [2.8, 261.63, 0.17, 3.2]   // C4
+          ]
+        }
       ]
     },
     {
-      id: 'bakery',
-      name: 'Paseo por la Pastelería',
-      icon: '🧁',
-      stepTime: 0.24,
-      bars: [
-        // Marchita alegre en F y C
-        [698.46, 783.99, 880.00, 1046.50, 880.00, 698.46],
-        [523.25, 659.25, 783.99, 1046.50, 783.99, 523.25],
-        [587.33, 698.46, 880.00, 1174.66, 880.00, 698.46],
-        [783.99, 987.77, 1174.66, 1318.51, 1174.66, 987.77],
-        [1046.50, 880.00, 698.46, 880.00, 1046.50, 1318.51],
-        [1174.66, 987.77, 783.99, 987.77, 1174.66, 1046.50]
+      id: 'starlight',
+      name: 'Paseo Estrellado',
+      icon: '🌙',
+      measures: [
+        // Compás 1: Fadd9 - Manto de estrellas
+        {
+          dur: 4.2,
+          pad: [87.31, 130.81, 220.00, 392.00], // F2, C3, A3, G4
+          melody: [
+            [0.2, 523.25, 0.17, 2.8],  // C5
+            [1.6, 392.00, 0.15, 2.5],  // G4
+            [2.8, 440.00, 0.16, 2.5]   // A4
+          ]
+        },
+        // Compás 2: Em7 - Silencio sereno
+        {
+          dur: 4.2,
+          pad: [82.41, 123.47, 196.00, 293.66], // E2, B2, G3, D4
+          melody: [
+            [0.1, 493.88, 0.17, 2.8],  // B4
+            [1.5, 392.00, 0.14, 2.4],  // G4
+            [2.8, 329.63, 0.15, 2.6]   // E4
+          ]
+        },
+        // Compás 3: Dm9 - Gota cristalina
+        {
+          dur: 4.2,
+          pad: [73.42, 110.00, 174.61, 329.63], // D2, A2, F3, E4
+          melody: [
+            [0.1, 349.23, 0.15, 2.5],  // F4
+            [1.4, 329.63, 0.14, 2.4],  // E4
+            [2.7, 293.66, 0.16, 2.8]   // D4
+          ]
+        },
+        // Compás 4: Cmaj7 - Paz profunda
+        {
+          dur: 4.5,
+          pad: [65.41, 98.00, 164.81, 246.94], // C2, G2, E3, B3
+          melody: [
+            [0.2, 329.63, 0.16, 3.0],  // E4
+            [1.6, 293.66, 0.14, 2.8],  // D4
+            [3.0, 261.63, 0.17, 3.4]   // C4
+          ]
+        },
+        // Compás 5: Bbmaj7 - Sueño dorado
+        {
+          dur: 4.2,
+          pad: [116.54, 174.61, 293.66, 349.23], // Bb2, F3, D4, F4
+          melody: [
+            [0.2, 440.00, 0.16, 2.8],  // A4
+            [1.6, 349.23, 0.14, 2.5],  // F4
+            [2.8, 293.66, 0.15, 2.6]   // D4
+          ]
+        },
+        // Compás 6: Cadd9 - Regreso a casa
+        {
+          dur: 4.8,
+          pad: [130.81, 196.00, 293.66, 329.63], // C3, G3, D4, E4
+          melody: [
+            [0.2, 392.00, 0.16, 3.2],  // G4
+            [1.8, 329.63, 0.15, 3.0],  // E4
+            [3.2, 261.63, 0.16, 3.5]   // C4
+          ]
+        }
       ]
     },
     {
-      id: 'tea',
-      name: 'Hora del Té con Mocha',
+      id: 'cozy_tea',
+      name: 'Té y Chocolate',
       icon: '☕',
-      stepTime: 0.32,
-      bars: [
-        // Vals en G y Em
-        [392.00, 587.33, 783.99, 987.77, 783.99, 587.33],
-        [329.63, 493.88, 659.25, 880.00, 659.25, 493.88],
-        [440.00, 659.25, 880.00, 1100.00, 880.00, 659.25],
-        [587.33, 880.00, 1174.66, 987.77, 783.99, 587.33],
-        [523.25, 659.25, 783.99, 1046.50, 880.00, 783.99],
-        [392.00, 493.88, 587.33, 783.99, 659.25, 587.33]
+      measures: [
+        // Compás 1: Gmaj7 - Calidez de hogar
+        {
+          dur: 4.0,
+          pad: [98.00, 146.83, 246.94, 369.99], // G2, D3, B3, F#4
+          melody: [
+            [0.1, 587.33, 0.17, 2.8],  // D5
+            [1.3, 493.88, 0.15, 2.4],  // B4
+            [2.5, 440.00, 0.15, 2.5]   // A4
+          ]
+        },
+        // Compás 2: Em7 - Melodía acogedora
+        {
+          dur: 4.0,
+          pad: [82.41, 123.47, 196.00, 293.66], // E2, B2, G3, D4
+          melody: [
+            [0.1, 392.00, 0.16, 2.6],  // G4
+            [1.2, 369.99, 0.14, 2.4],  // F#4
+            [2.4, 329.63, 0.16, 2.6]   // E4
+          ]
+        },
+        // Compás 3: Cadd9 - Dulce aroma
+        {
+          dur: 4.0,
+          pad: [65.41, 98.00, 164.81, 293.66], // C2, G2, E3, D4
+          melody: [
+            [0.1, 329.63, 0.15, 2.5],  // E4
+            [1.3, 392.00, 0.16, 2.5],  // G4
+            [2.5, 493.88, 0.17, 2.6]   // B4
+          ]
+        },
+        // Compás 4: D6 - Serenidad
+        {
+          dur: 4.4,
+          pad: [73.42, 110.00, 185.00, 246.94], // D2, A2, F#3, B3
+          melody: [
+            [0.1, 440.00, 0.16, 2.8],  // A4
+            [1.4, 369.99, 0.14, 2.5],  // F#4
+            [2.7, 293.66, 0.16, 3.0]   // D4
+          ]
+        },
+        // Compás 5: Bm7 - Espacio de calma
+        {
+          dur: 4.0,
+          pad: [123.47, 185.00, 293.66, 440.00], // B2, F#3, D4, A4
+          melody: [
+            [0.2, 369.99, 0.15, 2.6],  // F#4
+            [1.4, 440.00, 0.16, 2.6],  // A4
+            [2.6, 587.33, 0.17, 2.8]   // D5
+          ]
+        },
+        // Compás 6: Cmaj7 ➔ G - Paz total
+        {
+          dur: 4.6,
+          pad: [130.81, 196.00, 246.94, 329.63], // C3, G3, B3, E4
+          melody: [
+            [0.1, 493.88, 0.16, 2.8],  // B4
+            [1.5, 440.00, 0.15, 2.6],  // A4
+            [2.8, 392.00, 0.17, 3.4]   // G4
+          ]
+        }
       ]
     },
     {
-      id: 'rainbow',
-      name: 'Aventura en el Arcoíris',
-      icon: '🌈',
-      stepTime: 0.22,
-      bars: [
-        // Aventura pentatónica saltarina
-        [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50],
-        [1174.66, 1046.50, 880.00, 783.99, 659.25, 523.25],
-        [659.25, 783.99, 1046.50, 1318.51, 1046.50, 783.99],
-        [880.00, 1046.50, 1174.66, 1318.51, 1567.98, 1318.51],
-        [1046.50, 783.99, 659.25, 587.33, 523.25, 659.25],
-        [783.99, 880.00, 1046.50, 1174.66, 1046.50, 783.99]
+      id: 'zen_harp',
+      name: 'Brisa de Cinnamoroll',
+      icon: '🪽',
+      measures: [
+        // Compás 1: Dmaj7 - Vuelo ingrávido
+        {
+          dur: 4.2,
+          pad: [146.83, 220.00, 277.18, 369.99], // D3, A3, C#4, F#4
+          melody: [
+            [0.2, 440.00, 0.17, 2.8],  // A4
+            [1.5, 369.99, 0.15, 2.5],  // F#4
+            [2.8, 277.18, 0.16, 2.8]   // C#4
+          ]
+        },
+        // Compás 2: Gmaj7 - Suavidad de plumas
+        {
+          dur: 4.2,
+          pad: [98.00, 146.83, 246.94, 369.99], // G2, D3, B3, F#4
+          melody: [
+            [0.1, 493.88, 0.17, 2.8],  // B4
+            [1.4, 440.00, 0.15, 2.5],  // A4
+            [2.7, 392.00, 0.16, 2.6]   // G4
+          ]
+        },
+        // Compás 3: F#m7 - Silencio celestial
+        {
+          dur: 4.2,
+          pad: [92.50, 138.59, 220.00, 329.63], // F#2, C#3, A3, E4
+          melody: [
+            [0.2, 554.37, 0.17, 2.8],  // C#5
+            [1.5, 440.00, 0.15, 2.4],  // A4
+            [2.7, 369.99, 0.16, 2.6]   // F#4
+          ]
+        },
+        // Compás 4: A7sus4 ➔ D - Aterrizaje suave
+        {
+          dur: 4.6,
+          pad: [110.00, 164.81, 196.00, 293.66], // A2, E3, G3, D4
+          melody: [
+            [0.1, 329.63, 0.15, 2.8],  // E4
+            [1.5, 369.99, 0.15, 2.6],  // F#4
+            [2.9, 293.66, 0.17, 3.4]   // D4
+          ]
+        }
       ]
     }
   ];
 
   const audioInstance = new SoundEngine();
   audioInstance.currentTrackIndex = 0;
-  audioInstance.loopsInCurrentTrack = 0;
   window.Cinnamo = window.Cinnamo || {};
   window.Cinnamo.audio = audioInstance;
 })();
