@@ -5,60 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#9fd3ff" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Cinnamoroll · ¡A volar!</title>
+  <title>Cinnamoroll & Amigos · Suite de Juegos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <canvas id="game"></canvas>
+  <!-- BARRA DE NAVEGACIÓN UNIVERSAL -->
+  <header id="globalTopBar">
+    <button id="globalBtnHome" class="top-nav-btn hidden" title="Volver al Menú Principal" aria-label="Inicio">
+      <span class="btn-icon">🏠</span>
+      <span class="btn-text">Inicio</span>
+    </button>
+    <div class="top-brand">Cinnamoroll Land 🌸</div>
+    <div class="top-right-actions">
+      <button id="globalBtnMusic" class="top-nav-btn music-btn" title="Música relajante de caja de música" aria-label="Música">
+        <span id="musicIcon" class="btn-icon">🔇</span>
+        <span class="btn-text">Música</span>
+      </button>
+    </div>
+  </header>
 
-  <!-- HUD: pensado para una niña que todavía no lee: íconos y números grandes -->
-  <div id="hud" class="hidden">
-    <div id="score" class="pill"><span class="star-ico">★</span><span id="scoreNum">0</span></div>
-    <div id="progress"></div>
-  </div>
-
-  <div id="topbtns" class="hidden">
-    <button id="btnPause" class="round" aria-label="Pausa">❚❚</button>
-  </div>
-
-  <div id="micmeter" class="hidden"><div id="micfill"></div></div>
-  <div id="heard" class="hidden"></div>
-  <div id="cheer" class="hidden"></div>
-
-  <!-- Menú inicio / pausa -->
-  <div id="menu" class="overlay">
-    <div class="card">
-      <canvas id="menuChar"></canvas>
-      <h1>Cinnamoroll <span>¡A volar!</span></h1>
-      <button id="btnPlay" class="big-btn"><span class="tri">▶</span></button>
-
-      <div class="howto">
-        <div class="hint" data-mode="keys">⬆️⬇️<small>teclas o tocar</small></div>
-        <div class="hint" data-mode="voice">🗣️<small>“¡arriba!” “¡abajo!”<br>“¡gira!” “¡hola!”</small></div>
-        <div class="hint" data-mode="mic">🌬️<small>soplá o cantá<br>para subir</small></div>
-        <div class="hint" data-mode="tilt">📱<small>inclinar</small></div>
+  <main id="appContainer">
+    <!-- PANTALLA 1: HUB CENTRAL (Selector visual sin necesidad de leer) -->
+    <section id="screen-hub" class="screen active">
+      <div class="hub-header">
+        <div class="cinna-mascot-box">
+          <img src="cinnamoroll_sprite.png" class="cinna-mascot-img" alt="Cinnamoroll" />
+        </div>
+        <h1>¡El Mundo de Cinnamoroll!</h1>
+        <p class="subtitle">¡Elige un juego para divertirte con Cinnamoroll y sus amigos!</p>
       </div>
 
-      <details class="parents">
-        <summary>👨‍👩‍👧 Para papás: controles</summary>
-        <div class="chips">
-          <button class="chip" data-toggle="voice">🗣️ Comandos de voz <i></i></button>
-          <button class="chip" data-toggle="mic">🌬️ Soplar / cantar <i></i></button>
-          <button class="chip" data-toggle="tilt">📱 Inclinar (giroscopio) <i></i></button>
-          <button class="chip" data-toggle="sound">🔊 Sonido <i></i></button>
-          <button class="chip" data-toggle="invertTilt">↕️ Invertir inclinación <i></i></button>
-        </div>
-        <p id="status" class="status"></p>
-        <p class="note">Voz y micrófono necesitan <b>Chrome/Edge</b> y abrir el juego desde <code>http://localhost</code> o HTTPS (usá <code>start.bat</code>). Tocar un control de inclinación activo lo recalibra.</p>
-      </details>
-    </div>
-  </div>
+      <div class="game-cards-grid">
+        <!-- Tarjeta 1: A Volar -->
+        <article class="game-card card-flight" data-game="flight">
+          <div class="card-badge">✨ Vuelo</div>
+          <div class="card-illustration">
+            <span class="card-hero-emoji">✈️</span>
+            <span class="card-deco deco-star">⭐</span>
+            <span class="card-deco deco-cloud">☁️</span>
+          </div>
+          <h2>¡A Volar!</h2>
+          <p>Vuela con Cinnamoroll por las nubes y junta estrellas mágicas.</p>
+          <div class="card-play-tag">▶ ¡Jugar!</div>
+        </article>
 
+        <!-- Tarjeta 2: Sumas y Pastelería -->
+        <article class="game-card card-math" data-game="math">
+          <div class="card-badge">🧁 Números</div>
+          <div class="card-illustration">
+            <span class="card-hero-emoji">🍥</span>
+            <span class="card-deco deco-cookie">🍪</span>
+            <span class="card-deco deco-milk">🍼</span>
+          </div>
+          <h2>Pastelería de Sumas</h2>
+          <p>Cuenta deliciosos rollitos de canela y dulces con Cinnamoroll y Milk.</p>
+          <div class="card-play-tag">▶ ¡Contar!</div>
+        </article>
+
+        <!-- Tarjeta 3: Pintura y Colorear -->
+        <article class="game-card card-coloring" data-game="coloring">
+          <div class="card-badge">🎨 Dibujo</div>
+          <div class="card-illustration">
+            <span class="card-hero-emoji">🎨</span>
+            <span class="card-deco deco-sparkle">✨</span>
+            <span class="card-deco deco-flower">🌸</span>
+          </div>
+          <h2>Taller de Pintura</h2>
+          <p>Pinta a Cinnamoroll, Milk, Mocha y Pompompurin con colores pastel.</p>
+          <div class="card-play-tag">▶ ¡Pintar!</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- PANTALLA 2: JUEGO DE VUELO -->
+    <section id="screen-flight" class="screen">
+      <canvas id="game"></canvas>
+
+      <div id="hud" class="hidden">
+        <div id="score" class="pill"><span class="star-ico">★</span><span id="scoreNum">0</span></div>
+        <div id="progress"></div>
+      </div>
+
+      <div id="topbtns" class="hidden">
+        <button id="btnPause" class="round" aria-label="Pausa">❚❚</button>
+      </div>
+
+      <div id="micmeter" class="hidden"><div id="micfill"></div></div>
+      <div id="heard" class="hidden"></div>
+      <div id="cheer" class="hidden"></div>
+
+      <!-- Menú inicio / pausa del vuelo -->
+      <div id="menu" class="overlay">
+        <div class="card">
+          <canvas id="menuChar"></canvas>
+          <h1>Cinnamoroll <span>¡A volar!</span></h1>
+          <button id="btnPlay" class="big-btn"><span class="tri">▶</span></button>
+
+          <div class="howto">
+            <div class="hint" data-mode="keys">⬆️⬇️<small>teclas o tocar</small></div>
+            <div class="hint" data-mode="voice">🗣️<small>“¡arriba!” “¡abajo!”<br>“¡gira!”</small></div>
+            <div class="hint" data-mode="mic">🌬️<small>soplá o cantá<br>para subir</small></div>
+            <div class="hint" data-mode="tilt">📱<small>inclinar</small></div>
+          </div>
+
+          <details class="parents">
+            <summary>👨‍👩‍👧 Para papás: controles especiales</summary>
+            <div class="chips">
+              <button class="chip" data-toggle="voice">🗣️ Comandos de voz <i></i></button>
+              <button class="chip" data-toggle="mic">🌬️ Soplar / cantar <i></i></button>
+              <button class="chip" data-toggle="tilt">📱 Inclinar (giroscopio) <i></i></button>
+              <button class="chip" data-toggle="sound">🔊 Efectos <i></i></button>
+              <button class="chip" data-toggle="invertTilt">↕️ Invertir inclinación <i></i></button>
+            </div>
+            <p id="status" class="status"></p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA 3: PASTELERÍA DE SUMAS -->
+    <section id="screen-math" class="screen">
+      <div id="math-mount"></div>
+    </section>
+
+    <!-- PANTALLA 4: TALLER DE PINTURA -->
+    <section id="screen-coloring" class="screen">
+      <div id="coloring-mount"></div>
+    </section>
+  </main>
+
+  <!-- MÓDULOS DEL JUEGO -->
   <script src="js/audio.js"></script>
   <script src="js/input.js"></script>
   <script src="js/character.js"></script>
   <script src="js/game.js"></script>
+  <script src="js/math.js"></script>
+  <script src="js/coloring.js"></script>
+  <script src="js/hub.js"></script>
 </body>
 </html>

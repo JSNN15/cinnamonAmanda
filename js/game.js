@@ -129,7 +129,7 @@
       case 'hello':
         setMood('happy', 1.4); S.p.wiggle = 1.4;
         burst(px, playToY(S.p.y) - size * 0.4, 8, ['#ff8fbf', '#ffb3d1'], 120, 'heart');
-        if (source !== 'voice' || !A.isSelfTalking()) A.speak('¡Hola!');
+        A.kawaiiChirp('cheer');
         break;
     }
   }
@@ -142,7 +142,7 @@
     const colors = it.type === 'heart' ? ['#ff8fbf', '#ffc2dc', '#fff'] : it.type === 'roll' ? ['#f2c27b', '#fff', '#ffe066'] : ['#ffe066', '#fff6b0', '#fff'];
     burst(it.x, it.y, it.type === 'star' ? 12 : 22, colors);
     floatText(it.x, it.y - it.r, '+1');
-    it.type === 'star' ? A.collect(S.combo) : A.special();
+    it.type === 'star' ? A.collect(S.combo) : A.colorSplat();
     setMood('happy', 0.5);
     updateHud(true);
     if (S.inLevel >= GOAL) celebrate();
@@ -155,7 +155,6 @@
     for (let i = 0; i < 4; i++) burst(rand(W * 0.2, W * 0.8), rand(H * 0.1, H * 0.4), 40,
       ['#ff8fbf', '#9fd3ff', '#ffe066', '#b9a6ff', '#9be3c1', '#fff'], 380, 'confetti');
     A.celebrate();
-    setTimeout(() => A.speak(PRAISE[(Math.random() * PRAISE.length) | 0]), 500);
     setMood('happy', 3); S.p.spinT = 0.8;
     const el = $('cheer');
     el.textContent = CHEERS[(Math.random() * CHEERS.length) | 0];
@@ -420,7 +419,7 @@
     $('menu').classList.add('hidden');
     $('hud').classList.remove('hidden');
     $('topbtns').classList.remove('hidden');
-    if (first) A.speak('¡Hola! ¡Vamos a volar!');
+    if (first) A.kawaiiChirp('cheer');
     last = performance.now();
   }
   function pause() {
@@ -429,6 +428,9 @@
     $('menu').classList.remove('hidden');
     $('btnPlay').querySelector('.tri').textContent = '▶';
   }
+
+  window.Cinnamo.startFlightGame = startGame;
+  window.Cinnamo.pauseFlightGame = pause;
 
   $('btnPlay').addEventListener('click', startGame);
   $('btnPause').addEventListener('click', pause);

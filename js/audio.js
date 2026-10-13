@@ -1,95 +1,361 @@
-/* Sonido 100% sintetizado (WebAudio) + voz hablada (speechSynthesis). Cero archivos de audio. */
+/* Audio Engine 100% sintetizado con Web Audio API:
+ *  - Música relajante procedural de Caja de Música / Celesta (tipo cuna / Sanrio lullaby)
+ *  - Efectos kawaii y tiernos (burbujas para contar, arpas mágicas, risitas y campanitas)
+ *  - CERO voces robóticas espeluznantes.
+ */
 (function () {
-  const NOTES = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 1174.66, 1318.51]; // pentatónica: siempre suena bien
+  // Escala pentatónica y acordes mágicos (C Mayor / F Mayor / G Mayor)
+  const PENTATONIC = [
+    261.63, 293.66, 329.63, 392.00, 440.00, // C4, D4, E4, G4, A4
+    523.25, 587.33, 659.25, 783.99, 880.00, // C5, D5, E5, G5, A5
+    1046.50, 1174.66, 1318.51, 1567.98       // C6, D6, E6, G6
+  ];
 
-  const Audio = {
-    ctx: null,
-    master: null,
-    muted: false,
-    speaking: false,
-    lastSpeechEnd: 0,
+  class SoundEngine {
+    constructor() {
+      this.ctx = null;
+      this.masterGain = null;
+      this.musicGain = null;
+      this.sfxGain = null;
+      this.musicPlaying = false;
+      this.musicTimer = null;
+      this.muted = false;
+      this.currentMelodyIndex = 0;
+    }
+
+    init() {
+      if (this.ctx) {
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        return;
+      }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      this.ctx = new AC();
+
+      // Master bus
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.value = 0.4;
+      this.masterGain.connect(this.ctx.destination);
+
+      // SFX bus
+      this.sfxGain = this.ctx.createGain();
+      this.sfxGain.gain.value = 0.7;
+      this.sfxGain.connect(this.masterGain);
+
+      // Music bus (con filtro cálido tipo caja de música de cuerda)
+      this.musicGain = this.ctx.createGain();
+      this.musicGain.gain.value = 0.28;
+
+      // Filtro para sonido aterciopelado
+      this.musicFilter = this.ctx.createBiquadFilter();
+      this.musicFilter.type = 'lowpass';
+      this.musicFilter.frequency.value = 2400;
+
+      // Eco sutil (delay / reverb cálido)
+      this.musicDelay = this.ctx.createDelay();
+      this.musicDelay.delayTime.value = 0.28;
+      this.musicDelayGain = this.ctx.createGain();
+      this.musicDelayGain.gain.value = 0.25;
+
+      this.musicGain.connect(this.musicFilter);
+      this.musicFilter.connect(this.masterGain);
+      this.musicFilter.connect(this.musicDelay);
+      this.musicDelay.connect(this.musicDelayGain);
+      this.musicDelayGain.connect(this.musicFilter);
+    }
 
     unlock() {
-      if (!this.ctx) {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        if (!AC) return;
-        this.ctx = new AC();
-        this.master = this.ctx.createGain();
-        this.master.gain.value = 0.35;
-        this.master.connect(this.ctx.destination);
-      }
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-    },
+      this.init();
+      if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    }
 
-    tone(freq, dur = 0.25, type = 'sine', delay = 0, vol = 0.6, slideTo = null) {
+    setMuted(m) {
+      this.muted = m;
+      if (this.masterGain) {
+        this.masterGain.gain.setValueAtTime(m ? 0 : 0.4, this.ctx.currentTime);
+      }
+    }
+
+    /* ---------- SÍNTESIS DE INSTRUMENTOS ---------- */
+
+    // Campana de caja de música (Music box tine)
+    playMusicBoxTine(freq, time, vol = 0.5, dur = 1.4) {
       if (!this.ctx || this.muted) return;
-      const t = this.ctx.currentTime + delay;
+      const t = time || this.ctx.currentTime;
+
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(freq, t);
+
+      // Armónico sutil metálico agudo característico de las láminas de acero
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(freq * 3.01, t);
+
+      const g2 = this.ctx.createGain();
+      g2.gain.value = 0.15;
+      osc2.connect(g2).connect(gain);
+      osc1.connect(gain);
+
+      // Envolvente percusiva de campana de música
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(vol, t + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+      gain.connect(this.musicGain);
+      osc1.start(t);
+      osc2.start(t);
+      osc1.stop(t + dur + 0.05);
+      osc2.stop(t + dur + 0.05);
+    }
+
+    // Efecto Kawaii de formantes (sonido tierno tipo "¡Waaai!" o "¡Kyu!")
+    kawaiiChirp(type = 'cheer') {
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      // Doble filtro de formantes para simular fonética tierna
+      const f1 = this.ctx.createBiquadFilter();
+      f1.type = 'bandpass';
+      f1.Q.value = 4.0;
+      f1.frequency.value = 1100;
+
+      const f2 = this.ctx.createBiquadFilter();
+      f2.type = 'bandpass';
+      f2.Q.value = 5.0;
+      f2.frequency.value = 2600;
+
+      osc.type = 'triangle';
+      if (type === 'cheer') {
+        // Barrido ascendente alegre
+        osc.frequency.setValueAtTime(520, t);
+        osc.frequency.exponentialRampToValueAtTime(980, t + 0.15);
+        osc.frequency.exponentialRampToValueAtTime(1180, t + 0.28);
+      } else {
+        // Suspiro curioso
+        osc.frequency.setValueAtTime(700, t);
+        osc.frequency.exponentialRampToValueAtTime(540, t + 0.12);
+        osc.frequency.exponentialRampToValueAtTime(880, t + 0.26);
+      }
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.3, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
+
+      osc.connect(f1);
+      osc.connect(f2);
+      f1.connect(gain);
+      f2.connect(gain);
+      gain.connect(this.sfxGain);
+
+      osc.start(t);
+      osc.stop(t + 0.35);
+    }
+
+    // Burbuja suave para contar (Pop acústico)
+    bubblePop(step = 0) {
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      // Frecuencia que escala según el número que se cuenta
+      const base = 440 * Math.pow(1.08, step % 12);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(base, t);
+      osc.frequency.exponentialRampToValueAtTime(base * 1.6, t + 0.04);
+      osc.frequency.exponentialRampToValueAtTime(base * 0.8, t + 0.09);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.45, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.11);
+
+      osc.connect(gain).connect(this.sfxGain);
+      osc.start(t);
+      osc.stop(t + 0.13);
+    }
+
+    // Pincel mágico / pintar zona (shimmer brillante)
+    colorSplat() {
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime;
+      [587.33, 783.99, 1046.50, 1318.51].forEach((freq, idx) => {
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(freq, t + idx * 0.035);
+        g.gain.setValueAtTime(0.001, t + idx * 0.035);
+        g.gain.exponentialRampToValueAtTime(0.2, t + idx * 0.035 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.035 + 0.28);
+        o.connect(g).connect(this.sfxGain);
+        o.start(t + idx * 0.035);
+        o.stop(t + idx * 0.035 + 0.3);
+      });
+    }
+
+    // Resorte suave y tierno para intentar de nuevo (CERO bocina fea de error)
+    softBoing() {
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(320, t);
+      osc.frequency.exponentialRampToValueAtTime(440, t + 0.08);
+      osc.frequency.exponentialRampToValueAtTime(260, t + 0.22);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.3, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+
+      osc.connect(gain).connect(this.sfxGain);
+      osc.start(t);
+      osc.stop(t + 0.28);
+    }
+
+    // Arpa de celebración y aplauso mágico
+    celebrate() {
+      if (!this.ctx || this.muted) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98, 2093.00];
+      const t = this.ctx.currentTime;
+      notes.forEach((freq, i) => {
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = i % 2 ? 'triangle' : 'sine';
+        o.frequency.setValueAtTime(freq, t + i * 0.06);
+        g.gain.setValueAtTime(0.001, t + i * 0.06);
+        g.gain.linearRampToValueAtTime(0.35, t + i * 0.06 + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.06 + 0.45);
+        o.connect(g).connect(this.sfxGain);
+        o.start(t + i * 0.06);
+        o.stop(t + i * 0.06 + 0.5);
+      });
+
+      // Risita alegre de fondo
+      setTimeout(() => this.kawaiiChirp('cheer'), 280);
+    }
+
+    // Recolección de estrellas en el juego de volar
+    collect(step) {
+      if (!this.ctx || this.muted) return;
+      const f = PENTATONIC[(step + 5) % PENTATONIC.length];
+      const t = this.ctx.currentTime;
       const o = this.ctx.createOscillator();
       const g = this.ctx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq, t);
-      if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g).connect(this.master);
+      o.type = 'sine';
+      o.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.linearRampToValueAtTime(0.35, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+      o.connect(g).connect(this.sfxGain);
       o.start(t);
-      o.stop(t + dur + 0.05);
-    },
+      o.stop(t + 0.38);
+    }
 
-    collect(step) {
-      const f = NOTES[step % NOTES.length];
-      this.tone(f, 0.3, 'sine');
-      this.tone(f * 2, 0.18, 'triangle', 0.02, 0.15);
-    },
-    special() {
-      [0, 4, 7, 12].forEach((n, i) => this.tone(659.25 * Math.pow(2, n / 12), 0.25, 'triangle', i * 0.06, 0.4));
-    },
-    celebrate() {
-      [0, 4, 7, 12, 7, 12, 16, 19, 24].forEach((n, i) =>
-        this.tone(523.25 * Math.pow(2, n / 12), 0.35, i % 2 ? 'triangle' : 'sine', i * 0.11, 0.45));
-    },
-    whoosh(up = true) {
-      this.tone(up ? 300 : 700, 0.25, 'sine', 0, 0.25, up ? 900 : 250);
-    },
     spin() {
-      this.tone(400, 0.6, 'triangle', 0, 0.3, 1600);
-    },
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime;
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(420, t);
+      o.frequency.exponentialRampToValueAtTime(1400, t + 0.5);
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.linearRampToValueAtTime(0.3, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+      o.connect(g).connect(this.sfxGain);
+      o.start(t);
+      o.stop(t + 0.6);
+      this.kawaiiChirp('cheer');
+    }
 
-    _voice: null,
-    _pickVoice() {
-      if (this._voice || !('speechSynthesis' in window)) return this._voice;
-      const vs = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('es'));
-      const pref = ['es-419', 'es-ar', 'es-mx', 'es-us', 'es-es'];
-      for (const p of pref) {
-        const v = vs.find(v => v.lang.toLowerCase().replace('_', '-').startsWith(p));
-        if (v) return (this._voice = v);
+    whoosh(up = true) {
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime;
+      const o = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(up ? 350 : 700, t);
+      o.frequency.exponentialRampToValueAtTime(up ? 850 : 320, t + 0.22);
+      g.gain.setValueAtTime(0.001, t);
+      g.gain.linearRampToValueAtTime(0.2, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
+      o.connect(g).connect(this.sfxGain);
+      o.start(t);
+      o.stop(t + 0.26);
+    }
+
+    /* ---------- MÚSICA PROCEDURAL DE CAJA DE MÚSICA ---------- */
+
+    startMusic() {
+      this.unlock();
+      if (this.musicPlaying) return;
+      this.musicPlaying = true;
+      this.tickMusic();
+    }
+
+    stopMusic() {
+      this.musicPlaying = false;
+      if (this.musicTimer) {
+        clearTimeout(this.musicTimer);
+        this.musicTimer = null;
       }
-      return (this._voice = vs[0] || null);
-    },
+    }
 
-    speak(text) {
-      if (this.muted || !('speechSynthesis' in window)) return;
-      const u = new SpeechSynthesisUtterance(text);
-      const v = this._pickVoice();
-      if (v) u.voice = v;
-      u.lang = v ? v.lang : 'es-ES';
-      u.pitch = 1.6;  // voz aguda y tierna
-      u.rate = 1.0;
-      u.onstart = () => { this.speaking = true; };
-      u.onend = u.onerror = () => { this.speaking = false; this.lastSpeechEnd = performance.now(); };
-      speechSynthesis.cancel();
-      speechSynthesis.speak(u);
-    },
+    toggleMusic() {
+      if (this.musicPlaying) {
+        this.stopMusic();
+        return false;
+      } else {
+        this.startMusic();
+        return true;
+      }
+    }
 
-    /** true mientras el juego habla (y un ratito después) para que el reconocimiento de voz no se escuche a sí mismo. */
-    isSelfTalking() {
-      return this.speaking || performance.now() - this.lastSpeechEnd < 700;
-    },
-  };
+    // Melodía tipo Studio Ghibli / Sanrio Lullaby: arpegios en compás ternario relajante
+    tickMusic() {
+      if (!this.musicPlaying) return;
 
-  if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => { Audio._voice = null; };
+      const MELODY_PATTERNS = [
+        // Frase 1: C - Am
+        [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25],
+        [440.00, 523.25, 659.25, 880.00, 659.25, 523.25],
+        // Frase 2: F - G
+        [349.23, 440.00, 523.25, 698.46, 523.25, 440.00],
+        [392.00, 493.88, 587.33, 783.99, 987.77, 783.99],
+        // Frase 3: C - Em
+        [523.25, 659.25, 783.99, 1318.51, 1046.50, 783.99],
+        [329.63, 392.00, 493.88, 659.25, 493.88, 392.00],
+        // Frase 4: Dm - G (resolución dulce)
+        [293.66, 349.23, 440.00, 587.33, 523.25, 440.00],
+        [392.00, 493.88, 587.33, 783.99, 659.25, 523.25]
+      ];
 
+      const bar = MELODY_PATTERNS[this.currentMelodyIndex % MELODY_PATTERNS.length];
+      const now = this.ctx.currentTime;
+      const stepTime = 0.38; // Tiempo calmo y arrullador
+
+      bar.forEach((note, idx) => {
+        // La nota principal suena con campanita
+        this.playMusicBoxTine(note, now + idx * stepTime, idx === 0 ? 0.35 : 0.22, 1.2);
+        // En el primer tiempo de cada compás, nota baja de bajo
+        if (idx === 0) {
+          this.playMusicBoxTine(note / 2, now, 0.25, 1.6);
+        }
+      });
+
+      this.currentMelodyIndex++;
+      this.musicTimer = setTimeout(() => this.tickMusic(), bar.length * stepTime * 1000 - 50);
+    }
+  }
+
+  const audioInstance = new SoundEngine();
   window.Cinnamo = window.Cinnamo || {};
-  window.Cinnamo.audio = Audio;
+  window.Cinnamo.audio = audioInstance;
 })();
