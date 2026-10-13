@@ -47,13 +47,37 @@
       id: 'purin',
       name: 'Pompompurin',
       badge: '🍮 Purin',
-      imgSrc: 'assets/pompompurin.png',
+      imgSrc: 'assets/pompompurin_hq.png',
       treatEmoji: '🍮',
       treatName: 'Pudín de Caramelo',
       pawColor: '#fef08a',
       cuffColor: '#78350f',
       padColor: '#b45309',
       desc: '¡El perrito con boina! Reparte deliciosos flanes de caramelo con cereza.'
+    },
+    {
+      id: 'chiffon',
+      name: 'Chiffon',
+      badge: '🌸 Chiffon',
+      imgSrc: 'assets/chiffon.png',
+      treatEmoji: '🧁',
+      treatName: 'Cupcake de Vainilla',
+      pawColor: '#fef3c7',
+      cuffColor: '#f472b6',
+      padColor: '#fb7185',
+      desc: '¡La perrita enérgica! Reparte esponjosos cupcakes de vainilla con chispitas.'
+    },
+    {
+      id: 'mocha',
+      name: 'Mocha',
+      badge: '🎀 Mocha',
+      imgSrc: 'assets/mocha_hq.png',
+      treatEmoji: '🍫',
+      treatName: 'Chocolate con Malvaviscos',
+      pawColor: '#d97706',
+      cuffColor: '#92400e',
+      padColor: '#fbbf24',
+      desc: '¡La líder elegante! Reparte chocolate caliente cremoso con malvaviscos.'
     }
   ];
 
@@ -123,8 +147,8 @@
         cinna: new Image()
       };
       this.friendImages.milk.src = 'assets/milk_teddy.png';
-      this.friendImages.purin.src = 'assets/pompompurin.png';
-      this.friendImages.mocha.src = 'assets/mocha.png';
+      this.friendImages.purin.src = 'assets/pompompurin_hq.png';
+      this.friendImages.mocha.src = 'assets/mocha_hq.png';
       this.friendImages.chiffon.src = 'assets/chiffon.png';
       this.friendImages.cinna.src = 'assets/cinnamoroll_fly.png';
     }
@@ -285,23 +309,26 @@
     }
 
     bindInputs() {
-      window.addEventListener('keydown', (e) => {
-        if (e.code === 'KeyW' || e.code === 'ArrowUp') this.keys.forward = true;
-        if (e.code === 'KeyS' || e.code === 'ArrowDown') this.keys.backward = true;
-        if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.keys.left = true;
-        if (e.code === 'KeyD' || e.code === 'ArrowRight') this.keys.right = true;
-        if (e.code === 'Space') {
-          e.preventDefault();
-          this.shootTreat();
-        }
-      });
+      if (!this.inputsBound) {
+        this.inputsBound = true;
+        window.addEventListener('keydown', (e) => {
+          if (e.code === 'KeyW' || e.code === 'ArrowUp') this.keys.forward = true;
+          if (e.code === 'KeyS' || e.code === 'ArrowDown') this.keys.backward = true;
+          if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.keys.left = true;
+          if (e.code === 'KeyD' || e.code === 'ArrowRight') this.keys.right = true;
+          if (e.code === 'Space') {
+            e.preventDefault();
+            this.shootTreat();
+          }
+        });
 
-      window.addEventListener('keyup', (e) => {
-        if (e.code === 'KeyW' || e.code === 'ArrowUp') this.keys.forward = false;
-        if (e.code === 'KeyS' || e.code === 'ArrowDown') this.keys.backward = false;
-        if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.keys.left = false;
-        if (e.code === 'KeyD' || e.code === 'ArrowRight') this.keys.right = false;
-      });
+        window.addEventListener('keyup', (e) => {
+          if (e.code === 'KeyW' || e.code === 'ArrowUp') this.keys.forward = false;
+          if (e.code === 'KeyS' || e.code === 'ArrowDown') this.keys.backward = false;
+          if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.keys.left = false;
+          if (e.code === 'KeyD' || e.code === 'ArrowRight') this.keys.right = false;
+        });
+      }
 
       const hook = (id, prop) => {
         const el = this.container.querySelector(id);
@@ -952,7 +979,7 @@
 
       // --- A. BRAZOS VOLUMÉTRICOS CON SOMBREADO 3D SUAVE ---
       const armColor = hero.pawColor;
-      const shadeColor = (hero.id === 'purin') ? '#fcd34d' : '#e0e7ff';
+      const shadeColor = (hero.id === 'purin') ? '#fcd34d' : (hero.id === 'chiffon' ? '#fde68a' : (hero.id === 'mocha' ? '#92400e' : '#e0e7ff'));
 
       // Sombra proyectada detrás de los brazos
       ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
@@ -1139,6 +1166,96 @@
           ctx.beginPath();
           ctx.arc(0, -26, 8.5, 0, Math.PI * 2);
           ctx.fill();
+        } else if (hero.id === 'chiffon') {
+          // --- CUPCAKE DE VAINILLA Y FRESA 3D (CHIFFON) ---
+          const cupGrad = ctx.createLinearGradient(-26, 0, 26, 0);
+          cupGrad.addColorStop(0, '#fbcfe8');
+          cupGrad.addColorStop(0.5, '#f472b6');
+          cupGrad.addColorStop(1, '#db2777');
+          ctx.fillStyle = cupGrad;
+          ctx.beginPath();
+          ctx.moveTo(-24, 20);
+          ctx.lineTo(-30, -2);
+          ctx.lineTo(30, -2);
+          ctx.lineTo(24, 20);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+          ctx.lineWidth = 1.5;
+          for (let lx = -20; lx <= 20; lx += 8) {
+            ctx.beginPath();
+            ctx.moveTo(lx * 0.85, 20);
+            ctx.lineTo(lx, -2);
+            ctx.stroke();
+          }
+
+          const swirlGrad = ctx.createRadialGradient(0, -18, 6, 0, -18, 30);
+          swirlGrad.addColorStop(0, '#ffffff');
+          swirlGrad.addColorStop(0.5, '#fbcfe8');
+          swirlGrad.addColorStop(1, '#f472b6');
+          ctx.fillStyle = swirlGrad;
+          ctx.beginPath();
+          ctx.ellipse(0, -10, 32, 16, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(0, -20, 22, 12, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(0, -28, 12, 8, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          const strawGrad = ctx.createRadialGradient(-2, -37, 2, 0, -35, 9);
+          strawGrad.addColorStop(0, '#fda4af');
+          strawGrad.addColorStop(0.6, '#e11d48');
+          strawGrad.addColorStop(1, '#9f1239');
+          ctx.fillStyle = strawGrad;
+          ctx.beginPath();
+          ctx.arc(0, -35, 7.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.font = '16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('✨', 24, -22);
+        } else if (hero.id === 'mocha') {
+          // --- CHOCOLATE CALIENTE CON MALVAVISCOS 3D (MOCHA) ---
+          const mugGrad = ctx.createLinearGradient(-26, 0, 26, 0);
+          mugGrad.addColorStop(0, '#fef3c7');
+          mugGrad.addColorStop(0.3, '#ffffff');
+          mugGrad.addColorStop(0.8, '#fed7aa');
+          mugGrad.addColorStop(1, '#f97316');
+          ctx.fillStyle = mugGrad;
+          ctx.beginPath();
+          ctx.roundRect(-24, -12, 48, 32, [4, 4, 16, 16]);
+          ctx.fill();
+
+          ctx.strokeStyle = '#f97316';
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(26, 4, 10, -Math.PI * 0.4, Math.PI * 0.4);
+          ctx.stroke();
+
+          const chocGrad = ctx.createRadialGradient(0, -12, 4, 0, -12, 22);
+          chocGrad.addColorStop(0, '#78350f');
+          chocGrad.addColorStop(0.8, '#451a03');
+          chocGrad.addColorStop(1, '#290e02');
+          ctx.fillStyle = chocGrad;
+          ctx.beginPath();
+          ctx.ellipse(0, -12, 22, 9, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.beginPath();
+          ctx.roundRect(-12, -18, 10, 8, 3);
+          ctx.fill();
+          ctx.fillStyle = '#fce7f3';
+          ctx.beginPath();
+          ctx.roundRect(4, -16, 9, 7, 3);
+          ctx.fill();
+
+          ctx.font = '18px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('☕', 0, -28);
         }
 
         ctx.restore();

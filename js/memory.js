@@ -74,14 +74,28 @@
       this.matchedPairs = 0;
       this.isLocked = false;
       this.moves = 0;
+      this.matchTimeouts = [];
+    }
+
+    clearMatchTimeouts() {
+      if (this.matchTimeouts) {
+        this.matchTimeouts.forEach(t => clearTimeout(t));
+        this.matchTimeouts = [];
+      }
+    }
+
+    stop() {
+      this.clearMatchTimeouts();
     }
 
     init(containerEl) {
+      this.clearMatchTimeouts();
       this.container = containerEl;
       this.startNewGame(this.difficulty);
     }
 
     startNewGame(totalCards = 8) {
+      this.clearMatchTimeouts();
       this.difficulty = totalCards;
       this.moves = 0;
       this.matchedPairs = 0;
@@ -189,7 +203,7 @@
       this.isLocked = true;
 
       if (first.card.matchKey === second.card.matchKey) {
-        setTimeout(() => {
+        const tSuccess = setTimeout(() => {
           A.collect(this.matchedPairs + 1);
           A.sparkleChime();
 
@@ -204,11 +218,13 @@
           this.isLocked = false;
 
           if (this.matchedPairs === this.difficulty / 2) {
-            setTimeout(() => this.triggerVictory(), 400);
+            const tWin = setTimeout(() => this.triggerVictory(), 400);
+            this.matchTimeouts.push(tWin);
           }
         }, 400);
+        this.matchTimeouts.push(tSuccess);
       } else {
-        setTimeout(() => {
+        const tFail = setTimeout(() => {
           A.softBoing();
           first.el.classList.remove('flipped');
           second.el.classList.remove('flipped');
@@ -216,6 +232,7 @@
           this.flippedCards = [];
           this.isLocked = false;
         }, 900);
+        this.matchTimeouts.push(tFail);
       }
     }
 

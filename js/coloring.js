@@ -332,8 +332,12 @@
         e.preventDefault();
         A.unlock();
         this.isDrawing = true;
+        if (canvasBox.setPointerCapture && e.pointerId !== undefined) {
+          try { canvasBox.setPointerCapture(e.pointerId); } catch (_) {}
+        }
         const pos = getPos(e);
         this.lastPos = pos;
+        updateCursorVisual();
         setCursorPos(pos.clientX, pos.clientY);
 
         if (this.currentTool === 'stamp') {
@@ -388,7 +392,10 @@
         }
       };
 
-      const onPointerUp = () => {
+      const onPointerUp = (e) => {
+        if (canvasBox.releasePointerCapture && e && e.pointerId !== undefined) {
+          try { canvasBox.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
         this.isDrawing = false;
         this.lastPos = null;
         this.lastStampPos = null;

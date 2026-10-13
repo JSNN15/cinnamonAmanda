@@ -947,6 +947,15 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
   padding: 4px 16px; font-size: 14px; font-weight: 800; color: var(--pink-d);
   display: inline-block;
 }
+.btn-plat-modal-close {
+  background: #f1f5f9; border: 2.5px solid #cbd5e1; border-radius: 999px;
+  padding: 5px 18px; font: 800 14px var(--font); color: #475569;
+  cursor: pointer; margin-left: 10px; transition: transform 0.15s, background 0.15s, color 0.15s;
+  display: inline-block; vertical-align: middle;
+}
+.btn-plat-modal-close:hover {
+  background: #fee2e2; border-color: #fca5a5; color: #b91c1c; transform: scale(1.05);
+}
 .plat-heroes-select-grid {
   display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
 }

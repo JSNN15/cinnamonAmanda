@@ -311,6 +311,7 @@
               <div class="plat-modal-header">
                 <span class="plat-modal-badge">🌍 Gira Mundial de Cinnamoroll & Amanda ✈️</span>
                 <h2>¿A qué ciudad quieres viajar hoy?</h2>
+                <button class="btn-plat-modal-close" aria-label="Cerrar modal">✕ Cerrar</button>
               </div>
               <div class="plat-cities-grid">
                 ${CITIES.map((c, idx) => `
@@ -333,6 +334,7 @@
               <div class="plat-modal-header">
                 <span class="plat-modal-badge">✨ Elige a tu Amigo de Sanrio ✨</span>
                 <h2>¿Con quién quieres correr hoy, Amanda?</h2>
+                <button class="btn-plat-modal-close" aria-label="Cerrar modal">✕ Cerrar</button>
               </div>
               <div class="plat-heroes-select-grid">
                 ${HEROES.map(h => `
@@ -385,6 +387,19 @@
         });
       }
 
+      const closeCityModal = () => {
+        A.unlock();
+        A.bubblePop(1);
+        cityModal.classList.add('hidden');
+      };
+      const btnCloseCity = cityModal ? cityModal.querySelector('.btn-plat-modal-close') : null;
+      if (btnCloseCity) btnCloseCity.addEventListener('click', closeCityModal);
+      if (cityModal) {
+        cityModal.addEventListener('click', (e) => {
+          if (e.target === cityModal) closeCityModal();
+        });
+      }
+
       this.container.querySelectorAll('.plat-city-card').forEach(card => {
         card.addEventListener('click', (e) => {
           A.unlock();
@@ -403,6 +418,19 @@
           A.unlock();
           A.bubblePop(1);
           heroModal.classList.remove('hidden');
+        });
+      }
+
+      const closeHeroModal = () => {
+        A.unlock();
+        A.bubblePop(1);
+        heroModal.classList.add('hidden');
+      };
+      const btnCloseHero = heroModal ? heroModal.querySelector('.btn-plat-modal-close') : null;
+      if (btnCloseHero) btnCloseHero.addEventListener('click', closeHeroModal);
+      if (heroModal) {
+        heroModal.addEventListener('click', (e) => {
+          if (e.target === heroModal) closeHeroModal();
         });
       }
 
@@ -494,6 +522,8 @@
       p.squashX = 1.0;
       p.squashY = 1.0;
       p.standingPlat = null;
+      p.lastSafeX = 80;
+      p.lastSafeY = 350;
       this.score = 0;
       this.reachedGoal = false;
       this.camX = 0;
@@ -876,6 +906,8 @@
             A.softBoing();
             this.burstParticles(p.x + p.w / 2, p.y + p.h, 6, ['#ffffff', hero.trailColor]);
           }
+          p.lastSafeX = p.x;
+          p.lastSafeY = plat.y - p.h - 10;
         }
       }
       p.standingPlat = matchedPlat;
@@ -912,11 +944,12 @@
         }
       }
 
-      // Rescate mágico si cae (Amanda nunca pierde)
+      // Rescate mágico si cae (Amanda nunca pierde: regresa suavemente a la última plataforma segura)
       if (p.y > 515) {
-        p.x = Math.max(80, p.x - 260);
-        p.y = 230;
-        p.vy = -320;
+        p.x = (p.lastSafeX !== undefined) ? p.lastSafeX : Math.max(80, p.x - 260);
+        p.y = (p.lastSafeY !== undefined) ? p.lastSafeY : 230;
+        p.vy = -260;
+        p.grounded = false;
         A.whoosh(true);
         this.burstParticles(p.x + p.w / 2, p.y + p.h / 2, 18, ['#aee0ff', '#ffffff', '#ffd1dc']);
       }

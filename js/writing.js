@@ -361,6 +361,19 @@
       return WORDS.filter(w => w.tier === this.currentTier);
     }
 
+    getCurrentWord() {
+      const list = this.getFilteredWords();
+      return list[this.currentWordIdx] || WORDS[0];
+    }
+
+    getCurrentSentence() {
+      return SENTENCES[this.currentSentenceIdx];
+    }
+
+    stop() {
+      this.cleanupActiveDrag();
+    }
+
     cleanupActiveDrag() {
       if (this.currentDragCleanup) {
         try { this.currentDragCleanup(); } catch (_) {}

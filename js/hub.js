@@ -114,6 +114,9 @@
       if (window.Cinnamo.pauseFlightGame) window.Cinnamo.pauseFlightGame();
       if (window.Cinnamo.platformerGame && window.Cinnamo.platformerGame.stop) window.Cinnamo.platformerGame.stop();
       if (window.Cinnamo.doomGame && window.Cinnamo.doomGame.stop) window.Cinnamo.doomGame.stop();
+      if (window.Cinnamo.puzzleGame && window.Cinnamo.puzzleGame.stop) window.Cinnamo.puzzleGame.stop();
+      if (window.Cinnamo.writingGame && window.Cinnamo.writingGame.stop) window.Cinnamo.writingGame.stop();
+      if (window.Cinnamo.mathGame && window.Cinnamo.mathGame.stop) window.Cinnamo.mathGame.stop();
     }
 
     showScreen(screenName) {

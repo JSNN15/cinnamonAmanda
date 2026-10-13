@@ -93,6 +93,18 @@
       this.timerInterval = null;
     }
 
+    getCurrentChar() {
+      return PUZZLE_CHARACTERS[this.currentCharIdx];
+    }
+
+    stop() {
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval);
+        this.timerInterval = null;
+      }
+      this.cleanupActiveDrag();
+    }
+
     cleanupActiveDrag() {
       if (this.currentDragCleanup) {
         try { this.currentDragCleanup(); } catch (_) {}
@@ -107,6 +119,7 @@
     }
 
     init(containerEl) {
+      this.stop();
       this.container = containerEl;
       this.currentCharIdx = 0;
       this.pieceCountMode = 6;
@@ -624,7 +637,7 @@
         star.style.top = `${cy}px`;
         star.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
         star.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
-        document.body.appendChild(star);
+        (this.container || document.body).appendChild(star);
         setTimeout(() => star.remove(), 650);
       }
     }

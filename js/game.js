@@ -430,6 +430,7 @@
 
   function startGame() {
     A.unlock();
+    resize();
     const first = S.mode === 'menu';
     S.mode = 'play';
     $('menu').classList.add('hidden');

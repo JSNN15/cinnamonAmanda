@@ -32,25 +32,42 @@
       this.countedItems = new Set();
       this.answered = false;
       this.isCountingHelpActive = false;
+      this.guideTimeouts = [];
+    }
+
+    clearGuideTimeouts() {
+      if (this.guideTimeouts) {
+        this.guideTimeouts.forEach(t => clearTimeout(t));
+        this.guideTimeouts = [];
+      }
+      this.isCountingHelpActive = false;
+    }
+
+    stop() {
+      this.clearGuideTimeouts();
     }
 
     init(containerEl) {
+      this.clearGuideTimeouts();
       this.container = containerEl;
       this.score = 0;
       this.nextRound();
     }
 
     setTier(newTier) {
+      this.clearGuideTimeouts();
       this.ageTier = newTier;
       this.nextRound();
     }
 
     setMode(newMode) {
+      this.clearGuideTimeouts();
       this.mode = newMode;
       this.nextRound();
     }
 
     nextRound() {
+      this.clearGuideTimeouts();
       this.answered = false;
       this.isCountingHelpActive = false;
       this.countedItems.clear();
@@ -396,7 +413,7 @@
 
       const allActive = this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)');
       allActive.forEach((btn, i) => {
-        setTimeout(() => {
+        const tStep = setTimeout(() => {
           btn.classList.add('pop-counted');
           const badge = btn.querySelector('.treat-count');
           if (badge) {
@@ -405,16 +422,18 @@
           }
           A.bubblePop(i + 1);
         }, (i + 1) * 350);
+        this.guideTimeouts.push(tStep);
       });
 
       const totalDelay = (allActive.length + 1) * 350 + 600;
-      setTimeout(() => {
+      const tEnd = setTimeout(() => {
         if (cinnaBubble) cinnaBubble.innerHTML = `¡Hay <strong>${this.total}</strong> en total! 🌸`;
         if (milkBubble) milkBubble.innerHTML = `¡Elige el número <strong>${this.total}</strong> Amanda! ✨`;
         if (tray) tray.classList.remove('highlight-tray');
         this.isCountingHelpActive = false;
         btnEl.classList.remove('wobble');
       }, totalDelay);
+      this.guideTimeouts.push(tEnd);
     }
 
     triggerPartyVictory() {
