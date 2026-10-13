@@ -47,17 +47,18 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 ---
 
 ### 3. 🎨 Taller de Dibujo (Colorear con Sanrio)
-* **5 Láminas Oficiales en Blanco y Negro:**
+* **5 Láminas Oficiales en Blanco y Negro (Centradas y Proporcionadas):**
   1. **Cinnamoroll:** Flotando en el cielo con sus orejitas extendidas.
   2. **Milk (みるく):** Con su chupete celeste y su osito de peluche.
   3. **Pompompurin (ポムポムプリン):** Con su boina de chocolate y plato de flan.
   4. **Mocha (モカ):** Con sus largas orejitas onduladas y flor rosa.
-  5. **Chiffon (シフォン):** Con sus orejas esponjosas como nubes y su boina.
+  5. **Chiffon (シフォン):** Con sus orejas esponjosas como nubes y boina, re-escalada y centrada milimétricamente en el lienzo de 600x500 para armonizar con los otros personajes.
 * **Herramientas de Arte:**
-  * **Crayón / Pincel libre:** Con 3 grosores (fino, medio, grueso) y trazo suave redondeado.
+  * **Crayón / Pincel libre:** Con 3 grosores (fino, medio, grueso), trazo suave redondeado y cursor dinámico con aro de previsualización de grosor.
+  * **Contorno protegido:** Los colores se aplican con modo `multiply` bajo las líneas originales, garantizando que el contorno negro nunca quede cubierto por la pintura.
   * **Relleno Mágico (Tap-to-fill / Bucket):** Tocar cualquier zona cerrada rellena el área respetando el contorno negro.
   * **Borrador suave:** Para limpiar cualquier trazo.
-  * **Sellitos y Estampas:** Estrellitas ✨, corazones 💖, florecitas 🌸 y brillos.
+  * **Sellitos y Estampas:** Estrellitas ✨, corazones 💖, florecitas 🌸 y brillos con partículas flotantes.
   * **Botón Guardar:** Descarga la obra de arte terminada como imagen PNG.
 
 ---
@@ -74,10 +75,22 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 ---
 
 ### 5. 🏃 Super Cinnamoroll Run (Aventura de Plataformas 2D)
-* **Motor Gráfico:** Resolución virtual fija de 960x540 adaptada por CSS para que la pantalla **nunca se corte** en ningún celular, tablet o monitor.
-* **Planeo de Orejitas (Ear-Glide):** Mantener presionado el botón de salto hace que Cinnamoroll extienda sus orejas y planee suavemente por el aire con resistencia al viento.
-* **Mundo de Dulces:**
-  * Trampolines de nubes esponjosas que impulsan alto.
+* **Selector de 4 Héroes de Sanrio Jugables:**
+  * 🐶 **Cinnamoroll:** Planeo de orejas extendidas (*Ear-Glide*) con caída ultra suave y estela celeste.
+  * 🍼 **Milk:** Flotación de bebé (*Baby Float*) con saltitos tiernos y su osito de peluche.
+  * 🍮 **Pompompurin:** Rebote elástico (*Custard Bounce*) con gran impulso como flan de caramelo.
+  * 🌸 **Chiffon:** Salto alto y ágil (*Cloud Leap*) con sus orejitas de nube esponjosa.
+* **Física de Salto Moderna y Snappy:**
+  * Velocidad de salto ajustada a `-460` a `-490 px/s` calculada en tiempo continuo (delta-time).
+  * **Coyote Time (0.12s):** Permite saltar aunque el personaje acabe de dejar el borde de una plataforma.
+  * **Jump Buffering (0.15s):** Registra la pulsación de salto antes de tocar tierra para una respuesta inmediata.
+  * **Salto de Altura Variable:** Soltar la tecla o el botón táctil antes acorta la parábola para saltos de precisión.
+  * **Animación Squash & Stretch:** Deformación elástica viva en despegues y aterrizajes (`squashX`, `squashY`), balanceo rítmico de carrera (*walk bob*) y partículas de corazones y estrellas.
+* **Mundo de Dulces con Efecto Parallax:**
+  * Cielo degradado con nubes flotantes y gran arcoíris translúcido de fondo.
+  * Colinas lejanas de frutilla y algodón de azúcar a velocidad reducida (0.35x).
+  * Plataformas de waffle con glaseado chorreante, flores en flor y fresas silvestres.
+  * Trampolines de gelatina que impulsan alto (`vy = -680 px/s`).
   * Cupcakes flotantes para recolectar con sonido de campanita.
   * Rescate mágico: Si cae al vacío, una nube lo devuelve suavemente hacia arriba.
 * **Meta Picnic:** Al llegar al final (x = 2800), lo esperan en un mantel de picnic con globos todos sus amigos oficiales: **Milk, Pompompurin, Mocha y Chiffon**.
@@ -121,10 +134,22 @@ Inspirado en los motores raycaster clásicos (Wolfenstein 3D / DOOM), completame
 ---
 
 ## 🎵 Motor de Audio Procedural Kawaii
-
 * **Cero Voces Sintéticas Robóticas:** Todo el audio está generado mediante la **Web Audio API** de forma procedural, sin dependencias externas ni archivos de audio pesados.
-* **Caja de Música / Celesta Relajante:** Melodías pentatónicas estilo Studio Ghibli / cafetería Sanrio que pueden activarse/desactivarse con el botón universal **🎵 Música** en la barra superior.
+* **4 Melodías Procedurales con Selector Directo:**
+  1. 🌸 *"Nubes de Algodón"* (Canción de cuna en 3/4)
+  2. 🧁 *"Paseo por la Pastelería"* (Marcha alegre en 4/4)
+  3. ☕ *"Hora del Té con Mocha"* (Vals dulce en 3/4)
+  4. 🌈 *"Aventura en el Arcoíris"* (Escala pentatónica saltarina en 4/4)
+* **Selector en la Barra Superior (`#globalBtnTrack`):** Amanda o sus padres pueden cambiar la melodía con un solo toque sin interrumpir el juego. Las canciones rotan automáticamente cada 2 repeticiones.
 * **Efectos Sintetizados:** Chimes de campanas, pops de burbujas, arpas de victoria y formantes infantiles suaves.
+
+---
+
+## 📱 Centrado y Adaptabilidad Multi-Dispositivo (PC & Smartphone)
+* **Centrado Universal:** Todos los juegos cuentan con contenedores Flexbox y reglas estrictas de `aspect-ratio` (`object-fit: contain`) para mantenerse perfectamente centrados tanto en vertical como en horizontal.
+* **Smartphones en Vertical (ej. iPhone / Android 390x844):** Canales y lienzos centrados milimétricamente en el viewport, HUD superior despejado y botones táctiles adaptados al pulgar infantil.
+* **Smartphones en Horizontal (ej. 844x390):** Barra superior compacta (44px), área de juego a pantalla completa sin cortes y mandos táctiles laterales accesibles.
+* **Computadores y Tablets (1280x800, 1920x1080):** Lienzos nítidos con proporciones doradas y atajos de teclado completos.
 
 ---
 

@@ -293,6 +293,31 @@
 
     /* ---------- MÚSICA PROCEDURAL DE CAJA DE MÚSICA ---------- */
 
+    getTracks() {
+      return TRACKS;
+    }
+
+    getCurrentTrack() {
+      return TRACKS[this.currentTrackIndex % TRACKS.length];
+    }
+
+    setTrack(index) {
+      this.currentTrackIndex = ((index % TRACKS.length) + TRACKS.length) % TRACKS.length;
+      this.currentMelodyIndex = 0;
+      this.loopsInCurrentTrack = 0;
+      if (this.musicPlaying) {
+        if (this.musicTimer) clearTimeout(this.musicTimer);
+        this.tickMusic();
+      }
+      return this.getCurrentTrack();
+    }
+
+    nextTrack() {
+      const next = this.setTrack(this.currentTrackIndex + 1);
+      this.kawaiiChirp('cheer');
+      return next;
+    }
+
     startMusic() {
       this.unlock();
       if (this.musicPlaying) return;
@@ -318,44 +343,107 @@
       }
     }
 
-    // Melodía tipo Studio Ghibli / Sanrio Lullaby: arpegios en compás ternario relajante
     tickMusic() {
       if (!this.musicPlaying) return;
 
-      const MELODY_PATTERNS = [
-        // Frase 1: C - Am
-        [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25],
-        [440.00, 523.25, 659.25, 880.00, 659.25, 523.25],
-        // Frase 2: F - G
-        [349.23, 440.00, 523.25, 698.46, 523.25, 440.00],
-        [392.00, 493.88, 587.33, 783.99, 987.77, 783.99],
-        // Frase 3: C - Em
-        [523.25, 659.25, 783.99, 1318.51, 1046.50, 783.99],
-        [329.63, 392.00, 493.88, 659.25, 493.88, 392.00],
-        // Frase 4: Dm - G (resolución dulce)
-        [293.66, 349.23, 440.00, 587.33, 523.25, 440.00],
-        [392.00, 493.88, 587.33, 783.99, 659.25, 523.25]
-      ];
-
-      const bar = MELODY_PATTERNS[this.currentMelodyIndex % MELODY_PATTERNS.length];
+      const track = this.getCurrentTrack();
+      const bars = track.bars;
+      const barIndex = this.currentMelodyIndex % bars.length;
+      const bar = bars[barIndex];
       const now = this.ctx.currentTime;
-      const stepTime = 0.38; // Tiempo calmo y arrullador
+      const stepTime = track.stepTime;
 
       bar.forEach((note, idx) => {
-        // La nota principal suena con campanita
+        // La nota principal suena con campanita dulce de caja de música
         this.playMusicBoxTine(note, now + idx * stepTime, idx === 0 ? 0.35 : 0.22, 1.2);
         // En el primer tiempo de cada compás, nota baja de bajo
         if (idx === 0) {
-          this.playMusicBoxTine(note / 2, now, 0.25, 1.6);
+          this.playMusicBoxTine(note / 2, now, 0.26, 1.6);
         }
       });
 
       this.currentMelodyIndex++;
-      this.musicTimer = setTimeout(() => this.tickMusic(), bar.length * stepTime * 1000 - 50);
+      // Si completó 2 vueltas de la canción, pasar suavemente a la siguiente melodía
+      if (this.currentMelodyIndex >= bars.length * 2) {
+        this.currentTrackIndex = (this.currentTrackIndex + 1) % TRACKS.length;
+        this.currentMelodyIndex = 0;
+      }
+
+      this.musicTimer = setTimeout(() => this.tickMusic(), bar.length * stepTime * 1000 - 45);
     }
   }
 
+  const TRACKS = [
+    {
+      id: 'lullaby',
+      name: 'Nubes de Algodón',
+      icon: '🌸',
+      stepTime: 0.38,
+      bars: [
+        // C - Am (3/4 dulce de cuna)
+        [523.25, 659.25, 783.99, 1046.50, 783.99, 659.25],
+        [440.00, 523.25, 659.25, 880.00, 659.25, 523.25],
+        // F - G
+        [349.23, 440.00, 523.25, 698.46, 523.25, 440.00],
+        [392.00, 493.88, 587.33, 783.99, 987.77, 783.99],
+        // C - Em
+        [523.25, 659.25, 783.99, 1318.51, 1046.50, 783.99],
+        [329.63, 392.00, 493.88, 659.25, 493.88, 392.00],
+        // Dm - G (resolución dulce)
+        [293.66, 349.23, 440.00, 587.33, 523.25, 440.00],
+        [392.00, 493.88, 587.33, 783.99, 659.25, 523.25]
+      ]
+    },
+    {
+      id: 'bakery',
+      name: 'Paseo por la Pastelería',
+      icon: '🧁',
+      stepTime: 0.24,
+      bars: [
+        // Marchita alegre en F y C
+        [698.46, 783.99, 880.00, 1046.50, 880.00, 698.46],
+        [523.25, 659.25, 783.99, 1046.50, 783.99, 523.25],
+        [587.33, 698.46, 880.00, 1174.66, 880.00, 698.46],
+        [783.99, 987.77, 1174.66, 1318.51, 1174.66, 987.77],
+        [1046.50, 880.00, 698.46, 880.00, 1046.50, 1318.51],
+        [1174.66, 987.77, 783.99, 987.77, 1174.66, 1046.50]
+      ]
+    },
+    {
+      id: 'tea',
+      name: 'Hora del Té con Mocha',
+      icon: '☕',
+      stepTime: 0.32,
+      bars: [
+        // Vals en G y Em
+        [392.00, 587.33, 783.99, 987.77, 783.99, 587.33],
+        [329.63, 493.88, 659.25, 880.00, 659.25, 493.88],
+        [440.00, 659.25, 880.00, 1100.00, 880.00, 659.25],
+        [587.33, 880.00, 1174.66, 987.77, 783.99, 587.33],
+        [523.25, 659.25, 783.99, 1046.50, 880.00, 783.99],
+        [392.00, 493.88, 587.33, 783.99, 659.25, 587.33]
+      ]
+    },
+    {
+      id: 'rainbow',
+      name: 'Aventura en el Arcoíris',
+      icon: '🌈',
+      stepTime: 0.22,
+      bars: [
+        // Aventura pentatónica saltarina
+        [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50],
+        [1174.66, 1046.50, 880.00, 783.99, 659.25, 523.25],
+        [659.25, 783.99, 1046.50, 1318.51, 1046.50, 783.99],
+        [880.00, 1046.50, 1174.66, 1318.51, 1567.98, 1318.51],
+        [1046.50, 783.99, 659.25, 587.33, 523.25, 659.25],
+        [783.99, 880.00, 1046.50, 1174.66, 1046.50, 783.99]
+      ]
+    }
+  ];
+
   const audioInstance = new SoundEngine();
+  audioInstance.currentTrackIndex = 0;
+  audioInstance.loopsInCurrentTrack = 0;
   window.Cinnamo = window.Cinnamo || {};
   window.Cinnamo.audio = audioInstance;
 })();

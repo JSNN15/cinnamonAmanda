@@ -95,10 +95,10 @@ for y in range(crop_h):
 sheet_im = Image.frombytes('L', (crop_w, crop_h), bytes(sheet_bytes))
 sheet_im = sheet_im.filter(ImageFilter.SMOOTH)
 
-# Place into 600x500 white canvas
+# Place into 600x500 white canvas (scaled to fit proportionally with Cinnamoroll and Milk sheets)
 canvas_w, canvas_h = 600, 500
-sh_h = 360
-sh_w = int(sheet_im.width * (sh_h / sheet_im.height))
+sh_w = 450
+sh_h = int(sheet_im.height * (sh_w / sheet_im.width))
 sheet_resized = sheet_im.resize((sh_w, sh_h), Image.Resampling.LANCZOS)
 
 final_sheet = Image.new('RGB', (canvas_w, canvas_h), (255, 255, 255))

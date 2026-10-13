@@ -1,13 +1,67 @@
-/* Super Cinnamoroll Run (Aventura 2D de Plataformas)
- * Motor robusto con resolución virtual fija (960x540) adaptada para que NUNCA se corte.
- * Sprite oficial de Cinnamoroll con planeo de orejitas (ear-glide), trampolines de nubes,
- * y meta picnic con los sprites oficiales de Milk, Pompompurin y Mocha.
+/* Super Cinnamoroll Run (Aventura 2D de Plataformas de Sanrio)
+ * - Selección de personaje jugable: Cinnamoroll, Milk, Pompompurin y Chiffon.
+ * - Motor de salto y físicas corregido (snappy jump con velocidad delta-time real).
+ * - Coyote time y Jump buffering para control ultra receptivo preescolar.
+ * - Squash & Stretch, animación de orejitas, inclinación de carrera y planeo suave.
+ * - Fondo en paralaje multicapa (cielo, arcoíris, colinas de malvavisco y flores).
+ * - Controles centrados y responsivos en PC y móviles.
  */
 (function () {
   const { audio: A } = window.Cinnamo;
 
   const VW = 960;
   const VH = 540;
+
+  const HEROES = [
+    {
+      id: 'cinna',
+      name: 'Cinnamoroll',
+      badge: '🐶 Canela',
+      imgSrc: 'assets/cinnamoroll_fly.png',
+      desc: '¡Vuela y planea suavemente por el cielo con sus orejitas mágicas!',
+      jumpPower: 460,
+      glideGravity: 180,
+      trailColor: '#8ecae6',
+      w: 72,
+      h: 48
+    },
+    {
+      id: 'milk',
+      name: 'Milk',
+      badge: '🍼 Bebé',
+      imgSrc: 'assets/milk_teddy.png',
+      desc: '¡El más chiquitito! Da saltitos tiernos y flota con su osito de peluche.',
+      jumpPower: 475,
+      glideGravity: 210,
+      trailColor: '#ffb3d1',
+      w: 64,
+      h: 56
+    },
+    {
+      id: 'purin',
+      name: 'Pompompurin',
+      badge: '🍮 Purin',
+      imgSrc: 'assets/pompompurin.png',
+      desc: '¡El perrito con boina! Da rebotes súper elásticos como flan de caramelo.',
+      jumpPower: 490,
+      glideGravity: 230,
+      trailColor: '#f59e0b',
+      w: 68,
+      h: 62
+    },
+    {
+      id: 'chiffon',
+      name: 'Chiffon',
+      badge: '🌸 Esponjosa',
+      imgSrc: 'assets/chiffon.png',
+      desc: '¡La perrita enérgica! Salta alto y ágil con sus orejitas de nube.',
+      jumpPower: 470,
+      glideGravity: 190,
+      trailColor: '#ff80bf',
+      w: 74,
+      h: 50
+    }
+  ];
 
   class CinnamorollPlatformer {
     constructor() {
@@ -16,12 +70,12 @@
       this.ctx = null;
       this.animId = null;
       this.running = false;
+      this.inCharSelect = false;
 
-      // Sprites oficiales (carga bajo demanda)
-      this.cinnaImg = null;
-      this.milkImg = null;
-      this.purinImg = null;
-      this.mochaImg = null;
+      this.selectedHero = HEROES[0];
+
+      // Sprites cacheados
+      this.heroImages = {};
 
       // Estado del jugador
       this.p = {
@@ -29,21 +83,27 @@
         y: 350,
         vx: 0,
         vy: 0,
-        w: 70,
-        h: 46,
+        w: 72,
+        h: 48,
         grounded: false,
         gliding: false,
         facing: 1,
-        animTimer: 0
+        animTimer: 0,
+        squashX: 1.0,
+        squashY: 1.0,
+        coyoteTimer: 0,
+        jumpBuffer: 0,
+        wasGrounded: false
       };
 
       this.camX = 0;
-      this.levelWidth = 3200;
+      this.levelWidth = 3400;
       this.keys = { left: false, right: false, jump: false };
 
       this.cupcakes = [];
       this.platforms = [];
       this.springs = [];
+      this.sceneryClouds = [];
       this.particles = [];
       this.score = 0;
       this.totalCupcakes = 8;
@@ -51,21 +111,19 @@
     }
 
     ensureAssets() {
-      if (this.cinnaImg) return;
-      this.cinnaImg = new Image();
-      this.cinnaImg.src = 'assets/cinnamoroll_fly.png';
-
-      this.milkImg = new Image();
-      this.milkImg.src = 'assets/milk_teddy.png';
-
-      this.purinImg = new Image();
-      this.purinImg.src = 'assets/pompompurin.png';
-
-      this.mochaImg = new Image();
-      this.mochaImg.src = 'assets/mocha.png';
-
-      this.chiffonImg = new Image();
-      this.chiffonImg.src = 'assets/chiffon.png';
+      HEROES.forEach(h => {
+        if (!this.heroImages[h.id]) {
+          const img = new Image();
+          img.src = h.imgSrc;
+          this.heroImages[h.id] = img;
+        }
+      });
+      // Cargar también Mocha para el picnic final
+      if (!this.heroImages['mocha']) {
+        const mocha = new Image();
+        mocha.src = 'assets/mocha.png';
+        this.heroImages['mocha'] = mocha;
+      }
     }
 
     init(containerEl) {
@@ -79,6 +137,7 @@
     }
 
     renderDOM() {
+      const hero = this.selectedHero;
       this.container.innerHTML = `
         <div class="platformer-wrapper">
           <canvas id="platformerCanvas" width="${VW}" height="${VH}"></canvas>
@@ -89,7 +148,14 @@
               <span class="plat-cupcake-ico">🧁</span>
               <span id="platScoreNum">0 / ${this.totalCupcakes}</span>
             </div>
-            <div class="plat-hint-tag">🪽 ¡Mantén SALTO para planear suave con tus orejitas!</div>
+
+            <div class="plat-hero-pill" id="platHeroPill">
+              <img src="${hero.imgSrc}" alt="${hero.name}" class="plat-hud-avatar" />
+              <span>${hero.name}</span>
+              <button class="btn-plat-switch-hero" id="btnPlatSwitchHero" title="Cambiar Personaje">🔄 Cambiar</button>
+            </div>
+
+            <div class="plat-hint-tag">🪽 ¡Mantén SALTO para planear en el aire!</div>
           </div>
 
           <!-- Controles táctiles transparentes en pantalla -->
@@ -106,6 +172,29 @@
             </div>
           </div>
 
+          <!-- Modal de Selección de Personaje -->
+          <div class="plat-char-modal hidden" id="platCharModal">
+            <div class="plat-char-modal-box">
+              <div class="plat-modal-header">
+                <span class="plat-modal-badge">✨ Elige a tu Amigo de Sanrio ✨</span>
+                <h2>¿Con quién quieres correr hoy, Amanda?</h2>
+              </div>
+              <div class="plat-heroes-select-grid">
+                ${HEROES.map(h => `
+                  <div class="plat-hero-option ${h.id === this.selectedHero.id ? 'active' : ''}" data-id="${h.id}">
+                    <span class="plat-opt-badge">${h.badge}</span>
+                    <div class="plat-opt-img-box">
+                      <img src="${h.imgSrc}" alt="${h.name}" />
+                    </div>
+                    <h3>${h.name}</h3>
+                    <p>${h.desc}</p>
+                    <button class="btn-pick-plat-hero">¡Elegir!</button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
           <!-- Pantalla de victoria con amigos oficiales -->
           <div class="plat-victory-overlay hidden" id="platVictoryScreen">
             <div class="plat-victory-card">
@@ -116,13 +205,49 @@
                 <img src="assets/milk_teddy.png" class="picnic-char milk" alt="Milk" />
                 <img src="assets/pompompurin.png" class="picnic-char purin" alt="Pompompurin" />
                 <img src="assets/mocha.png" class="picnic-char mocha" alt="Mocha" />
+                <img src="assets/chiffon.png" class="picnic-char chiffon" alt="Chiffon" />
               </div>
-              <p>¡Amanda, eres la heroína de Cinnamoroll Land! 🌸</p>
+              <p>¡Amanda, eres la mejor amiga de Cinnamoroll Land! 🌸</p>
               <button class="btn-plat-replay" id="btnPlatReplay">▶ ¡Jugar otra aventura!</button>
             </div>
           </div>
         </div>
       `;
+
+      // Modal select hero
+      const modal = this.container.querySelector('#platCharModal');
+      const btnSwitch = this.container.querySelector('#btnPlatSwitchHero');
+      if (btnSwitch) {
+        btnSwitch.addEventListener('click', () => {
+          A.unlock();
+          A.bubblePop(1);
+          modal.classList.remove('hidden');
+        });
+      }
+
+      this.container.querySelectorAll('.plat-hero-option').forEach(opt => {
+        opt.addEventListener('click', (e) => {
+          A.unlock();
+          A.celebrate();
+          const id = e.currentTarget.dataset.id;
+          const found = HEROES.find(h => h.id === id);
+          if (found) {
+            this.setHero(found);
+            modal.classList.add('hidden');
+          }
+        });
+      });
+    }
+
+    setHero(hero) {
+      this.selectedHero = hero;
+      this.p.w = hero.w;
+      this.p.h = hero.h;
+      const avatar = this.container.querySelector('.plat-hud-avatar');
+      if (avatar) avatar.src = hero.imgSrc;
+      const nameEl = this.container.querySelector('#platHeroPill span');
+      if (nameEl) nameEl.textContent = hero.name;
+      this.burstParticles(this.p.x + this.p.w / 2, this.p.y + this.p.h / 2, 16, ['#ffffff', hero.trailColor, '#ffd1dc']);
     }
 
     setupCanvas() {
@@ -131,53 +256,68 @@
     }
 
     buildLevel() {
-      this.p.x = 80;
-      this.p.y = 350;
-      this.p.vx = 0;
-      this.p.vy = 0;
-      this.p.grounded = false;
+      const p = this.p;
+      p.x = 80;
+      p.y = 350;
+      p.vx = 0;
+      p.vy = 0;
+      p.w = this.selectedHero.w;
+      p.h = this.selectedHero.h;
+      p.grounded = false;
+      p.coyoteTimer = 0;
+      p.jumpBuffer = 0;
+      p.squashX = 1.0;
+      p.squashY = 1.0;
       this.score = 0;
       this.reachedGoal = false;
-      this.particles = [];
+      this.camX = 0;
 
-      // Plataformas calculadas proporcionalmente para que NUNCA se corten
-      const groundY = 440;
+      // Nubes decorativas en el cielo lejano
+      this.sceneryClouds = [];
+      for (let i = 0; i < 18; i++) {
+        this.sceneryClouds.push({
+          x: i * 220 + Math.random() * 80,
+          y: 35 + (i % 4) * 42,
+          w: 80 + (i % 3) * 35,
+          speed: 0.2 + (i % 3) * 0.15
+        });
+      }
 
+      // Plataformas
       this.platforms = [
-        // Suelos principales
-        { x: 0, y: groundY, w: 640, h: 100, type: 'ground' },
-        { x: 740, y: groundY, w: 600, h: 100, type: 'ground' },
-        { x: 1440, y: groundY, w: 650, h: 100, type: 'ground' },
-        { x: 2200, y: groundY, w: 1000, h: 100, type: 'ground' }, // Meta
-
-        // Nubes flotantes seguras
-        { x: 280, y: 320, w: 150, h: 32, type: 'cloud' },
-        { x: 480, y: 240, w: 160, h: 32, type: 'cloud' },
-        { x: 780, y: 300, w: 150, h: 32, type: 'cloud' },
-        { x: 1000, y: 220, w: 160, h: 32, type: 'cloud' },
-        { x: 1250, y: 310, w: 150, h: 32, type: 'cloud' },
-        { x: 1520, y: 240, w: 160, h: 32, type: 'cloud' },
-        { x: 1780, y: 190, w: 160, h: 32, type: 'cloud' },
-        { x: 2020, y: 280, w: 160, h: 32, type: 'cloud' }
+        // Suelo inicial suave
+        { x: -50, y: 440, w: 680, h: 100, type: 'ground' },
+        // Escalera de nubes de azúcar
+        { x: 700, y: 380, w: 160, h: 26, type: 'cloud' },
+        { x: 920, y: 320, w: 160, h: 26, type: 'cloud' },
+        { x: 1140, y: 260, w: 180, h: 26, type: 'cloud' },
+        // Gran isla flotante de waffle
+        { x: 1380, y: 390, w: 520, h: 100, type: 'ground' },
+        // Islas altas sobre el arcoíris
+        { x: 1960, y: 310, w: 160, h: 26, type: 'cloud' },
+        { x: 2180, y: 240, w: 180, h: 26, type: 'cloud' },
+        { x: 2420, y: 320, w: 170, h: 26, type: 'cloud' },
+        // Pradera final de picnic
+        { x: 2650, y: 430, w: 850, h: 110, type: 'ground' }
       ];
 
-      // Trampolines elásticos
+      // Trampolines de gelatina rosa
       this.springs = [
-        { x: 420, y: groundY - 18, w: 70, h: 22, timer: 0 },
-        { x: 1140, y: groundY - 18, w: 70, h: 22, timer: 0 },
-        { x: 1880, y: groundY - 18, w: 70, h: 22, timer: 0 }
+        { x: 540, y: 418, w: 56, h: 22, timer: 0 },
+        { x: 1780, y: 368, w: 56, h: 22, timer: 0 },
+        { x: 2520, y: 408, w: 56, h: 22, timer: 0 }
       ];
 
-      // 8 Cupcakes coleccionables
+      // Cupcakes flotantes
       this.cupcakes = [
-        { x: 350, y: 270, got: false },
-        { x: 550, y: 190, got: false },
-        { x: 850, y: 250, got: false },
-        { x: 1080, y: 170, got: false },
-        { x: 1320, y: 260, got: false },
-        { x: 1600, y: 190, got: false },
-        { x: 1850, y: 140, got: false },
-        { x: 2100, y: 230, got: false }
+        { x: 420, y: 380, got: false },
+        { x: 780, y: 320, got: false },
+        { x: 1000, y: 260, got: false },
+        { x: 1220, y: 200, got: false },
+        { x: 1540, y: 330, got: false },
+        { x: 1720, y: 320, got: false },
+        { x: 2040, y: 250, got: false },
+        { x: 2260, y: 180, got: false }
       ];
 
       this.updateHUD();
@@ -190,14 +330,20 @@
         if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
           A.unlock();
           this.keys.jump = true;
-          this.tryJump();
+          this.p.jumpBuffer = 0.15; // Jump buffering
         }
       });
 
       window.addEventListener('keyup', (e) => {
         if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = false;
         if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = false;
-        if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') this.keys.jump = false;
+        if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
+          this.keys.jump = false;
+          // Variable jump height: suelta el salto antes para salto corto
+          if (this.p.vy < -160) {
+            this.p.vy *= 0.55;
+          }
+        }
       });
 
       const btnL = this.container.querySelector('#btnPlatLeft');
@@ -205,6 +351,7 @@
       const btnJ = this.container.querySelector('#btnPlatJump');
 
       const hookTouch = (el, pressFn, releaseFn) => {
+        if (!el) return;
         el.addEventListener('pointerdown', (e) => {
           e.preventDefault();
           A.unlock();
@@ -219,10 +366,28 @@
       hookTouch(btnR, () => { this.keys.right = true; }, () => { this.keys.right = false; });
       hookTouch(btnJ, () => {
         this.keys.jump = true;
-        this.tryJump();
+        this.p.jumpBuffer = 0.15;
       }, () => {
         this.keys.jump = false;
+        if (this.p.vy < -160) this.p.vy *= 0.55;
       });
+
+      // Toque en el lienzo derecho también salta (intuitivo en móvil)
+      if (this.canvas) {
+        this.canvas.addEventListener('pointerdown', (e) => {
+          const rect = this.canvas.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          if (clickX > rect.width * 0.55) {
+            A.unlock();
+            this.keys.jump = true;
+            this.p.jumpBuffer = 0.15;
+          }
+        });
+        this.canvas.addEventListener('pointerup', () => {
+          this.keys.jump = false;
+          if (this.p.vy < -160) this.p.vy *= 0.55;
+        });
+      }
 
       const btnReplay = this.container.querySelector('#btnPlatReplay');
       if (btnReplay) {
@@ -236,11 +401,20 @@
     }
 
     tryJump() {
-      if (this.p.grounded) {
-        this.p.vy = -12.5;
-        this.p.grounded = false;
+      const p = this.p;
+      // Salto habilitado si está en el suelo o dentro de coyote time
+      if (p.grounded || p.coyoteTimer > 0) {
+        p.vy = -this.selectedHero.jumpPower;
+        p.grounded = false;
+        p.coyoteTimer = 0;
+        p.jumpBuffer = 0;
+
+        // Animación de estiramiento vertical al saltar (Stretch)
+        p.squashX = 0.82;
+        p.squashY = 1.25;
+
         A.whoosh(true);
-        this.burstParticles(this.p.x + 35, this.p.y + 40, 8, ['#ffffff', '#ffb6d2']);
+        this.burstParticles(p.x + p.w / 2, p.y + p.h, 10, ['#ffffff', this.selectedHero.trailColor, '#ffeaf4']);
       }
     }
 
@@ -267,94 +441,148 @@
 
     update(dt) {
       const p = this.p;
+      const hero = this.selectedHero;
 
-      const moveSpeed = 260;
+      // Movimiento horizontal suave con aceleración e inercia
+      const maxSpeed = 290;
+      let targetVx = 0;
       if (this.keys.left) {
-        p.vx = -moveSpeed;
+        targetVx = -maxSpeed;
         p.facing = -1;
       } else if (this.keys.right) {
-        p.vx = moveSpeed;
+        targetVx = maxSpeed;
         p.facing = 1;
-      } else {
-        p.vx *= 0.82;
-        if (Math.abs(p.vx) < 5) p.vx = 0;
       }
+
+      const accel = p.grounded ? 16 : 9;
+      p.vx += (targetVx - p.vx) * Math.min(1, dt * accel);
+      if (Math.abs(p.vx) < 4) p.vx = 0;
       p.x += p.vx * dt;
 
-      // Planeo suave con orejitas (Ear-Glide)
+      // Coyote time y Jump buffer
+      if (p.grounded) {
+        p.coyoteTimer = 0.12;
+      } else {
+        p.coyoteTimer = Math.max(0, p.coyoteTimer - dt);
+      }
+
+      if (p.jumpBuffer > 0) {
+        p.jumpBuffer -= dt;
+        if (p.coyoteTimer > 0) {
+          this.tryJump();
+        }
+      }
+
+      // Planeo suave en el aire (Ear-Glide)
       p.gliding = !p.grounded && this.keys.jump && p.vy > 0;
-      const gravity = p.gliding ? 200 : 660;
+      const gravity = p.gliding ? hero.glideGravity : 720;
       p.vy += gravity * dt;
 
       if (p.gliding) {
-        p.vy = Math.min(p.vy, 85);
+        p.vy = Math.min(p.vy, 90);
+        // Estela mágica de brillos al planear
+        if (Math.random() < 0.35) {
+          this.particles.push({
+            x: p.x + (p.facing > 0 ? 8 : p.w - 8),
+            y: p.y + p.h * 0.4,
+            vx: -p.facing * 40 + (Math.random() - 0.5) * 20,
+            vy: (Math.random() - 0.5) * 30,
+            color: hero.trailColor,
+            size: 3 + Math.random() * 4,
+            alpha: 0.9
+          });
+        }
       }
       p.y += p.vy * dt;
-      p.animTimer += dt * 8;
+
+      // Squash & Stretch recuperación elástica a 1.0
+      p.squashX += (1.0 - p.squashX) * Math.min(1, dt * 10);
+      p.squashY += (1.0 - p.squashY) * Math.min(1, dt * 10);
+
+      // Temporizador de animación de pasos
+      if (p.grounded && Math.abs(p.vx) > 10) {
+        p.animTimer += dt * 12;
+      } else {
+        p.animTimer += dt * 5;
+      }
 
       // Colisión con plataformas
+      p.wasGrounded = p.grounded;
       p.grounded = false;
+
       for (const plat of this.platforms) {
         if (
           p.x + p.w * 0.7 > plat.x &&
           p.x + p.w * 0.3 < plat.x + plat.w &&
           p.y + p.h >= plat.y &&
-          p.y + p.h <= plat.y + 24 &&
+          p.y + p.h <= plat.y + 28 &&
           p.vy >= 0
         ) {
           p.y = plat.y - p.h;
           p.vy = 0;
           p.grounded = true;
+
+          // Si acaba de aterrizar, squash suave de impacto
+          if (!p.wasGrounded) {
+            p.squashX = 1.25;
+            p.squashY = 0.78;
+            A.softBoing();
+            this.burstParticles(p.x + p.w / 2, p.y + p.h, 6, ['#ffffff', hero.trailColor]);
+          }
         }
       }
 
-      // Colisión con trampolines
+      // Colisión con trampolines rosas
       for (const sp of this.springs) {
         if (sp.timer > 0) sp.timer -= dt;
         if (
           p.x + p.w * 0.7 > sp.x &&
           p.x + p.w * 0.3 < sp.x + sp.w &&
           p.y + p.h >= sp.y &&
-          p.y + p.h <= sp.y + 20 &&
+          p.y + p.h <= sp.y + 24 &&
           p.vy >= 0
         ) {
-          p.vy = -16.5;
+          p.vy = -680; // Súper impulso elástico hacia las nubes
+          p.grounded = false;
           sp.timer = 0.35;
+          p.squashX = 0.75;
+          p.squashY = 1.35;
           A.softBoing();
-          this.burstParticles(sp.x + sp.w / 2, sp.y, 10, ['#ff8fbf', '#ffe066']);
+          A.kawaiiChirp('cheer');
+          this.burstParticles(sp.x + sp.w / 2, sp.y, 14, ['#ff8fbf', '#ffe066', '#ffffff']);
         }
       }
 
-      // Coleccionables
+      // Recolección de pastelitos
       for (const cp of this.cupcakes) {
-        if (!cp.got && Math.hypot((p.x + 35) - cp.x, (p.y + 20) - cp.y) < 42) {
+        if (!cp.got && Math.hypot((p.x + p.w / 2) - cp.x, (p.y + p.h / 2) - cp.y) < 46) {
           cp.got = true;
           this.score++;
           A.collect(this.score);
-          this.burstParticles(cp.x, cp.y, 12, ['#ff6b9d', '#ffe066', '#ffffff']);
+          this.burstParticles(cp.x, cp.y, 14, ['#ff6b9d', '#ffe066', '#ffffff']);
           this.updateHUD();
         }
       }
 
-      // Rescate mágico si cae al vacío (¡Amanda nunca pierde!)
-      if (p.y > 490) {
-        p.x = Math.max(80, p.x - 200);
-        p.y = 260;
-        p.vy = -6;
+      // Rescate mágico si cae (Amanda nunca pierde)
+      if (p.y > 510) {
+        p.x = Math.max(80, p.x - 240);
+        p.y = 240;
+        p.vy = -340;
         A.whoosh(true);
-        this.burstParticles(p.x + 35, p.y + 20, 16, ['#aee0ff', '#ffffff']);
+        this.burstParticles(p.x + p.w / 2, p.y + p.h / 2, 18, ['#aee0ff', '#ffffff', '#ffd1dc']);
       }
 
-      // Meta picnic
-      if (p.x >= 2800 && !this.reachedGoal) {
+      // Meta picnic al final
+      if (p.x >= 2850 && !this.reachedGoal) {
         this.reachedGoal = true;
         A.celebrate();
         this.container.querySelector('#platVictoryScreen').classList.remove('hidden');
       }
 
-      // Cámara horizontal
+      // Cámara suave que sigue al jugador
       const targetCamX = p.x - VW * 0.35;
-      this.camX += (targetCamX - this.camX) * 0.1;
+      this.camX += (targetCamX - this.camX) * 0.12;
       this.camX = Math.max(0, Math.min(this.levelWidth - VW, this.camX));
 
       // Partículas
@@ -369,11 +597,11 @@
     burstParticles(x, y, count, colors) {
       for (let i = 0; i < count; i++) {
         const ang = Math.random() * Math.PI * 2;
-        const spd = 40 + Math.random() * 120;
+        const spd = 50 + Math.random() * 140;
         this.particles.push({
           x, y,
           vx: Math.cos(ang) * spd,
-          vy: Math.sin(ang) * spd - 30,
+          vy: Math.sin(ang) * spd - 40,
           color: colors[Math.floor(Math.random() * colors.length)],
           size: 4 + Math.random() * 5,
           alpha: 1
@@ -392,99 +620,181 @@
 
       // 1. Cielo en degradé pastel
       const sky = ctx.createLinearGradient(0, 0, 0, VH);
-      sky.addColorStop(0, '#9fd3ff');
-      sky.addColorStop(0.5, '#d4ecff');
-      sky.addColorStop(1, '#ffeaf4');
+      sky.addColorStop(0, '#98d2ff');
+      sky.addColorStop(0.45, '#d6efff');
+      sky.addColorStop(1, '#ffe8f3');
       ctx.fillStyle = sky;
       ctx.fillRect(0, 0, VW, VH);
 
+      // 2. PARALAJE CAPA 1: Nubes lejanas y Arcoíris (0.12x velocidad)
+      ctx.save();
+      ctx.translate(-this.camX * 0.12, 0);
+
+      // Arcoíris gigante de fondo
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+      const rainbowColors = ['#ff9999', '#ffcc99', '#ffff99', '#99ff99', '#99ccff', '#cc99ff'];
+      rainbowColors.forEach((col, i) => {
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 14;
+        ctx.beginPath();
+        ctx.arc(950, 480, 420 - i * 14, Math.PI, 0);
+        ctx.stroke();
+      });
+      ctx.restore();
+
+      // Nubes decorativas en el cielo
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      for (const cl of this.sceneryClouds) {
+        ctx.beginPath();
+        ctx.arc(cl.x, cl.y, cl.w * 0.28, 0, Math.PI * 2);
+        ctx.arc(cl.x + cl.w * 0.26, cl.y - cl.w * 0.12, cl.w * 0.35, 0, Math.PI * 2);
+        ctx.arc(cl.x + cl.w * 0.55, cl.y, cl.w * 0.26, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 3. PARALAJE CAPA 2: Colinas de Fresa y Algodón de Azúcar (0.35x velocidad)
+      ctx.save();
+      ctx.translate(-this.camX * 0.35, 0);
+      ctx.fillStyle = 'rgba(255, 218, 235, 0.75)';
+      for (let x = -300; x < this.levelWidth * 0.5 + 400; x += 360) {
+        ctx.beginPath();
+        ctx.arc(x, 510, 240, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // 4. MUNDO PRINCIPAL (1.0x velocidad con cámara del jugador)
       ctx.save();
       ctx.translate(-this.camX, 0);
 
-      // 2. Colinas de caramelo lejanas
-      ctx.fillStyle = 'rgba(255, 225, 240, 0.7)';
-      for (let x = -200; x < this.levelWidth + 400; x += 320) {
-        ctx.beginPath();
-        ctx.arc(x, 480, 200, 0, Math.PI * 2);
-        ctx.fill();
+      // Flores y detalles en el suelo
+      for (let fx = 60; fx < this.levelWidth; fx += 140) {
+        ctx.font = '22px sans-serif';
+        ctx.fillText(['🌸', '🌼', '🍓', '✨'][Math.floor(fx / 140) % 4], fx, 436);
       }
 
-      // 3. Plataformas
+      // Plataformas
       for (const plat of this.platforms) {
         if (plat.type === 'ground') {
-          ctx.fillStyle = '#bbf2c8';
+          // Cubierta verde menta con crema
+          ctx.fillStyle = '#bdf4cb';
           ctx.beginPath();
-          ctx.roundRect(plat.x, plat.y, plat.w, 24, [14, 14, 0, 0]);
+          ctx.roundRect(plat.x, plat.y, plat.w, 24, [16, 16, 0, 0]);
           ctx.fill();
 
-          ctx.fillStyle = '#eed6c4';
-          ctx.fillRect(plat.x, plat.y + 20, plat.w, plat.h);
-        } else {
+          // Glaseado ondulado blanco
           ctx.fillStyle = '#ffffff';
-          ctx.shadowColor = 'rgba(107, 143, 199, 0.25)';
-          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          for (let wx = plat.x; wx < plat.x + plat.w; wx += 28) {
+            ctx.arc(wx + 14, plat.y + 22, 10, 0, Math.PI);
+          }
+          ctx.fill();
+
+          // Base de galleta waffle
+          ctx.fillStyle = '#edd2be';
+          ctx.fillRect(plat.x, plat.y + 24, plat.w, plat.h);
+
+          // Líneas de waffle
+          ctx.strokeStyle = '#d9b69b';
+          ctx.lineWidth = 2.5;
+          for (let ly = plat.y + 36; ly < plat.y + plat.h; ly += 20) {
+            ctx.beginPath();
+            ctx.moveTo(plat.x, ly);
+            ctx.lineTo(plat.x + plat.w, ly);
+            ctx.stroke();
+          }
+        } else {
+          // Nubes esponjosas flotantes
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = 'rgba(107, 143, 199, 0.28)';
+          ctx.shadowBlur = 10;
           ctx.beginPath();
           ctx.roundRect(plat.x, plat.y, plat.w, plat.h, 16);
           ctx.fill();
           ctx.shadowBlur = 0;
+
+          // Franja pastel central
+          ctx.fillStyle = '#ffdeeb';
+          ctx.beginPath();
+          ctx.roundRect(plat.x + 8, plat.y + 6, plat.w - 16, 6, 999);
+          ctx.fill();
         }
       }
 
-      // 4. Trampolines rosas
+      // Trampolines de gelatina rosa
       for (const sp of this.springs) {
-        const sq = sp.timer > 0 ? 6 : 0;
-        ctx.fillStyle = '#ff8fbf';
+        const bounce = sp.timer > 0 ? Math.sin(sp.timer * 20) * 8 : 0;
+        ctx.fillStyle = '#ff7eaa';
         ctx.beginPath();
-        ctx.roundRect(sp.x, sp.y + sq, sp.w, sp.h - sq, 10);
+        ctx.roundRect(sp.x, sp.y + bounce, sp.w, sp.h - bounce, 12);
         ctx.fill();
+
         ctx.fillStyle = '#ffffff';
         ctx.font = '16px sans-serif';
-        ctx.fillText('☁️', sp.x + sp.w / 2 - 8, sp.y + 16);
+        ctx.fillText('☁️', sp.x + sp.w / 2 - 8, sp.y + 16 + bounce);
       }
 
-      // 5. Cupcakes flotantes
+      // Cupcakes flotantes con anillo de brillo
       for (const cp of this.cupcakes) {
         if (!cp.got) {
-          const bob = Math.sin(performance.now() * 0.005 + cp.x) * 6;
-          ctx.font = '28px sans-serif';
-          ctx.fillText('🧁', cp.x - 14, cp.y + bob);
+          const hoverY = Math.sin(performance.now() * 0.005 + cp.x) * 7;
+          ctx.font = '32px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('🧁', cp.x, cp.y + hoverY);
+
+          // Brillo
+          ctx.font = '14px sans-serif';
+          ctx.fillText('✨', cp.x + 18, cp.y - 12 + hoverY);
         }
       }
 
-      // 6. Meta picnic con los amigos oficiales
-      ctx.font = '48px sans-serif';
-      ctx.fillText('🌈', 2850, 340);
-      ctx.font = '36px sans-serif';
-      ctx.fillText('🧺', 2950, 435);
+      // Meta picnic con mantel, globos y amigos
+      ctx.font = '54px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('🌈', 3040, 310);
+      ctx.fillText('🎈', 2880, 360);
+      ctx.font = '42px sans-serif';
+      ctx.fillText('🧺', 3040, 425);
 
-      if (this.milkImg.complete) {
-        ctx.drawImage(this.milkImg, 2900, 365, 80, 70);
+      // Amigos en el picnic
+      if (this.heroImages['milk'] && this.heroImages['milk'].complete) {
+        ctx.drawImage(this.heroImages['milk'], 2920, 362, 75, 68);
       }
-      if (this.purinImg.complete) {
-        ctx.drawImage(this.purinImg, 2985, 360, 75, 75);
+      if (this.heroImages['purin'] && this.heroImages['purin'].complete) {
+        ctx.drawImage(this.heroImages['purin'], 3000, 355, 74, 74);
       }
-      if (this.mochaImg.complete) {
-        ctx.drawImage(this.mochaImg, 3065, 370, 80, 65);
+      if (this.heroImages['mocha'] && this.heroImages['mocha'].complete) {
+        ctx.drawImage(this.heroImages['mocha'], 3080, 365, 78, 64);
       }
-      if (this.chiffonImg && this.chiffonImg.complete) {
-        ctx.drawImage(this.chiffonImg, 3150, 362, 85, 70);
+      if (this.heroImages['chiffon'] && this.heroImages['chiffon'].complete) {
+        ctx.drawImage(this.heroImages['chiffon'], 3160, 358, 80, 68);
       }
 
-      // 7. Cinnamoroll oficial
+      // 5. PERSONAJE JUGADOR CON ANIMACIÓN EXPRESSIVA
       ctx.save();
-      ctx.translate(this.p.x + this.p.w / 2, this.p.y + this.p.h / 2);
-      ctx.scale(this.p.facing, 1);
+      const hero = this.selectedHero;
+      const p = this.p;
 
-      const bob = this.p.grounded ? Math.sin(this.p.animTimer) * 3 : 0;
-      const tilt = this.p.gliding ? 0.08 * Math.sin(this.p.animTimer) : 0;
+      // Bobbing de pasos en tierra
+      const walkBob = p.grounded && Math.abs(p.vx) > 10 ? Math.sin(p.animTimer) * 4 : 0;
+      // Inclinación aerodinámica
+      const tilt = p.gliding
+        ? Math.sin(p.animTimer * 1.6) * 0.12
+        : (p.grounded ? p.facing * Math.min(0.08, Math.abs(p.vx) * 0.0003) : (p.vy > 0 ? 0.08 : -0.08));
+
+      ctx.translate(p.x + p.w / 2, p.y + p.h / 2 + walkBob);
+      ctx.scale(p.facing * p.squashX, p.squashY);
       ctx.rotate(tilt);
 
-      if (this.cinnaImg.complete) {
-        ctx.drawImage(this.cinnaImg, -this.p.w / 2, -this.p.h / 2 + bob, this.p.w, this.p.h);
+      const charImg = this.heroImages[hero.id];
+      if (charImg && charImg.complete) {
+        ctx.drawImage(charImg, -p.w / 2, -p.h / 2, p.w, p.h);
       }
       ctx.restore();
 
-      // 8. Partículas
+      // 6. PARTÍCULAS
       for (const pt of this.particles) {
         ctx.save();
         ctx.globalAlpha = pt.alpha;

@@ -41,6 +41,18 @@
       this.btnHome = document.getElementById('globalBtnHome');
       this.btnMusic = document.getElementById('globalBtnMusic');
       this.musicIcon = document.getElementById('musicIcon');
+      this.btnTrack = document.getElementById('globalBtnTrack');
+      this.trackIcon = document.getElementById('trackIcon');
+      this.trackName = document.getElementById('trackName');
+    }
+
+    updateTrackUI() {
+      if (!this.trackIcon || !this.trackName) return;
+      const t = A.getCurrentTrack();
+      if (t) {
+        this.trackIcon.textContent = t.icon;
+        this.trackName.textContent = t.name.split(' ')[0];
+      }
     }
 
     bindEvents() {
@@ -58,7 +70,20 @@
         this.musicEnabled = A.toggleMusic();
         this.musicIcon.textContent = this.musicEnabled ? '🎵' : '🔇';
         this.btnMusic.classList.toggle('playing', this.musicEnabled);
+        if (this.btnTrack) {
+          this.btnTrack.classList.toggle('hidden', !this.musicEnabled);
+          this.updateTrackUI();
+        }
       });
+
+      // Botón para cambiar de melodía
+      if (this.btnTrack) {
+        this.btnTrack.addEventListener('click', () => {
+          A.unlock();
+          const next = A.nextTrack();
+          this.updateTrackUI();
+        });
+      }
 
       // Tarjetas del Hub
       document.querySelectorAll('.game-card').forEach(card => {
@@ -71,6 +96,10 @@
             A.startMusic();
             this.musicIcon.textContent = '🎵';
             this.btnMusic.classList.add('playing');
+            if (this.btnTrack) {
+              this.btnTrack.classList.remove('hidden');
+              this.updateTrackUI();
+            }
           }
 
           const targetGame = e.currentTarget.dataset.game;
