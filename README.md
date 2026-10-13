@@ -137,24 +137,44 @@ Diseñado con metodología preescolar multisensorial para que Amanda aprenda a e
   * 💖 **Familia y Amanda:** `MAMÁ`, `PAPÁ`, `AMANDA`, `AMOR`.
   * 🐶 **Amigos de Sanrio:** `CINNAMOROLL`, `MILK`, `PURIN`, `MOCHA`, `CHIFFON`.
   * 🌸 **Naturaleza y Dulces:** `SOL`, `NUBE`, `FLOR`, `PASTEL`.
+* **Arrastre Táctil y Ergonomía de Pantalla (Pointer Events):**
+  * **Arrastre Real con Dedo o Ratón:** Seguimiento a 60fps con clon flotante de galleta dorada con sombra 3D elevada (`pointer-events: none`).
+  * **Imán Magnético Inteligente (75px):** Al acercar la galleta a su molde correspondiente, el casillero pulsa con un aura mágica rosa/dorada (`slot-magnet-match`).
+  * **Snap & Fónica Musical:** Al soltar la galleta sobre su molde, encaja con sonido de campana afinada, ráfaga de estrellitas y pronunciación fónica de la letra.
+  * **Asistencia Dual (Tap-to-Place):** Si la niña da un toque rápido sin arrastrar, la galletita vuela automáticamente a su molde correspondiente.
+  * **Autocorrección Libre (Montessori):** Tocar una letra colocada la devuelve suavemente a la bandeja de galletitas sin penalizaciones.
+  * **Normalización de Tildes:** Acepta tanto `Á` como `A` en palabras como `MAMÁ` y `PAPÁ` para evitar frustraciones ortográficas tempranas.
 * **3 Modos Pedagógicos:**
-  1. 🍪 **Alfabeto Móvil Montessori:** Bandeja de madera pastel con los moldes vacíos de la palabra. Amanda toca o arrastra las galletitas doradas de letras (`M`, `A`, `M`, `Á`) a su lugar con sonido fonético musical.
+  1. 🍪 **Alfabeto Móvil Montessori:** Bandeja de galletitas horneadas con moldes en relieve.
   2. ✨ **Trazado Sensorial con Estrellas:** Letras gigantes con guías punteadas que dejan una estela brillante de polvo de estrellas al pasar el dedo o ratón.
-  3. 🖍️ **Pizarra Libre con Tizas Pastel:** Pizarra de cuaderno caligráfico para escribir libremente con tizas de colores (rosa, celeste, amarillo sol, menta, blanco) y borrador de esponjita suave.
+  3. 🖍️ **Pizarra Libre con Tizas Pastel:** Pizarra de cuaderno caligráfico para escribir libremente con tizas de colores (rosa, celeste, amarillo sol, menta, blanco) y esponjita de borrar.
 * **Fónica con Voz en Español:** Pronunciación dulce y cariñosa mediante `SpeechSynthesis` (*"¡Ma-má! ¡Excelente Amanda!"*).
 
 ---
 
-### 8. 🧩 Puzzles de Lógica y Formas (Tangram Sanrio)
-Juego clásico de percepción espacial y pensamiento lógico preescolar:
+### 8. 🧩 Puzzles de Lógica (Rompecabezas Visual de Madera Sanrio)
+Diseñado desde cero bajo criterios de Game Design para niñas de prebásica (4 a 5 años, pre-lectoras):
 
-* **5 Escenarios de Formas Mágicas:**
-  1. ☕ **Cinnamoroll en la Taza de Café:** Formas de orejas, cabeza nube, taza pastel y estrella mágica.
-  2. 🍼 **Milk y su Biberón Dulce:** Carita de bebé, chupete celeste, osito de peluche y corazón rosa.
-  3. 🍮 **Pompompurin y su Flan Gigante:** Boina de chocolate, carita dorada, flan y cereza brillante.
-  4. 🎀 **Mocha en el Salón de Té:** Carita mocha, flor de cerezo, lazo elegante y tetera pastel.
-  5. 🌸 **Chiffon en el Jardín de Flores:** Orejitas de nube, arcoíris mágico y mariposa alada.
-* **Mecánica Magnética Adaptada:** Las piezas de galleta encajan suavemente con imán en las siluetas punteadas con sonido satisfactorio de madera y estallido de confeti.
+* **100% Visual · CERO Necesidad de Leer Texto:**
+  * Sustitución total de botones con texto ("Cabeza Nube", "Taza") por auténticas **piezas ilustradas troqueladas de los personajes**.
+  * Reconocimiento natural de patrones visuales: orejitas de nube, colita de canela, osito de peluche, boina de flan.
+* **5 Cuadros de Alta Resolución de Sanrio:**
+  1. 🪽 **Cinnamoroll en el Cielo de Nubes:** Cinnamoroll volando suavemente entre nubes de algodón y arcoíris pastel.
+  2. 🍼 **Milk y su Osito de Peluche:** El bebé Milk con su biberón y su osito favorito en tonos lavanda.
+  3. 🌸 **Chiffon en el Prado de Flores:** Chiffon saltando alegre con sus orejitas de nube entre flores de cerezo.
+  4. 🍮 **Pompompurin y su Flan Gigante:** Pompompurin con su boina de chocolate y delicioso flan de caramelo.
+  5. 🎀 **Mocha en la Fiesta del Té:** La elegante Mocha con su flor rosa en un salón de té con pasteles.
+* **Tablero con Marco de Madera y Silueta Guía ("Ghost Image"):**
+  * Marco de madera biselado con relieve dorado.
+  * Marca de agua semitransparente (opacidad 28%) en el fondo del tablero para que la niña compare formas y sepa intuitivamente dónde va cada pieza.
+* **Dificultad Adaptativa Preescolar:**
+  * 🧩 **4 Piezas Grandes (2x2):** Formato gigante ideal para pre-kínder (4 años).
+  * ⭐ **6 Piezas (3x2):** Desafío para kínder (5 años).
+* **Física Táctil y Encaje Magnético:**
+  * Arrastre suave con clon tridimensional flotante.
+  * Encaje magnético con destello dorado, campanita musical ascendente y lluvia de purpurina.
+  * Asistencia gentil: Si Amanda toca directamente una ranura vacía del cuadro, la pieza de la bandeja vuela automáticamente a su lugar.
+* **Gran Victoria:** El cuadro completo resplandece con animación arcoíris, fanfarria festiva y confeti.
 
 ---
 
