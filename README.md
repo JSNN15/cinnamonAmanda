@@ -6,7 +6,7 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 
 ---
 
-## 🗺️ Arquitectura de la Suite (6 Juegos)
+## 🗺️ Arquitectura de la Suite (8 Juegos)
 
 ```
                        ┌─────────────────────────────────────────┐
@@ -15,9 +15,21 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
                        └────────────────────┬────────────────────┘
           ┌─────────────────┬───────────────┼───────────────┬─────────────────┐
           ▼                 ▼               ▼               ▼                 ▼
-   🛫 ¡A Volar!      🧁 Pastelería    🎨 Taller de    🃏 Memorice de   🏃 Super Run     🎮 Repartidor 3D
-   Vuelo por nubes   Sumas y conteo   Dibujo Sanrio   Cartas y parejas  Plataformas 2D   Motor DOOM 2.5D
-   Voz y sensores    Con Milk y Cinna 5 láminas B&W   3 dificultades   Planeo de orejas Héroes y patitas
+   🛫 ¡A Volar!      🧁 Pastelería    🎨 Taller de    🃏 Memorice de   🏃 Super Run
+   Vuelo por nubes   Sumas y conteo   Dibujo Sanrio   Cartas y parejas  Plataformas 2D
+   Voz y sensores    Con Milk y Cinna 5 láminas B&W   3 dificultades   Planeo de orejas
+          │                 │               │               │                 │
+          └─────────────────┴───────────────┼───────────────┴─────────────────┘
+                            ┌───────────────┴───────────────┐
+                            ▼                               ▼
+                     🎮 Repartidor 3D               ✏️ Palabras Mágicas
+                     Motor DOOM 2.5D Pabellón       Taller Waldorf / Montessori
+                     Sombras 3D y bandejas          Mamá, Papá, Amanda y Sanrio
+                            │                               │
+                            └───────────────┬───────────────┘
+                                            ▼
+                                     🧩 Puzzles de Lógica
+                                     Tangram de formas y figuras
 ```
 
 ---
@@ -97,39 +109,52 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 
 ---
 
-### 6. 🎮 Repartidor de Dulces 3D (Motor DOOM 2.5D Clásico)
-Inspirado en los motores raycaster clásicos (Wolfenstein 3D / DOOM), completamente rediseñado con estética pastel, física sólida y perspectiva en primera persona:
+### 6. 🎮 Repartidor de Dulces 3D (Motor DOOM 2.5D Pabellón Sanrio)
+Completamente rediseñado con mapa espacioso, eliminación de atascos y renderizado pseudo-3D de alta gama:
 
-* **Selector de Personaje Jugable:**
-  * 🐶 **Cinnamoroll:** Reparte rollitos de canela glaseados en plato de porcelana.
-  * 🍼 **Milk:** Reparte biberones de leche tibia con chupete celeste.
-  * 🍮 **Pompompurin:** Reparte deliciosos flanes de caramelo con cereza.
-* **Perspectiva en Primera Persona Auténtica (DOOM Weapons):**
-  * Se ven las patitas esponjosas del personaje sosteniendo la bandeja/dulce directamente frente al pecho.
-  * Almohadillas rosadas en las patas con deditos ilustrados.
-  * **Weapon Bobbing:** Vaivén rítmico de las manos al caminar en sincronía con los pasos (`walkTimer`).
-  * **Sway:** Inclinación natural de las manos hacia los lados al rotar la vista.
-  * **Recoil:** Animación en 3 fases al lanzar un dulce (impulso hacia adelante, repliegue de manos y reaparición con resorte).
-* **Motor DDA Raycaster con Iluminación Direccional:**
-  * Algoritmo *Digital Differential Analysis (DDA)* para cálculo exacto de distancias a muros.
-  * **Sombreado Direccional de Caras:** Las paredes horizontales (Norte/Sur) tienen sombreado diferenciado (`0.72x`) de las verticales (Este/Oeste). Esto hace que cada esquina y recoveco en 3D tenga contraste y profundidad visual perfecta.
-* **Texturas de Muros y Zócalos de Contraste:**
-  * **Muro Galleta Waffle:** Tono doradito con cuadrícula y chispas de chocolate.
-  * **Muro Oblea de Fresa:** Tono rosa pastel con franjas de crema.
-  * **Muro Dulce de Menta:** Franjas diagonales de caramelo refrescante.
-  * **Zócalo de Chocolate Oscuro (`#5a3825`):** Rodapié oscuro en la base de todas las paredes con línea dorada superior, eliminando toda confusión entre el suelo y los muros.
-  * **Moldura de Glaseado:** Remate blanco en el techo.
-  * **Suelo en Perspectiva:** Franjas horizontales con degradado para percibir velocidad y distancia al desplazarse.
-* **Física y Deslizamiento (DOOM Collision):**
-  * Radio físico del jugador (`r = 0.28`).
-  * Deslizamiento independiente en ejes X e Y al rozar paredes (sin atascarse).
-  * Rebote de pantalla y efecto auditivo suave (*soft boing*) al colisionar.
-* **Inteligencia Artificial y Reacciones de los Amigos:**
-  * Los amigos (*Mocha, Chiffon, Milk, Purin*) deambulan suavemente cerca de sus zonas de la panadería.
-  * Orientación visual hacia el jugador con burbujas de diálogo adaptadas.
-  * **Reacción de Alegría al Alimentarlos:** Saltos elásticos (`jumpY`), estallido de partículas de corazones y estrellas (`💖`, `✨`, `⭐`), y burbuja de agradecimiento: *¡Ñam ñam! ¡Gracias Amanda! 💖*.
-* **Radar Minimap:** Mini-mapa en tiempo real en la esquina superior derecha que muestra el laberinto, la orientación del jugador y la ubicación de los amigos.
-* **Controles Universales:** Flechas del teclado / WASD + Barra espaciadora para lanzar dulce. D-pad táctil y botón gigante de lanzamiento para pantallas táctiles.
+* **Mapa de Pabellón Amplio (14 x 12):**
+  * Eliminación total de pasillos de 1 sola casilla.
+  * Pasillos anchos de **2 a 4 baldosas**, gran plaza central abierta y 4 salones temáticos dedicados a cada personaje.
+* **Física Anti-Atascos e IA de Cortesía (Cero Bloqueos):**
+  * **Separación Elástica de Amigos (Boids Flocking Repulsion):** Los personajes se repelen continuamente a distancia de seguridad (`minDist = 1.2`), garantizando que **NUNCA se encimen ni se superpongan**.
+  * **Ceder el Paso Cortésmente (Gentle Step-Aside):** Al acercarse Amanda a menos de 1 metro, los amigos se deslizan amablemente hacia un espacio libre para dejarla pasar.
+  * **Radio de Colisión Suave:** Optimizado (`radius + 0.16`) para permitir deslizarse fluidamente incluso en esquinas con múltiples personajes alrededor.
+* **Renderizado Tridimensional de Personajes (Eliminación de la apariencia "a mano"):**
+  * **Sombra de Suelo Proyectada en Perspectiva:** Elipse difusa bajo los pies de cada amigo que se escala según la distancia y el salto, anclándolos visualmente al piso 3D.
+  * **Iluminación 3D Ambiental & Depth Fog:** Los sprites reciben tinte y sombreado volumétrico del entorno en lugar de flotar como calcomanías planas.
+  * **Espejo Direccional & Respiración 3D:** Orientación dinámica según la dirección de caminata y balanceo de respiración orgánico.
+* **Primera Persona Volumétrica de Calidad de Consola:**
+  * Brazos redondeados con gradientes cilíndricos y luces especulares.
+  * Bandeja de porcelana con filo dorado metálico y reflejo cerámico brillante.
+  * Dulces modelados en 3D con relieve glaseado, espirales de canela, botella de leche translúcida y flan con caramelo chorreante.
+
+---
+
+### 7. ✏️ Palabras Mágicas (Taller Waldorf & Montessori de Escritura)
+Diseñado con metodología preescolar multisensorial para que Amanda aprenda a escribir sus primeras palabras con alegría y afecto:
+
+* **Vocabulario Afectivo y Amigos de Sanrio:**
+  * 💖 **Familia y Amanda:** `MAMÁ`, `PAPÁ`, `AMANDA`, `AMOR`.
+  * 🐶 **Amigos de Sanrio:** `CINNAMOROLL`, `MILK`, `PURIN`, `MOCHA`, `CHIFFON`.
+  * 🌸 **Naturaleza y Dulces:** `SOL`, `NUBE`, `FLOR`, `PASTEL`.
+* **3 Modos Pedagógicos:**
+  1. 🍪 **Alfabeto Móvil Montessori:** Bandeja de madera pastel con los moldes vacíos de la palabra. Amanda toca o arrastra las galletitas doradas de letras (`M`, `A`, `M`, `Á`) a su lugar con sonido fonético musical.
+  2. ✨ **Trazado Sensorial con Estrellas:** Letras gigantes con guías punteadas que dejan una estela brillante de polvo de estrellas al pasar el dedo o ratón.
+  3. 🖍️ **Pizarra Libre con Tizas Pastel:** Pizarra de cuaderno caligráfico para escribir libremente con tizas de colores (rosa, celeste, amarillo sol, menta, blanco) y borrador de esponjita suave.
+* **Fónica con Voz en Español:** Pronunciación dulce y cariñosa mediante `SpeechSynthesis` (*"¡Ma-má! ¡Excelente Amanda!"*).
+
+---
+
+### 8. 🧩 Puzzles de Lógica y Formas (Tangram Sanrio)
+Juego clásico de percepción espacial y pensamiento lógico preescolar:
+
+* **5 Escenarios de Formas Mágicas:**
+  1. ☕ **Cinnamoroll en la Taza de Café:** Formas de orejas, cabeza nube, taza pastel y estrella mágica.
+  2. 🍼 **Milk y su Biberón Dulce:** Carita de bebé, chupete celeste, osito de peluche y corazón rosa.
+  3. 🍮 **Pompompurin y su Flan Gigante:** Boina de chocolate, carita dorada, flan y cereza brillante.
+  4. 🎀 **Mocha en el Salón de Té:** Carita mocha, flor de cerezo, lazo elegante y tetera pastel.
+  5. 🌸 **Chiffon en el Jardín de Flores:** Orejitas de nube, arcoíris mágico y mariposa alada.
+* **Mecánica Magnética Adaptada:** Las piezas de galleta encajan suavemente con imán en las siluetas punteadas con sonido satisfactorio de madera y estallido de confeti.
 
 ---
 

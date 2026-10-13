@@ -1,13 +1,15 @@
-/* Cinnamon Treat-Shooter 2.5D (El Repartidor Mágico de Dulces)
+/* Cinnamon Treat-Shooter 2.5D (El Repartidor Mágico de Dulces de Sanrio)
  * Motor Raycaster 2.5D con SELECCIÓN DE PERSONAJE:
  * Cinnamoroll, Milk o Pompompurin.
  * 
- * Mejoras clave:
- *  - Algoritmo DDA con sombreado de caras (Wolfenstein/DOOM) y zócalos de chocolate para ver los muros con claridad.
- *  - Texturas procedurales nítidas (Galleta de Mantequilla, Oblea Rosa, Caramelo Menta) y suelo en perspectiva.
- *  - Detección de colisiones con radio físico del jugador, deslizamiento en muros y rebote táctil.
- *  - Brazos y patitas en primera persona (estilo DOOM) sosteniendo el dulce en sus manos con vaivén (bobbing) y animación de lanzamiento.
- *  - Inteligencia artificial para los amigos: deambulan suavemente, miran al jugador, piden dulces y bailan con corazones y estrellas al comer.
+ * MEJORAS ARQUITECTÓNICAS Y FÍSICAS SENIOR:
+ *  1. Mapa de Pabellón Amplio (14x12) con pasillos anchos (2-4 baldosas), plaza central y salones temáticos.
+ *  2. Separación elástica entre amigos (Boids Flocking Repulsion): NUNCA se superponen ni se enciman.
+ *  3. Ceder el paso cortésmente (Gentle Step-Aside): Los amigos se hacen a un lado suavemente al acercarse Amanda.
+ *  4. Colisión suave de jugador optimizada: Cero atascos o bloqueos, incluso con amigos al rededor.
+ *  5. Renderizado 3D de personajes: Sombras de suelo proyectadas en perspectiva, niebla de profundidad,
+ *     iluminación volumétrica y balanceo de respiración tridimensional.
+ *  6. Manos y dulces en primera persona con modelado volumétrico 3D, reflejos cerámicos y glaseados realistas.
  */
 (function () {
   const { audio: A } = window.Cinnamo;
@@ -26,6 +28,7 @@
       treatName: 'Rollito de Canela',
       pawColor: '#ffffff',
       cuffColor: '#93c5fd',
+      padColor: '#f472b6',
       desc: '¡Reparte rollitos de canela recién horneados con sus patitas esponjosas!'
     },
     {
@@ -37,6 +40,7 @@
       treatName: 'Biberón de Leche Tibia',
       pawColor: '#ffffff',
       cuffColor: '#c7d2fe',
+      padColor: '#f472b6',
       desc: '¡El más chiquitito! Reparte ricos biberones de leche tibia.'
     },
     {
@@ -46,27 +50,32 @@
       imgSrc: 'assets/pompompurin.png',
       treatEmoji: '🍮',
       treatName: 'Pudín de Caramelo',
-      pawColor: '#fcd34d',
+      pawColor: '#fef08a',
       cuffColor: '#78350f',
+      padColor: '#b45309',
       desc: '¡El perrito con boina! Reparte deliciosos flanes de caramelo con cereza.'
     }
   ];
 
-  // Mapa del laberinto (1: galleta waffle, 2: oblea rosa, 3: caramelo menta, 0: camino)
+  // Mapa de la Gran Pastelería Sanrio (14 x 12)
+  // Pasillos anchos de 2 a 3 baldosas, plaza central y 4 salones abiertos.
+  // 1: Galleta waffle dorada, 2: Oblea de fresa, 3: Caramelo menta, 0: Camino despejado
   const MAP = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 3, 0, 2, 0, 3, 3, 3, 0, 0, 1],
-    [1, 0, 3, 0, 0, 0, 0, 0, 3, 0, 2, 1],
-    [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 2, 1],
-    [1, 2, 2, 0, 1, 0, 0, 3, 3, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 1],
-    [1, 0, 3, 3, 0, 2, 2, 0, 0, 0, 3, 1],
-    [1, 0, 0, 3, 0, 0, 2, 0, 1, 0, 0, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1], // Salón Sup Izq (Milk/Cinna) | Salón Sup Der (Mocha)
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 1],
+    [1, 1, 0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 1, 1], // Pasillos anchos a los lados de la plaza
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], // Gran Plaza Central de Dulces
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 0, 0, 3, 3, 0, 0, 3, 3, 0, 0, 1, 1],
+    [1, 0, 0, 0, 0, 3, 0, 0, 3, 0, 0, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1], // Salón Inf Izq (Chiffon) | Salón Inf Der (Purin)
+    [1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
   ];
-  const MAP_W = 12;
-  const MAP_H = 10;
+  const MAP_W = 14;
+  const MAP_H = 12;
 
   class TreatDoomGame {
     constructor() {
@@ -80,12 +89,12 @@
       this.selectedHero = PLAYABLE_CHARACTERS[0];
 
       this.player = {
-        x: 1.5,
-        y: 3.5,
-        angle: 0,
-        fov: Math.PI / 3, // 60 deg
-        speed: 2.3,
-        rotSpeed: 2.5
+        x: 6.5,
+        y: 2.5,
+        angle: Math.PI / 2, // Mirando hacia el centro
+        fov: Math.PI / 3,   // 60 deg
+        speed: 2.4,
+        rotSpeed: 2.6
       };
 
       this.keys = { forward: false, backward: false, left: false, right: false };
@@ -95,14 +104,12 @@
       this.fedCount = 0;
       this.totalFriends = 4;
 
-      // Variables de vaivén (bobbing), retroceso de lanzamiento y colisión
       this.walkTimer = 0;
       this.recoil = 0;
       this.swayAngle = 0;
       this.bumpIntensity = 0;
       this.lastBumpSoundTime = 0;
 
-      // Sprites de los amigos (carga bajo demanda)
       this.friendImages = null;
     }
 
@@ -149,8 +156,8 @@
                 <div class="hero-card-weapon">
                   <span class="weapon-pill">${c.treatEmoji} ${c.treatName}</span>
                 </div>
-                <p class="hero-card-desc">${c.desc}</p>
-                <button class="btn-select-hero">▶ ¡Elegir a ${c.name}!</button>
+                <p>${c.desc}</p>
+                <button class="btn-select-hero">¡Jugar con ${c.name}!</button>
               </div>
             `).join('')}
           </div>
@@ -159,11 +166,11 @@
 
       this.container.querySelectorAll('.char-hero-card').forEach(card => {
         card.addEventListener('click', (e) => {
-          A.unlock();
-          A.celebrate();
           const id = e.currentTarget.dataset.id;
           const found = PLAYABLE_CHARACTERS.find(c => c.id === id);
           if (found) {
+            A.unlock();
+            A.celebrate();
             this.selectedHero = found;
             this.start3DGame();
           }
@@ -181,13 +188,13 @@
     }
 
     setupFriendsList() {
-      // Amigos en el laberinto (distribuidos en distintas zonas de la panadería mágica)
+      // Amigos distribuidos en los 4 salones amplios de la gran pastelería
       const allPossible = [
-        { id: 'mocha', name: 'Mocha', x: 7.5, y: 3.5, imgKey: 'mocha', hungry: true, phrase: '¡Quiero un dulce! 🎀' },
-        { id: 'chiffon', name: 'Chiffon', x: 6.5, y: 6.5, imgKey: 'chiffon', hungry: true, phrase: '¡Tengo apetito! 🌸' },
-        { id: 'milk', name: 'Milk', x: 3.8, y: 1.5, imgKey: 'milk', hungry: true, phrase: '¡Quiero lechita! 🍼' },
-        { id: 'purin', name: 'Pompompurin', x: 9.5, y: 7.5, imgKey: 'purin', hungry: true, phrase: '¡Mucho apetito! 🍮' },
-        { id: 'cinna', name: 'Cinnamoroll', x: 3.8, y: 1.5, imgKey: 'cinna', hungry: true, phrase: '¡Un rollito porfa! 🪽' }
+        { id: 'mocha', name: 'Mocha', x: 10.5, y: 2.5, imgKey: 'mocha', hungry: true, phrase: '¡Quiero un dulce! 🎀' },
+        { id: 'chiffon', name: 'Chiffon', x: 2.5, y: 9.5, imgKey: 'chiffon', hungry: true, phrase: '¡Tengo apetito! 🌸' },
+        { id: 'milk', name: 'Milk', x: 2.5, y: 2.5, imgKey: 'milk', hungry: true, phrase: '¡Quiero lechita! 🍼' },
+        { id: 'purin', name: 'Pompompurin', x: 10.5, y: 9.5, imgKey: 'purin', hungry: true, phrase: '¡Mucho apetito! 🍮' },
+        { id: 'cinna', name: 'Cinnamoroll', x: 6.5, y: 8.5, imgKey: 'cinna', hungry: true, phrase: '¡Un rollito porfa! 🪽' }
       ];
 
       // Excluir al héroe que está usando Amanda
@@ -198,18 +205,21 @@
           ...f,
           originX: f.x,
           originY: f.y,
+          vx: 0,
+          vy: 0,
+          facingLeft: false,
           wanderTimer: 1.5 + Math.random() * 2,
           jumpY: 0,
-          happyTimer: 0
+          breathePhase: Math.random() * Math.PI * 2
         }));
 
       this.totalFriends = this.friends.length;
       this.fedCount = 0;
       this.projectiles = [];
       this.particles = [];
-      this.player.x = 1.5;
-      this.player.y = 1.5;
-      this.player.angle = 0;
+      this.player.x = 6.5;
+      this.player.y = 2.5;
+      this.player.angle = Math.PI / 2;
       this.walkTimer = 0;
       this.recoil = 0;
       this.bumpIntensity = 0;
@@ -225,7 +235,7 @@
           <div class="doom-hud">
             <div class="doom-score-pill">
               <span class="hud-ico">💖</span>
-              <span>Amigos Felices: <strong id="doomFedCount">0 / 4</strong></span>
+              <span>Amigos Felices: <strong id="doomFedCount">0 / ${this.totalFriends}</strong></span>
             </div>
             <div class="doom-hero-pill">
               <span>Jugando como: <strong>${hero.name}</strong> ${hero.treatEmoji}</span>
@@ -234,7 +244,7 @@
           </div>
 
           <!-- Radar / Minimap -->
-          <canvas id="doomMinimap" class="doom-radar-canvas" width="120" height="100"></canvas>
+          <canvas id="doomMinimap" class="doom-radar-canvas" width="130" height="110"></canvas>
 
           <!-- Controles táctiles transparentes para tablets / móviles -->
           <div class="doom-touch-controls">
@@ -338,7 +348,7 @@
     }
 
     shootTreat() {
-      if (this.recoil > 0.4) return; // Pequeño enfriamiento
+      if (this.recoil > 0.4) return;
       A.whoosh(true);
       this.recoil = 1.0;
 
@@ -348,8 +358,8 @@
       this.projectiles.push({
         x: this.player.x + dirX * 0.45,
         y: this.player.y + dirY * 0.45,
-        vx: dirX * 5.4,
-        vy: dirY * 5.4,
+        vx: dirX * 5.6,
+        vy: dirY * 5.6,
         emoji: this.selectedHero.treatEmoji,
         treatName: this.selectedHero.treatName,
         life: 2.5
@@ -378,8 +388,8 @@
       if (this.animId) cancelAnimationFrame(this.animId);
     }
 
-    // Comprobación de colisión con radio físico (DOOM-style player radius)
-    canMoveTo(x, y, radius = 0.28, checkFriends = false) {
+    // Comprobación de colisión en mapa
+    canMoveTo(x, y, radius = 0.24, checkFriends = false) {
       const minX = Math.floor(x - radius);
       const maxX = Math.floor(x + radius);
       const minY = Math.floor(y - radius);
@@ -394,7 +404,8 @@
 
       if (checkFriends && this.friends) {
         for (const fr of this.friends) {
-          if (Math.hypot(x - fr.x, y - fr.y) < radius + 0.35) return false;
+          // Radio de colisión suave reducido para no atascar jamás al jugador
+          if (Math.hypot(x - fr.x, y - fr.y) < radius + 0.16) return false;
         }
       }
       return true;
@@ -421,60 +432,104 @@
         const moveY = Math.sin(p.angle) * moveStep;
         let didBump = false;
 
-        // Deslizamiento independiente en X e Y (no atraviesa muros ni amigos)
-        if (this.canMoveTo(p.x + moveX, p.y, 0.28, true)) {
+        // Deslizamiento independiente en X e Y
+        if (this.canMoveTo(p.x + moveX, p.y, 0.24, true)) {
           p.x += moveX;
         } else {
           didBump = true;
         }
 
-        if (this.canMoveTo(p.x, p.y + moveY, 0.28, true)) {
+        if (this.canMoveTo(p.x, p.y + moveY, 0.24, true)) {
           p.y += moveY;
         } else {
           didBump = true;
         }
 
-        this.walkTimer += dt * 6.8;
+        this.walkTimer += dt * 7.0;
 
-        // Reacción y retroalimentación táctil de choque contra pared
+        // Sonido suave al toparse con muros
         if (didBump) {
           const nowMs = performance.now();
-          if (nowMs - this.lastBumpSoundTime > 380) {
+          if (nowMs - this.lastBumpSoundTime > 400) {
             this.lastBumpSoundTime = nowMs;
             A.softBoing();
           }
-          this.bumpIntensity = 1.0;
+          this.bumpIntensity = 0.8;
         }
       }
 
       this.bumpIntensity = Math.max(0, this.bumpIntensity - dt * 5.0);
 
-      // Desvanecimiento del retroceso de lanzamiento
       if (this.recoil > 0) {
         this.recoil = Math.max(0, this.recoil - dt * 3.5);
       }
 
-      // IA y Animación de los Amigos
+      // --- IA DE LOS AMIGOS (FÍSICA ANTIBLOQUEO & SEPARACIÓN ELÁSTICA) ---
       for (const fr of this.friends) {
-        // Amigo alimentado celebrando: rebota de alegría y crea brillos
+        fr.breathePhase += dt * 3.0;
+
+        // Si ya comió: brinca alegremente
         if (!fr.hungry) {
-          fr.jumpY = Math.abs(Math.sin(performance.now() / 140)) * 24;
+          fr.jumpY = Math.abs(Math.sin(performance.now() / 140)) * 22;
           continue;
         }
 
-        // Amigo con hambre: deambula pasito a pasito cerca de su rincón
+        // 1. CEDER EL PASO AL JUGADOR (Gentle Step-Aside):
+        // Si Amanda se acerca a menos de 1.05m, el amigo se hace a un lado amablemente
+        const distToPlayer = Math.hypot(fr.x - p.x, fr.y - p.y);
+        if (distToPlayer < 1.05 && distToPlayer > 0.01) {
+          const pushX = (fr.x - p.x) / distToPlayer;
+          const pushY = (fr.y - p.y) / distToPlayer;
+          const yieldSpeed = dt * 1.5;
+          if (this.canMoveTo(fr.x + pushX * yieldSpeed, fr.y + pushY * yieldSpeed, 0.22, false)) {
+            fr.x += pushX * yieldSpeed;
+            fr.y += pushY * yieldSpeed;
+            fr.facingLeft = (pushX < 0);
+          }
+        }
+
+        // 2. Deambular tranquilo cerca de su zona
         fr.wanderTimer -= dt;
         if (fr.wanderTimer <= 0) {
-          fr.wanderTimer = 2.0 + Math.random() * 2.5;
+          fr.wanderTimer = 2.5 + Math.random() * 3.0;
           const wanderAngle = Math.random() * Math.PI * 2;
-          const stepDist = 0.25;
+          const stepDist = 0.35;
           const tx = fr.x + Math.cos(wanderAngle) * stepDist;
           const ty = fr.y + Math.sin(wanderAngle) * stepDist;
 
-          // No alejarse más de 1.2 casillas de su lugar original y no atravesar muros
-          if (Math.hypot(tx - fr.originX, ty - fr.originY) < 1.3 && this.canMoveTo(tx, ty, 0.25)) {
+          // No alejarse más de 2.0 casillas de su salón y no atravesar muros
+          if (Math.hypot(tx - fr.originX, ty - fr.originY) < 2.0 && this.canMoveTo(tx, ty, 0.22, false)) {
+            fr.facingLeft = (tx < fr.x);
             fr.x = tx;
             fr.y = ty;
+          }
+        }
+      }
+
+      // 3. SEPARACIÓN MUTUA DE AMIGOS (Boids Flocking Repulsion):
+      // Si dos amigos se acercan a menos de 1.2 casillas, se repelen elásticamente para NUNCA superponerse
+      for (let i = 0; i < this.friends.length; i++) {
+        for (let j = i + 1; j < this.friends.length; j++) {
+          const f1 = this.friends[i];
+          const f2 = this.friends[j];
+          const dx = f1.x - f2.x;
+          const dy = f1.y - f2.y;
+          const d = Math.hypot(dx, dy);
+          const minSeparation = 1.25;
+
+          if (d < minSeparation && d > 0.001) {
+            const overlap = (minSeparation - d) * 0.5;
+            const nx = dx / d;
+            const ny = dy / d;
+
+            if (this.canMoveTo(f1.x + nx * overlap, f1.y + ny * overlap, 0.22, false)) {
+              f1.x += nx * overlap;
+              f1.y += ny * overlap;
+            }
+            if (this.canMoveTo(f2.x - nx * overlap, f2.y - ny * overlap, 0.22, false)) {
+              f2.x -= nx * overlap;
+              f2.y -= ny * overlap;
+            }
           }
         }
       }
@@ -496,7 +551,7 @@
 
         // Impacto de dulce con un amigo
         for (const fr of this.friends) {
-          if (fr.hungry && Math.hypot(pr.x - fr.x, pr.y - fr.y) < 0.68) {
+          if (fr.hungry && Math.hypot(pr.x - fr.x, pr.y - fr.y) < 0.72) {
             fr.hungry = false;
             pr.life = -1;
             this.fedCount++;
@@ -527,7 +582,7 @@
           }
         }
 
-        // Si choca con un muro, desaparece con sonido suave
+        // Si choca con un muro, desaparece suavemente
         if (!this.canMoveTo(pr.x, pr.y, 0.08)) {
           pr.life = -1;
         }
@@ -544,7 +599,7 @@
       const ctx = this.ctx;
       const p = this.player;
 
-      // 1. Cielo pastel suave con nubes
+      // 1. Cielo pastel suave con nubes flotantes
       const skyGrad = ctx.createLinearGradient(0, 0, 0, VH / 2);
       skyGrad.addColorStop(0, '#7ec8f8');
       skyGrad.addColorStop(1, '#e3f3ff');
@@ -562,15 +617,14 @@
         ctx.fill();
       }
 
-      // 2. Suelo con perspectiva y baldosas de pasteladería
-      // Rayas en perspectiva que dan noción de distancia y movimiento al suelo
+      // 2. Suelo con perspectiva y baldosas de pastelería
       const floorGrad = ctx.createLinearGradient(0, VH / 2, 0, VH);
       floorGrad.addColorStop(0, '#ffd8ea');
       floorGrad.addColorStop(1, '#ffbedc');
       ctx.fillStyle = floorGrad;
       ctx.fillRect(0, VH / 2, VW, VH / 2);
 
-      // Baldosas de perspectiva sobre el suelo (líneas horizontales con escala cuadrática)
+      // Baldosas de perspectiva sobre el suelo
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
       ctx.lineWidth = 1.5;
       for (let y = VH / 2 + 10; y < VH; y += 14 + (y - VH / 2) * 0.35) {
@@ -580,12 +634,11 @@
         ctx.stroke();
       }
 
-      // 3. Algoritmo DDA Digital Differential Analysis (Wolfenstein / DOOM clásico)
+      // 3. Algoritmo DDA Digital Differential Analysis (DOOM Raycaster)
       const numRays = VW / 2; // 320 rayos en columnas de 2px
       const halfFov = p.fov / 2;
       const zBuffer = new Array(numRays);
 
-      // Cámara y choque
       const shakeY = (this.bumpIntensity > 0.05) ? Math.sin(performance.now() / 30) * this.bumpIntensity * 4 : 0;
 
       for (let r = 0; r < numRays; r++) {
@@ -618,10 +671,10 @@
         }
 
         let hit = 0;
-        let side = 0; // 0 = Cara vertical (Este/Oeste), 1 = Cara horizontal (Norte/Sur)
+        let side = 0;
         let steps = 0;
 
-        while (hit === 0 && steps < 30) {
+        while (hit === 0 && steps < 35) {
           steps++;
           if (sideDistX < sideDistY) {
             sideDistX += deltaDistX;
@@ -645,7 +698,6 @@
           perpWallDist = (sideDistY - deltaDistY);
         }
 
-        // Corrección de efecto ojo de pez
         const correctDist = Math.max(0.2, perpWallDist * Math.cos(rayAngle - p.angle));
         zBuffer[r] = correctDist;
 
@@ -655,7 +707,6 @@
         const colX = r * 2;
         const colW = 2.2;
 
-        // Coordenada exacta de textura (0.0 a 1.0 a lo largo del muro)
         let wallX;
         if (side === 0) {
           wallX = p.y + perpWallDist * rayDirY;
@@ -664,41 +715,39 @@
         }
         wallX -= Math.floor(wallX);
 
-        // Paleta base según tipo de muro
-        let baseColor = '#f6c78e';     // 1: Galleta de mantequilla
+        // Paleta base según tipo de muro con iluminación 3D
+        let baseColor = '#f6c78e';     // 1: Galleta de mantequilla dorada
         let mortarColor = '#e0a65b';
         if (hit === 2) {
-          baseColor = '#ff9ebb';       // 2: Oblea de fresa
+          baseColor = '#ff9ebb';       // 2: Oblea de fresa pastel
           mortarColor = '#f472b6';
         } else if (hit === 3) {
-          baseColor = '#8ee6b8';       // 3: Caramelo menta
+          baseColor = '#8ee6b8';       // 3: Caramelo menta suave
           mortarColor = '#60c993';
         }
 
-        // Sombreado clásico DOOM: Caras Norte/Sur tienen un 28% más de sombra
-        // para que cada esquina del laberinto se distinga nítidamente
+        // Sombreado direccional de caras 3D (Caras Norte/Sur con sombreado 0.72x)
         const faceShade = (side === 1) ? 0.72 : 1.0;
-        const distShade = Math.max(0.35, 1 - (correctDist / 12));
+        const distShade = Math.max(0.35, 1 - (correctDist / 14));
         const finalShade = faceShade * distShade;
 
-        // Dibujar franja base del muro
         ctx.fillStyle = baseColor;
         ctx.fillRect(colX, topY, colW, wallH);
 
-        // --- Textura 1: Mampostería de Galleta (líneas de mortero y chispas) ---
+        // Texturas de muros 3D
         if (hit === 1) {
-          // Ranuras de galleta verticales
+          // Ranuras verticales de galleta waffle
           if (wallX < 0.05 || Math.abs(wallX - 0.5) < 0.04) {
             ctx.fillStyle = mortarColor;
             ctx.fillRect(colX, topY, colW, wallH);
           }
-          // Chispitas de chocolate
+          // Chispas de chocolate
           if ((Math.abs(wallX - 0.25) < 0.03 || Math.abs(wallX - 0.75) < 0.03) && (r % 6 === 0)) {
             ctx.fillStyle = '#5c3d2e';
             ctx.fillRect(colX, topY + wallH * 0.45, colW, wallH * 0.1);
           }
         } else if (hit === 2) {
-          // --- Textura 2: Oblea Waffle cruzada con crema blanca al centro ---
+          // Oblea con crema blanca central
           ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
           ctx.fillRect(colX, topY + wallH * 0.46, colW, Math.max(2, wallH * 0.08));
           if (Math.abs(wallX - 0.33) < 0.03 || Math.abs(wallX - 0.66) < 0.03) {
@@ -706,7 +755,7 @@
             ctx.fillRect(colX, topY, colW, wallH);
           }
         } else if (hit === 3) {
-          // --- Textura 3: Caramelo Menta con rayas diagonales ---
+          // Rayas de caramelo
           const stripePhase = (wallX * 4) % 1;
           if (stripePhase < 0.4) {
             ctx.fillStyle = '#bbf7d0';
@@ -714,28 +763,27 @@
           }
         }
 
-        // --- ZÓCALO INFERIOR DE CHOCOLATE (Delimita exactamente el suelo y el muro) ---
+        // ZÓCALO INFERIOR DE CHOCOLATE (Delimitador visual nítido)
         const skirtH = Math.max(4, wallH * 0.12);
-        ctx.fillStyle = '#5a3825'; // Chocolate oscuro Sanrio
+        ctx.fillStyle = '#5a3825';
         ctx.fillRect(colX, topY + wallH - skirtH, colW, skirtH);
 
-        // Línea dorada encima del zócalo
         ctx.fillStyle = '#fde047';
         ctx.fillRect(colX, topY + wallH - skirtH, colW, 2);
 
-        // --- MOLDURA SUPERIOR DE CREMA BLANCA ---
+        // MOLDURA SUPERIOR
         const crownH = Math.max(3, wallH * 0.08);
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(colX, topY, colW, crownH);
 
-        // Sombra de profundidad general
+        // Sombra de profundidad en muro
         if (finalShade < 0.98) {
           ctx.fillStyle = `rgba(30, 20, 45, ${1 - finalShade})`;
           ctx.fillRect(colX, topY, colW, wallH);
         }
       }
 
-      // 4. Sprites 3D de amigos, proyectiles y partículas (Billboard)
+      // --- 4. RENDERIZADO 3D DE PERSONAJES, PROYECTILES Y PARTÍCULAS ---
       const sprites = [];
 
       for (const fr of this.friends) {
@@ -771,30 +819,63 @@
 
         if (Math.abs(angleToSprite) < halfFov + 0.35 && sp.dist > 0.25) {
           const screenX = (VW / 2) + Math.tan(angleToSprite) * (VW / (2 * Math.tan(halfFov)));
-          const spriteH = Math.min(VH * 0.72, (VH / sp.dist) * 0.85);
+          const spriteH = Math.min(VH * 0.75, (VH / sp.dist) * 0.88);
           const spriteW = spriteH * 1.15;
           const rayIdx = Math.floor((screenX / VW) * numRays);
 
           if (rayIdx >= 0 && rayIdx < numRays && sp.dist < zBuffer[rayIdx] + 0.35) {
             if (sp.type === 'friend') {
               const fr = sp.data;
+
+              // A. SOMBRA PROYECTADA EN EL SUELO 3D (Ground Shadow Ellipse)
+              // Ancla visualmente al personaje sobre el piso tridimensional
+              const shadowFloorY = VH / 2 + (VH / sp.dist) * 0.44 + shakeY;
+              const shadowW = spriteW * 0.65;
+              const shadowH = shadowW * 0.22;
+              const shadowGrad = ctx.createRadialGradient(screenX, shadowFloorY, 2, screenX, shadowFloorY, shadowW / 2);
+              shadowGrad.addColorStop(0, 'rgba(45, 18, 38, 0.45)');
+              shadowGrad.addColorStop(0.7, 'rgba(45, 18, 38, 0.2)');
+              shadowGrad.addColorStop(1, 'rgba(45, 18, 38, 0)');
+              ctx.fillStyle = shadowGrad;
+              ctx.beginPath();
+              ctx.ellipse(screenX, shadowFloorY, shadowW / 2, shadowH / 2, 0, 0, Math.PI * 2);
+              ctx.fill();
+
+              // B. RENDERIZADO DEL SPRITE CON PROFUNDIDAD Y RESPIRACIÓN 3D
               const screenY = VH / 2 - spriteH / 2 + 10 - fr.jumpY + shakeY;
               const img = this.friendImages[fr.imgKey];
 
               if (img && img.complete) {
-                ctx.drawImage(img, screenX - spriteW / 2, screenY, spriteW, spriteH);
+                ctx.save();
+                ctx.translate(screenX, screenY + spriteH / 2);
+
+                // Orientación de mirada según su movimiento
+                if (fr.facingLeft) {
+                  ctx.scale(-1, 1);
+                }
+
+                // Respiración y balanceo orgánico 3D
+                const breathe = 1 + Math.sin(fr.breathePhase) * 0.035;
+                ctx.scale(1, breathe);
+
+                // Sombra de profundidad por distancia (iluminación del entorno)
+                const depthLight = Math.max(0.65, 1 - (sp.dist / 14));
+                if (depthLight < 0.98) {
+                  ctx.filter = `brightness(${depthLight.toFixed(2)})`;
+                }
+
+                ctx.drawImage(img, -spriteW / 2, -spriteH / 2, spriteW, spriteH);
+                ctx.restore();
               }
 
-              // Burbuja tierna de diálogo sobre el personaje
+              // C. BURBUJA 3D DE DIÁLOGO ADAPTADA
               const bubbleText = fr.hungry ? fr.phrase : '¡Ñam ñam! ¡Gracias Amanda! 💖';
-              const bubbleFontSize = Math.min(15, Math.max(11, Math.floor(spriteH * 0.08)));
+              const bubbleFontSize = Math.min(15, Math.max(11, Math.floor(spriteH * 0.085)));
               ctx.font = `800 ${bubbleFontSize}px "Baloo 2", sans-serif`;
               ctx.textAlign = 'center';
 
-              const bubbleY = Math.max(56, screenY - 12);
-
-              // Fondo de píldora para que se lea perfecto
-              ctx.fillStyle = fr.hungry ? 'rgba(255, 240, 245, 0.95)' : 'rgba(240, 255, 240, 0.95)';
+              const bubbleY = Math.max(54, screenY - 14);
+              ctx.fillStyle = fr.hungry ? 'rgba(255, 240, 245, 0.96)' : 'rgba(240, 255, 240, 0.96)';
               ctx.strokeStyle = fr.hungry ? '#ff69b4' : '#4caf50';
               ctx.lineWidth = 2.5;
 
@@ -806,12 +887,22 @@
 
               ctx.fillStyle = fr.hungry ? '#d81b60' : '#2e7d32';
               ctx.fillText(bubbleText, screenX, bubbleY - 2);
+
             } else if (sp.type === 'projectile') {
               const pr = sp.data;
               const screenY = VH / 2 - spriteH / 2 + 15 + shakeY;
+
+              // Sombra en el piso bajo el dulce
+              const projShadowY = VH / 2 + (VH / sp.dist) * 0.44 + shakeY;
+              ctx.fillStyle = 'rgba(50, 20, 40, 0.25)';
+              ctx.beginPath();
+              ctx.ellipse(screenX, projShadowY, spriteW * 0.2, spriteW * 0.08, 0, 0, Math.PI * 2);
+              ctx.fill();
+
               ctx.font = `${Math.floor(spriteH * 0.65)}px sans-serif`;
               ctx.textAlign = 'center';
               ctx.fillText(pr.emoji, screenX, screenY + spriteH * 0.5);
+
             } else if (sp.type === 'particle') {
               const pt = sp.data;
               const screenY = VH / 2 - spriteH / 2 - (pt.z * spriteH) + shakeY;
@@ -823,8 +914,7 @@
         }
       }
 
-      // 5. RENDERIZADO EN PRIMERA PERSONA (DOOM-Style Paws & Held Treat)
-      // Brazos y patitas ilustradas sosteniendo el dulce directamente en la pantalla
+      // --- 5. RENDERIZADO EN PRIMERA PERSONA CON ACABADO VOLUMÉTRICO 3D ---
       this.renderFirstPersonArms(ctx, dt);
     }
 
@@ -832,239 +922,284 @@
       const hero = this.selectedHero;
       const t = this.walkTimer;
 
-      // Vaivén al caminar (Weapon Bobbing de DOOM)
+      // Vaivén al caminar (DOOM Weapon Bobbing)
       const isMoving = this.keys.forward || this.keys.backward;
-      const bobX = isMoving ? Math.cos(t) * 12 : Math.cos(performance.now() / 600) * 3;
-      const bobY = isMoving ? Math.abs(Math.sin(t)) * 14 : Math.sin(performance.now() / 600) * 4;
-
-      // Inclinación al girar
+      const bobX = isMoving ? Math.cos(t) * 12 : Math.cos(performance.now() / 650) * 3;
+      const bobY = isMoving ? Math.abs(Math.sin(t)) * 14 : Math.sin(performance.now() / 650) * 4;
       const sway = this.swayAngle;
 
-      // Animación de retroceso/lanzamiento
       let recoilOffset = 0;
       let treatScale = 1.0;
       if (this.recoil > 0.6) {
-        // Fase 1: Empujón hacia adelante al lanzar el dulce
         const p = (this.recoil - 0.6) / 0.4;
         recoilOffset = -30 * p;
         treatScale = 1.15;
       } else if (this.recoil > 0.2) {
-        // Fase 2: Manos bajan brevemente vacías
         const p = (this.recoil - 0.2) / 0.4;
         recoilOffset = 25 * p;
-        treatScale = 0; // El dulce ya voló
+        treatScale = 0;
       } else if (this.recoil > 0) {
-        // Fase 3: Nuevo dulce fresco reaparece en las patitas con resorte
         const p = this.recoil / 0.2;
         recoilOffset = 15 * p;
         treatScale = 1.0 - p * 0.4;
       }
 
       const baseX = VW / 2 + bobX + sway;
-      const baseY = VH - 28 + bobY + recoilOffset;
+      const baseY = VH - 26 + bobY + recoilOffset;
 
       ctx.save();
       ctx.translate(baseX, baseY);
 
-      // --- 1. Brazos y cuerpo del personaje (perspectiva primera persona) ---
+      // --- A. BRAZOS VOLUMÉTRICOS CON SOMBREADO 3D SUAVE ---
       const armColor = hero.pawColor;
-      const outlineColor = '#5c3d2e';
+      const shadeColor = (hero.id === 'purin') ? '#fcd34d' : '#e0e7ff';
 
-      ctx.lineWidth = 3.5;
-      ctx.strokeStyle = outlineColor;
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
-
-      // Pancita suave y redonda en la parte inferior de la vista
+      // Sombra proyectada detrás de los brazos
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
       ctx.beginPath();
-      ctx.ellipse(0, 56, 100, 40, 0, 0, Math.PI * 2);
-      ctx.fillStyle = armColor;
+      ctx.ellipse(0, 48, 110, 44, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.stroke();
 
-      // Brazo izquierdo (chubby y suave saliendo del cuerpito hacia la bandeja)
+      // Pancita redonda en primer plano con gradiente esférico 3D
+      const bellyGrad = ctx.createRadialGradient(0, 20, 20, 0, 50, 110);
+      bellyGrad.addColorStop(0, armColor);
+      bellyGrad.addColorStop(0.7, armColor);
+      bellyGrad.addColorStop(1, shadeColor);
+      ctx.fillStyle = bellyGrad;
+      ctx.beginPath();
+      ctx.ellipse(0, 56, 102, 42, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Brazo Izquierdo (Cilindro 3D con luz especular)
+      const armLGrad = ctx.createLinearGradient(-100, 30, -30, -30);
+      armLGrad.addColorStop(0, shadeColor);
+      armLGrad.addColorStop(0.5, armColor);
+      armLGrad.addColorStop(1, armColor);
+      ctx.fillStyle = armLGrad;
       ctx.beginPath();
       ctx.moveTo(-100, 52);
       ctx.bezierCurveTo(-85, 18, -68, -18, -48, -40);
       ctx.lineTo(-24, -20);
       ctx.bezierCurveTo(-44, 12, -56, 38, -62, 52);
       ctx.closePath();
-      ctx.fillStyle = armColor;
       ctx.fill();
-      ctx.stroke();
 
-      // Brazo derecho
+      // Brazo Derecho
+      const armRGrad = ctx.createLinearGradient(100, 30, 30, -30);
+      armRGrad.addColorStop(0, shadeColor);
+      armRGrad.addColorStop(0.5, armColor);
+      armRGrad.addColorStop(1, armColor);
+      ctx.fillStyle = armRGrad;
       ctx.beginPath();
       ctx.moveTo(100, 52);
       ctx.bezierCurveTo(85, 18, 68, -18, 48, -40);
       ctx.lineTo(24, -20);
       ctx.bezierCurveTo(44, 12, 56, 38, 62, 52);
       ctx.closePath();
-      ctx.fillStyle = armColor;
       ctx.fill();
-      ctx.stroke();
 
-      // --- 2. Dulce en el centro sostenido en bandeja ---
+      // --- B. BANDEJA DE PORCELANA Y DULCE 3D MODELADO ---
       if (treatScale > 0.05) {
         ctx.save();
         ctx.translate(0, -48);
         ctx.scale(treatScale, treatScale);
 
+        // 1. Sombra bajo la bandeja
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+        ctx.beginPath();
+        ctx.ellipse(0, 26, 58, 16, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Plato de Porcelana con Borde Dorado y Brillo Especular
+        const plateGrad = ctx.createLinearGradient(0, 8, 0, 24);
+        plateGrad.addColorStop(0, '#ffffff');
+        plateGrad.addColorStop(0.6, '#f8fafc');
+        plateGrad.addColorStop(1, '#e2e8f0');
+        ctx.fillStyle = plateGrad;
+        ctx.beginPath();
+        ctx.ellipse(0, 22, 54, 15, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Filo dorado
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
         if (hero.id === 'cinna') {
-          // Plato blanco
+          // --- ROLLITO DE CANELA 3D VOLUMÉTRICO ---
+          // Bollo horneado con gradiente cálido
+          const rollGrad = ctx.createRadialGradient(0, -6, 8, 0, 0, 36);
+          rollGrad.addColorStop(0, '#fde68a');
+          rollGrad.addColorStop(0.5, '#d97706');
+          rollGrad.addColorStop(1, '#92400e');
+          ctx.fillStyle = rollGrad;
           ctx.beginPath();
-          ctx.ellipse(0, 22, 54, 16, 0, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffffff';
-          ctx.fill();
-          ctx.stroke();
-
-          // Bollo de rollito de canela
-          ctx.beginPath();
-          ctx.ellipse(0, 0, 44, 28, 0, 0, Math.PI * 2);
-          ctx.fillStyle = '#e89e53';
-          ctx.fill();
-          ctx.stroke();
-
-          // Glaseado de crema blanca arriba
-          ctx.beginPath();
-          ctx.ellipse(0, -6, 36, 16, 0, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+          ctx.ellipse(0, 0, 42, 26, 0, 0, Math.PI * 2);
           ctx.fill();
 
-          // Espirales de canela
+          // Glaseado de crema blanca brillante
+          const glazeGrad = ctx.createRadialGradient(-6, -8, 4, 0, -6, 28);
+          glazeGrad.addColorStop(0, '#ffffff');
+          glazeGrad.addColorStop(0.7, '#fef3c7');
+          glazeGrad.addColorStop(1, 'rgba(254, 243, 199, 0.8)');
+          ctx.fillStyle = glazeGrad;
           ctx.beginPath();
-          ctx.arc(0, 0, 24, 0.4, Math.PI * 2.3);
-          ctx.strokeStyle = '#8a4b1c';
+          ctx.ellipse(0, -5, 34, 15, 0, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Espirales de canela con relieve 3D
+          ctx.beginPath();
+          ctx.arc(0, 0, 22, 0.4, Math.PI * 2.3);
+          ctx.strokeStyle = '#78350f';
           ctx.lineWidth = 4;
           ctx.stroke();
 
           ctx.beginPath();
-          ctx.arc(0, 0, 12, 0.6, Math.PI * 2.1);
+          ctx.arc(0, 0, 11, 0.6, Math.PI * 2.1);
           ctx.stroke();
 
-          // Brillo
-          ctx.font = '20px sans-serif';
+          // Brillos mágicos
+          ctx.font = '22px sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText('✨', 34, -22);
+          ctx.fillText('✨', 32, -20);
+
         } else if (hero.id === 'milk') {
-          // Biberón de leche tibia
+          // --- BIBERÓN DE LECHE 3D CRISTALINO ---
+          // Botella de vidrio con leche tibia
+          const bottleGrad = ctx.createLinearGradient(-24, 0, 24, 0);
+          bottleGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+          bottleGrad.addColorStop(0.3, '#ffffff');
+          bottleGrad.addColorStop(0.7, '#fef9c3');
+          bottleGrad.addColorStop(1, 'rgba(224, 242, 254, 0.85)');
+          ctx.fillStyle = bottleGrad;
           ctx.beginPath();
-          ctx.roundRect(-24, -30, 48, 68, 12);
-          ctx.fillStyle = '#ffffff';
+          ctx.roundRect(-24, -30, 48, 66, 12);
           ctx.fill();
-          ctx.stroke();
 
-          ctx.fillStyle = '#fffbeb';
-          ctx.fillRect(-22, -15, 44, 50);
-
-          ctx.strokeStyle = '#93c5fd';
-          ctx.lineWidth = 2.5;
-          for (let ly = -8; ly <= 22; ly += 9) {
+          // Graduación métrica
+          ctx.strokeStyle = '#60a5fa';
+          ctx.lineWidth = 2;
+          for (let ly = -8; ly <= 20; ly += 8) {
             ctx.beginPath();
             ctx.moveTo(-16, ly);
             ctx.lineTo(-4, ly);
             ctx.stroke();
           }
 
+          // Cuello celeste con brillo
+          ctx.fillStyle = '#60a5fa';
           ctx.beginPath();
-          ctx.roundRect(-20, -44, 40, 15, 6);
-          ctx.fillStyle = '#93c5fd';
+          ctx.roundRect(-20, -42, 40, 14, 6);
           ctx.fill();
-          ctx.stroke();
 
+          // Chupete amarillo translúcido
+          const teatGrad = ctx.createRadialGradient(0, -48, 3, 0, -48, 12);
+          teatGrad.addColorStop(0, '#fef08a');
+          teatGrad.addColorStop(1, '#f59e0b');
+          ctx.fillStyle = teatGrad;
           ctx.beginPath();
-          ctx.arc(0, -48, 11, Math.PI, 0);
-          ctx.fillStyle = '#fde68a';
+          ctx.arc(0, -48, 10, Math.PI, 0);
           ctx.fill();
-          ctx.stroke();
 
           ctx.font = '18px sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText('🍼', 0, 18);
-        } else if (hero.id === 'purin') {
-          // Plato de pudín
-          ctx.beginPath();
-          ctx.ellipse(0, 24, 56, 16, 0, 0, Math.PI * 2);
-          ctx.fillStyle = '#ffffff';
-          ctx.fill();
-          ctx.stroke();
 
+        } else if (hero.id === 'purin') {
+          // --- PUDÍN DE CARAMELO 3D CON CEREZA ---
+          // Cuerpo del flan de vainilla
+          const flanGrad = ctx.createRadialGradient(0, 4, 10, 0, 10, 36);
+          flanGrad.addColorStop(0, '#fef08a');
+          flanGrad.addColorStop(0.7, '#fde047');
+          flanGrad.addColorStop(1, '#eab308');
+          ctx.fillStyle = flanGrad;
           ctx.beginPath();
-          ctx.moveTo(-36, 20);
+          ctx.moveTo(-36, 18);
           ctx.lineTo(-24, -14);
           ctx.quadraticCurveTo(0, -22, 24, -14);
-          ctx.lineTo(36, 20);
+          ctx.lineTo(36, 18);
           ctx.closePath();
-          ctx.fillStyle = '#fef08a';
           ctx.fill();
-          ctx.stroke();
 
+          // Caramelo oscuro chorreante arriba
+          const caramelGrad = ctx.createRadialGradient(0, -14, 4, 0, -14, 24);
+          caramelGrad.addColorStop(0, '#92400e');
+          caramelGrad.addColorStop(1, '#451a03');
+          ctx.fillStyle = caramelGrad;
           ctx.beginPath();
-          ctx.ellipse(0, -14, 25, 10, 0, 0, Math.PI * 2);
-          ctx.fillStyle = '#78350f';
+          ctx.ellipse(0, -14, 25, 9, 0, 0, Math.PI * 2);
           ctx.fill();
-          ctx.stroke();
 
+          // Cereza con brillo especular 3D
+          const cherryGrad = ctx.createRadialGradient(-3, -28, 2, 0, -26, 9);
+          cherryGrad.addColorStop(0, '#fca5a5');
+          cherryGrad.addColorStop(0.5, '#dc2626');
+          cherryGrad.addColorStop(1, '#7f1d1d');
+          ctx.fillStyle = cherryGrad;
           ctx.beginPath();
-          ctx.arc(0, -26, 9, 0, Math.PI * 2);
-          ctx.fillStyle = '#ef4444';
+          ctx.arc(0, -26, 8.5, 0, Math.PI * 2);
           ctx.fill();
-          ctx.stroke();
         }
 
         ctx.restore();
       }
 
-      // --- 3. Patitas abrazando y sosteniendo el plato a los lados ---
-      // Patita izquierda
+      // --- C. PATITAS AFELPADAS 3D CON ALMOHADILLAS ---
+      const pawPadColor = hero.padColor;
+
+      // Patita Izquierda
+      const pawLGrad = ctx.createRadialGradient(-48, -48, 4, -48, -48, 20);
+      pawLGrad.addColorStop(0, armColor);
+      pawLGrad.addColorStop(0.8, armColor);
+      pawLGrad.addColorStop(1, shadeColor);
+      ctx.fillStyle = pawLGrad;
       ctx.beginPath();
       ctx.ellipse(-48, -48, 20, 18, -0.2, 0, Math.PI * 2);
-      ctx.fillStyle = armColor;
       ctx.fill();
-      ctx.stroke();
 
-      // Huellita rosa en pata izquierda
+      // Almohadilla central
+      ctx.fillStyle = pawPadColor;
       ctx.beginPath();
       ctx.ellipse(-48, -48, 8, 7, -0.2, 0, Math.PI * 2);
-      ctx.fillStyle = (hero.id === 'purin') ? '#b45309' : '#f472b6';
       ctx.fill();
 
       // Deditos izquierda
       for (const [ox, oy] of [[-44, -62], [-58, -50], [-52, -34]]) {
+        ctx.fillStyle = armColor;
         ctx.beginPath();
         ctx.arc(ox, oy, 5.5, 0, Math.PI * 2);
-        ctx.fillStyle = armColor;
         ctx.fill();
-        ctx.stroke();
+        ctx.fillStyle = pawPadColor;
         ctx.beginPath();
         ctx.arc(ox, oy, 3, 0, Math.PI * 2);
-        ctx.fillStyle = (hero.id === 'purin') ? '#b45309' : '#f472b6';
         ctx.fill();
       }
 
-      // Patita derecha
+      // Patita Derecha
+      const pawRGrad = ctx.createRadialGradient(48, -48, 4, 48, -48, 20);
+      pawRGrad.addColorStop(0, armColor);
+      pawRGrad.addColorStop(0.8, armColor);
+      pawRGrad.addColorStop(1, shadeColor);
+      ctx.fillStyle = pawRGrad;
       ctx.beginPath();
       ctx.ellipse(48, -48, 20, 18, 0.2, 0, Math.PI * 2);
-      ctx.fillStyle = armColor;
       ctx.fill();
-      ctx.stroke();
 
-      // Huellita rosa en pata derecha
+      // Almohadilla central
+      ctx.fillStyle = pawPadColor;
       ctx.beginPath();
       ctx.ellipse(48, -48, 8, 7, 0.2, 0, Math.PI * 2);
-      ctx.fillStyle = (hero.id === 'purin') ? '#b45309' : '#f472b6';
       ctx.fill();
 
       // Deditos derecha
       for (const [ox, oy] of [[44, -62], [58, -50], [52, -34]]) {
+        ctx.fillStyle = armColor;
         ctx.beginPath();
         ctx.arc(ox, oy, 5.5, 0, Math.PI * 2);
-        ctx.fillStyle = armColor;
         ctx.fill();
-        ctx.stroke();
+        ctx.fillStyle = pawPadColor;
         ctx.beginPath();
         ctx.arc(ox, oy, 3, 0, Math.PI * 2);
-        ctx.fillStyle = (hero.id === 'purin') ? '#b45309' : '#f472b6';
         ctx.fill();
       }
 
@@ -1079,10 +1214,10 @@
       const cellH = canvas.height / MAP_H;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Muros
+      // Muros del minimapa
       for (let y = 0; y < MAP_H; y++) {
         for (let x = 0; x < MAP_W; x++) {
           if (MAP[y][x] > 0) {
@@ -1092,7 +1227,7 @@
         }
       }
 
-      // Amigos en el minimapa (verde si están alimentados, rosa parpadeante si tienen hambre)
+      // Amigos en el minimapa (verde si están alimentados, rosa si tienen hambre)
       for (const fr of this.friends) {
         ctx.fillStyle = fr.hungry ? '#ff1493' : '#4caf50';
         ctx.beginPath();
@@ -1110,10 +1245,10 @@
 
       // Cono de visión
       const fov = this.player.fov;
-      ctx.fillStyle = 'rgba(37, 99, 235, 0.2)';
+      ctx.fillStyle = 'rgba(37, 99, 235, 0.22)';
       ctx.beginPath();
       ctx.moveTo(px, py);
-      ctx.arc(px, py, 20, this.player.angle - fov / 2, this.player.angle + fov / 2);
+      ctx.arc(px, py, 22, this.player.angle - fov / 2, this.player.angle + fov / 2);
       ctx.closePath();
       ctx.fill();
     }

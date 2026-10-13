@@ -35,7 +35,9 @@
         coloring: document.getElementById('screen-coloring'),
         memory: document.getElementById('screen-memory'),
         platformer: document.getElementById('screen-platformer'),
-        doom: document.getElementById('screen-doom')
+        doom: document.getElementById('screen-doom'),
+        writing: document.getElementById('screen-writing'),
+        puzzle: document.getElementById('screen-puzzle')
       };
 
       this.btnHome = document.getElementById('globalBtnHome');
@@ -158,6 +160,16 @@
         const doomMount = document.getElementById('doom-mount');
         if (window.Cinnamo.doomGame) {
           window.Cinnamo.doomGame.init(doomMount);
+        }
+      } else if (gameKey === 'writing') {
+        const writingMount = document.getElementById('writing-mount');
+        if (window.Cinnamo.writingGame) {
+          window.Cinnamo.writingGame.init(writingMount);
+        }
+      } else if (gameKey === 'puzzle') {
+        const puzzleMount = document.getElementById('puzzle-mount');
+        if (window.Cinnamo.puzzleGame) {
+          window.Cinnamo.puzzleGame.init(puzzleMount);
         }
       }
     }
