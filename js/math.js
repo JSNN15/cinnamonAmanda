@@ -1,6 +1,7 @@
 /* La Pastelería Mágica de Cinnamoroll & Milk
- * Juego preescolar de sumas y restas adaptado con amor y pedagogía para 5 años.
- * Personajes animados, conteo táctil interactivo, y guía positiva "¿Estás segura? ¡Contemos juntas!".
+ * Juego preescolar de sumas y restas con los personajes OFICIALES de Sanrio.
+ * Cinnamoroll y Milk (con su osito, chupete y rulo), guía pedagógica amorosa
+ * "¿Estás segura Amanda? ¡Contemos juntas!" y conteo táctil interactivo.
  */
 (function () {
   const { audio: A } = window.Cinnamo;
@@ -45,7 +46,6 @@
       this.isCountingHelpActive = false;
       this.countedItems.clear();
 
-      // Determinar operación según modo
       if (this.mode === 'mix') {
         this.currentOp = Math.random() > 0.5 ? '+' : '-';
       } else if (this.mode === 'sub') {
@@ -57,14 +57,12 @@
       this.treatType = TREAT_TYPES[Math.floor(Math.random() * TREAT_TYPES.length)];
 
       if (this.currentOp === '+') {
-        // Sumas sencillas para 5 años: totales entre 2 y 6
-        this.numA = 1 + Math.floor(Math.random() * 3); // 1, 2, 3
-        this.numB = 1 + Math.floor(Math.random() * 3); // 1, 2, 3
+        this.numA = 1 + Math.floor(Math.random() * 3); // 1..3
+        this.numB = 1 + Math.floor(Math.random() * 3); // 1..3
         this.total = this.numA + this.numB;
       } else {
-        // Restas sencillas: total original 3 a 6, resta 1 a 2
-        this.numA = 2 + Math.floor(Math.random() * 4); // 2, 3, 4, 5
-        this.numB = 1 + Math.floor(Math.random() * (this.numA - 1)); // 1 hasta A-1
+        this.numA = 2 + Math.floor(Math.random() * 4); // 2..5
+        this.numB = 1 + Math.floor(Math.random() * (this.numA - 1)); // 1..A-1
         this.total = this.numA - this.numB;
       }
 
@@ -72,14 +70,13 @@
     }
 
     render() {
-      // Opciones de respuesta: el valor correcto + 2 distractores
       const pool = [1, 2, 3, 4, 5, 6, 7].filter(n => n !== this.total);
       pool.sort(() => Math.random() - 0.5);
       const options = [this.total, pool[0], pool[1]].sort((a, b) => a - b);
 
       this.container.innerHTML = `
         <div class="math-wrap">
-          <!-- Barra superior: Modo de juego y Progreso -->
+          <!-- Barra superior de Modo y Progreso -->
           <div class="math-top-bar">
             <div class="mode-toggles">
               <button class="mode-btn ${this.mode === 'add' ? 'active' : ''}" data-mode="add">➕ Sumas</button>
@@ -93,12 +90,12 @@
             </div>
           </div>
 
-          <!-- Escenario de la pastelería -->
+          <!-- Escenario con personajes OFICIALES -->
           <div class="bakery-stage">
-            <!-- Cinnamoroll a la izquierda -->
+            <!-- Cinnamoroll Oficial a la izquierda -->
             <div class="baker-char cinna-side" id="cinnaBaker">
               <div class="cinna-avatar-wrap">
-                <img src="cinnamoroll_sprite.png" class="cinna-char-img" alt="Cinnamoroll" />
+                <img src="assets/cinnamoroll_fly.png" class="official-baker-img cinna-official" alt="Cinnamoroll" />
               </div>
               <div class="char-bubble cinna-bubble" id="cinnaBubble">
                 ${this.currentOp === '+' 
@@ -113,7 +110,6 @@
               
               <div class="sweet-tray">
                 ${this.currentOp === '+' ? `
-                  <!-- Grupo A -->
                   <div class="treat-cluster group-left">
                     ${Array.from({ length: this.numA }).map((_, i) => `
                       <button class="treat-btn" data-idx="a-${i}" aria-label="Dulce ${i + 1}">
@@ -125,7 +121,6 @@
 
                   <div class="math-sign-symbol">➕</div>
 
-                  <!-- Grupo B -->
                   <div class="treat-cluster group-right">
                     ${Array.from({ length: this.numB }).map((_, i) => `
                       <button class="treat-btn" data-idx="b-${i}" aria-label="Dulce ${this.numA + i + 1}">
@@ -135,7 +130,6 @@
                     `).join('')}
                   </div>
                 ` : `
-                  <!-- Modo Resta: Dulces que quedan vs dulces que comió Milk -->
                   <div class="treat-cluster group-remain">
                     ${Array.from({ length: this.total }).map((_, i) => `
                       <button class="treat-btn remain-item" data-idx="r-${i}">
@@ -159,63 +153,10 @@
               </div>
             </div>
 
-            <!-- Milk a la derecha (Completamente animado) -->
+            <!-- Milk Oficial con su osito y chupete a la derecha -->
             <div class="baker-char milk-side" id="milkBaker">
               <div class="milk-avatar-wrap">
-                <svg viewBox="0 0 120 110" class="milk-svg-enhanced" id="milkSvg">
-                  <defs>
-                    <linearGradient id="milkEye" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stop-color="#40c4ff" />
-                      <stop offset="100%" stop-color="#0288d1" />
-                    </linearGradient>
-                    <radialGradient id="pacifierGlow" cx="40%" cy="40%" r="60%">
-                      <stop offset="0%" stop-color="#b3e5fc" />
-                      <stop offset="100%" stop-color="#4fc3f7" />
-                    </radialGradient>
-                  </defs>
-
-                  <!-- Orejitas caídas y tiernas de Milk -->
-                  <g class="milk-ears">
-                    <path class="milk-ear ear-l" d="M 32,58 C 12,48 2,68 8,92 C 14,106 32,102 36,82 C 38,70 36,62 32,58 Z" 
-                          fill="#ffffff" stroke="#5c3d2e" stroke-width="3.5" stroke-linejoin="round" />
-                    <path class="milk-ear ear-r" d="M 88,58 C 108,48 118,68 112,92 C 106,106 88,102 84,82 C 82,70 84,62 88,58 Z" 
-                          fill="#ffffff" stroke="#5c3d2e" stroke-width="3.5" stroke-linejoin="round" />
-                  </g>
-
-                  <!-- Cuerpo de bebé -->
-                  <ellipse cx="60" cy="85" rx="28" ry="20" fill="#ffffff" stroke="#5c3d2e" stroke-width="3.5" />
-                  <!-- Patitas de bebé -->
-                  <ellipse cx="48" cy="100" rx="9" ry="6" fill="#ffffff" stroke="#5c3d2e" stroke-width="3" />
-                  <ellipse cx="72" cy="100" rx="9" ry="6" fill="#ffffff" stroke="#5c3d2e" stroke-width="3" />
-
-                  <!-- Cabeza redondita -->
-                  <ellipse cx="60" cy="54" rx="38" ry="30" fill="#ffffff" stroke="#5c3d2e" stroke-width="3.5" />
-
-                  <!-- Mechas/rulo característico de la cabeza de Milk -->
-                  <path d="M 60,25 C 54,20 62,12 68,18 C 72,22 66,27 60,25 Z" 
-                        fill="#ffffff" stroke="#5c3d2e" stroke-width="3" stroke-linecap="round" />
-
-                  <!-- Mejillas rosadas súper tiernas -->
-                  <ellipse cx="36" cy="62" rx="8" ry="5" fill="#ffb6d2" />
-                  <ellipse cx="84" cy="62" rx="8" ry="5" fill="#ffb6d2" />
-
-                  <!-- Ojos grandes celestes brillantes -->
-                  <g class="milk-eyes" id="milkEyes">
-                    <ellipse cx="46" cy="50" rx="5" ry="7.5" fill="url(#milkEye)" stroke="#5c3d2e" stroke-width="1.5" />
-                    <ellipse cx="74" cy="50" rx="5" ry="7.5" fill="url(#milkEye)" stroke="#5c3d2e" stroke-width="1.5" />
-                    <!-- Brillos de los ojos -->
-                    <circle cx="44.5" cy="47" r="2.2" fill="#ffffff" />
-                    <circle cx="47.5" cy="53" r="1.1" fill="#ffffff" />
-                    <circle cx="72.5" cy="47" r="2.2" fill="#ffffff" />
-                    <circle cx="75.5" cy="53" r="1.1" fill="#ffffff" />
-                  </g>
-
-                  <!-- Chupete azul oficial de Milk -->
-                  <g class="milk-pacifier" id="milkPacifier">
-                    <ellipse cx="60" cy="64" rx="11" ry="8" fill="url(#pacifierGlow)" stroke="#5c3d2e" stroke-width="2.8" />
-                    <circle cx="60" cy="69" r="6" fill="#ffffff" stroke="#5c3d2e" stroke-width="2.2" />
-                  </g>
-                </svg>
+                <img src="assets/milk_teddy.png" class="official-baker-img milk-official" id="milkImg" alt="Milk" />
               </div>
               <div class="char-bubble milk-bubble" id="milkBubble">
                 ${this.currentOp === '+' 
@@ -225,7 +166,7 @@
             </div>
           </div>
 
-          <!-- Pregunta pedagógica y botones grandes de respuesta -->
+          <!-- Pregunta pedagógica y opciones de respuesta -->
           <div class="math-question-panel">
             <h2 id="mathQuestionText">
               ${this.currentOp === '+' 
@@ -248,7 +189,7 @@
     }
 
     bindEvents() {
-      // Cambio de modo (Sumas / Restas / Mezcla)
+      // Cambio de modo
       this.container.querySelectorAll('.mode-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
@@ -257,7 +198,7 @@
         });
       });
 
-      // Tocar dulces individuales para contarlos con el dedito
+      // Conteo táctil de dulces
       this.container.querySelectorAll('.treat-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
@@ -281,7 +222,7 @@
         });
       });
 
-      // Tocar las respuestas numéricas
+      // Respuestas
       this.container.querySelectorAll('.math-ans-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           if (this.answered || this.isCountingHelpActive) return;
@@ -304,7 +245,6 @@
 
       A.celebrate();
 
-      // Animación de fiesta en Cinnamoroll y Milk
       const cinna = this.container.querySelector('#cinnaBaker');
       const milk = this.container.querySelector('#milkBaker');
       const milkBubble = this.container.querySelector('#milkBubble');
@@ -313,10 +253,9 @@
       if (cinna) cinna.classList.add('party-jump');
       if (milk) milk.classList.add('party-jump');
 
-      if (milkBubble) milkBubble.innerHTML = '¡Siii, contaste muy bien! 💖';
+      if (milkBubble) milkBubble.innerHTML = '¡Siii, contaste muy bien Amanda! 💖';
       if (cinnaBubble) cinnaBubble.innerHTML = '¡Eres una gran pastelera! 🌟';
 
-      // Revelar todos los números ordenados en los dulces
       const activeTreats = this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)');
       activeTreats.forEach((item, i) => {
         const badge = item.querySelector('.treat-count');
@@ -335,10 +274,6 @@
       }, 1900);
     }
 
-    /* Reacción pedagógica cuando eligen una respuesta incorrecta:
-     * Milk reacciona con duda tierna: "¿Estás segura, Amanda? 🤔 ¡Contemos juntas!".
-     * Se iluminan los pastelitos uno por uno para que la niña aprenda sin frustración.
-     */
     handleDoubtAndGuide(btnEl) {
       A.softBoing();
       btnEl.classList.add('wobble-friendly');
@@ -354,7 +289,7 @@
       }
 
       if (milkBubble) {
-        milkBubble.innerHTML = '¿Estás segura? 🤔 ¡Contemos juntas!';
+        milkBubble.innerHTML = '¿Estás segura Amanda? 🤔 ¡Contemos juntas!';
         milkBubble.classList.add('highlight-speech');
         setTimeout(() => milkBubble.classList.remove('highlight-speech'), 2200);
       }
@@ -364,7 +299,6 @@
         setTimeout(() => tray.classList.remove('gentle-pulse'), 1200);
       }
 
-      // Guía paso a paso: ilumina y cuenta cada pastelito que debe ser contado
       this.isCountingHelpActive = true;
       const targets = Array.from(this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)'));
 
@@ -397,28 +331,12 @@
           <h2>¡Completaste todos los pedidos de la pastelería!</h2>
           <div class="victory-bakers-row">
             <div class="victory-mascot-cinna">
-              <img src="cinnamoroll_sprite.png" alt="Cinnamoroll" />
+              <img src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" />
               <span>Cinnamoroll</span>
             </div>
             <div class="giant-cake">🎂✨</div>
             <div class="victory-mascot-milk">
-              <svg viewBox="0 0 120 110" width="120" height="110">
-                <g class="milk-ears">
-                  <path d="M 32,58 C 12,48 2,68 8,92 C 14,106 32,102 36,82 C 38,70 36,62 32,58 Z" fill="#ffffff" stroke="#5c3d2e" stroke-width="3.5" />
-                  <path d="M 88,58 C 108,48 118,68 112,92 C 106,106 88,102 84,82 C 82,70 84,62 88,58 Z" fill="#ffffff" stroke="#5c3d2e" stroke-width="3.5" />
-                </g>
-                <ellipse cx="60" cy="85" rx="28" ry="20" fill="#ffffff" stroke="#5c3d2e" stroke-width="3.5" />
-                <ellipse cx="60" cy="54" rx="38" ry="30" fill="#ffffff" stroke="#5c3d2e" stroke-width="3.5" />
-                <path d="M 60,25 C 54,20 62,12 68,18 C 72,22 66,27 60,25 Z" fill="#ffffff" stroke="#5c3d2e" stroke-width="3" />
-                <ellipse cx="36" cy="62" rx="8" ry="5" fill="#ffb6d2" />
-                <ellipse cx="84" cy="62" rx="8" ry="5" fill="#ffb6d2" />
-                <ellipse cx="46" cy="50" rx="5" ry="7.5" fill="#0288d1" stroke="#5c3d2e" stroke-width="1.5" />
-                <ellipse cx="74" cy="50" rx="5" ry="7.5" fill="#0288d1" stroke="#5c3d2e" stroke-width="1.5" />
-                <circle cx="44.5" cy="47" r="2.2" fill="#ffffff" />
-                <circle cx="72.5" cy="47" r="2.2" fill="#ffffff" />
-                <ellipse cx="60" cy="64" rx="11" ry="8" fill="#4fc3f7" stroke="#5c3d2e" stroke-width="2.8" />
-                <circle cx="60" cy="69" r="6" fill="#ffffff" stroke="#5c3d2e" stroke-width="2.2" />
-              </svg>
+              <img src="assets/milk_teddy.png" alt="Milk" />
               <span>Milk</span>
             </div>
           </div>

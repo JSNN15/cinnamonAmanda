@@ -1,12 +1,50 @@
-/* Cinnamon Treat-Shooter 2.5D (El Repartidor Mágico de Rollitos)
- * Raycaster 2.5D estilo DOOM pero completamente pacífico y kawaii para una niña de 5 años:
- * En lugar de armas, Cinnamoroll sostiene una bandeja de rollitos de canela 🍥 y paletas 🍭
- * y recorre un laberinto de galletitas repartiendo comida a sus amigos hambrientos (Milk, Mocha, Purin, Chiffon).
+/* Cinnamon Treat-Shooter 2.5D (El Repartidor Mágico de Dulces)
+ * Motor Raycaster 2.5D robusto, nítido y colorido con SELECCIÓN DE PERSONAJE:
+ * Elige entre Cinnamoroll, Milk o Pompompurin.
+ * Laberinto de galletas con texturas, cielo pastel, suelo ajedrezado,
+ * y sprites de amigos oficiales en cartelera 3D (Milk, Mocha, Purin, Chiffon).
  */
 (function () {
   const { audio: A } = window.Cinnamo;
 
-  // Mapa del laberinto del jardín de caramelos (1 = galleta, 2 = oblea rosa, 3 = seto de menta, 0 = camino)
+  const VW = 640;
+  const VH = 360;
+
+  // Personajes jugables seleccionables
+  const PLAYABLE_CHARACTERS = [
+    {
+      id: 'cinna',
+      name: 'Cinnamoroll',
+      badge: '🐶 Canela',
+      imgSrc: 'assets/cinnamoroll_fly.png',
+      treatEmoji: '🍥',
+      treatName: 'Rollito de Canela',
+      pawColor: '#ffffff',
+      desc: '¡Reparte rollitos de canela recién horneados!'
+    },
+    {
+      id: 'milk',
+      name: 'Milk',
+      badge: '🍼 Bebé',
+      imgSrc: 'assets/milk_teddy.png',
+      treatEmoji: '🧸',
+      treatName: 'Galletita de Osito',
+      pawColor: '#ffffff',
+      desc: '¡Reparte ricas galletitas de osito y biberones!'
+    },
+    {
+      id: 'purin',
+      name: 'Pompompurin',
+      badge: '🍮 Purin',
+      imgSrc: 'assets/pompompurin.png',
+      treatEmoji: '🍮',
+      treatName: 'Pudín de Caramelo',
+      pawColor: '#fde047',
+      desc: '¡Reparte deliciosos flanes y pudines dulces!'
+    }
+  ];
+
+  // Mapa del laberinto (1: galleta waffle, 2: oblea rosa, 3: seto menta, 0: camino)
   const MAP = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 1],
@@ -22,14 +60,6 @@
   const MAP_W = 12;
   const MAP_H = 10;
 
-  // Amigos que esperan dulces
-  const FRIENDS_DEF = [
-    { id: 'milk', name: 'Milk', x: 2.5, y: 1.8, emoji: '🍼', hungry: true, phrase: '¡Tengo hambre! 🍼' },
-    { id: 'mocha', name: 'Mocha', x: 7.5, y: 2.5, emoji: '🎀', hungry: true, phrase: '¡Quiero un dulce! 🎀' },
-    { id: 'pompompurin', name: 'Pompompurin', x: 9.5, y: 7.5, emoji: '🍮', hungry: true, phrase: '¡Mucho apetito! 🍮' },
-    { id: 'chiffon', name: 'Chiffon', x: 1.8, y: 7.2, emoji: '🌸', hungry: true, phrase: '¡Un rollito por favor! 🌸' }
-  ];
-
   class TreatDoomGame {
     constructor() {
       this.container = null;
@@ -37,69 +67,144 @@
       this.ctx = null;
       this.animId = null;
       this.running = false;
+      this.inCharSelect = true;
 
-      // Jugador
+      this.selectedHero = PLAYABLE_CHARACTERS[0];
+
       this.player = {
         x: 1.5,
         y: 3.5,
         angle: 0,
-        fov: Math.PI / 3, // 60 grados
-        speed: 2.2,
-        rotSpeed: 2.4
+        fov: Math.PI / 3, // 60 deg
+        speed: 2.4,
+        rotSpeed: 2.6
       };
 
-      // Controles
       this.keys = { forward: false, backward: false, left: false, right: false };
-
-      // Proyectiles de dulces lanzados
-      this.treatProjectiles = [];
-
-      // Estado de los amigos
+      this.projectiles = [];
       this.friends = [];
       this.fedCount = 0;
-      this.totalFriends = FRIENDS_DEF.length;
+      this.totalFriends = 4;
 
-      // Arma/Bandeja seleccionada (rollito o paleta)
-      this.currentTreat = 'rollito'; // 'rollito' o 'paleta'
-      this.launchBob = 0;
+      // Cargar imágenes de los amigos
+      this.friendImages = {
+        milk: new Image(),
+        purin: new Image(),
+        mocha: new Image(),
+        chiffon: new Image(),
+        cinna: new Image()
+      };
+      this.friendImages.milk.src = 'assets/milk_teddy.png';
+      this.friendImages.purin.src = 'assets/pompompurin.png';
+      this.friendImages.mocha.src = 'assets/mocha.png';
+      this.friendImages.chiffon.src = 'assets/chiffon.png';
+      this.friendImages.cinna.src = 'assets/cinnamoroll_fly.png';
     }
 
     init(containerEl) {
       this.container = containerEl;
-      this.renderDOM();
+      this.inCharSelect = true;
+      this.renderCharSelect();
+    }
+
+    renderCharSelect() {
+      this.container.innerHTML = `
+        <div class="doom-char-select-wrap">
+          <div class="char-select-header">
+            <span class="select-badge">✨ Elige a tu Repartidor Mágico ✨</span>
+            <h1>¿Con quién quieres jugar hoy, Amanda?</h1>
+            <p>¡Elige a tu personaje favorito para repartir dulces a todos sus amigos!</p>
+          </div>
+
+          <div class="char-select-cards-row">
+            ${PLAYABLE_CHARACTERS.map(c => `
+              <div class="char-hero-card ${c.id === this.selectedHero.id ? 'active' : ''}" data-id="${c.id}">
+                <div class="hero-badge">${c.badge}</div>
+                <div class="hero-img-box">
+                  <img src="${c.imgSrc}" alt="${c.name}" />
+                </div>
+                <h2>${c.name}</h2>
+                <div class="hero-treat-tag">${c.treatEmoji} ${c.treatName}</div>
+                <p>${c.desc}</p>
+                <button class="btn-pick-hero">▶ ¡Elegir a ${c.name}!</button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      this.container.querySelectorAll('.char-hero-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          A.unlock();
+          A.celebrate();
+          const id = e.currentTarget.dataset.id;
+          const found = PLAYABLE_CHARACTERS.find(c => c.id === id);
+          if (found) {
+            this.selectedHero = found;
+            this.start3DGame();
+          }
+        });
+      });
+    }
+
+    start3DGame() {
+      this.inCharSelect = false;
+      this.render3DStage();
       this.setupCanvas();
-      this.resetGame();
+      this.setupFriendsList();
       this.bindInputs();
       this.startLoop();
     }
 
-    renderDOM() {
+    setupFriendsList() {
+      // Amigos en el laberinto según quién esté jugando (para no repetir al héroe)
+      const allPossible = [
+        { id: 'mocha', name: 'Mocha', x: 7.5, y: 2.5, imgKey: 'mocha', hungry: true, phrase: '¡Quiero un dulce! 🎀' },
+        { id: 'chiffon', name: 'Chiffon', x: 1.8, y: 7.2, imgKey: 'chiffon', hungry: true, phrase: '¡Tengo apetito! 🌸' },
+        { id: 'milk', name: 'Milk', x: 2.5, y: 1.8, imgKey: 'milk', hungry: true, phrase: '¡Quiero merienda! 🍼' },
+        { id: 'purin', name: 'Pompompurin', x: 9.5, y: 7.5, imgKey: 'purin', hungry: true, phrase: '¡Mucho apetito! 🍮' },
+        { id: 'cinna', name: 'Cinnamoroll', x: 2.5, y: 1.8, imgKey: 'cinna', hungry: true, phrase: '¡Un rollito porfa! 🪽' }
+      ];
+
+      // Excluir al héroe seleccionado
+      this.friends = allPossible.filter(f => f.id !== this.selectedHero.id).slice(0, 4);
+      this.totalFriends = this.friends.length;
+      this.fedCount = 0;
+      this.projectiles = [];
+      this.player.x = 1.5;
+      this.player.y = 3.5;
+      this.player.angle = 0;
+    }
+
+    render3DStage() {
+      const hero = this.selectedHero;
+
       this.container.innerHTML = `
         <div class="doom-wrapper">
-          <canvas id="doomCanvas"></canvas>
+          <canvas id="doomCanvas" width="${VW}" height="${VH}"></canvas>
 
-          <!-- Barra superior del Repartidor -->
+          <!-- Barra superior -->
           <div class="doom-hud">
             <div class="doom-score-pill">
               <span>💖 Amigos Felices: <strong id="doomFedCount">0 / ${this.totalFriends}</strong></span>
             </div>
-            <div class="treat-switcher-pills">
-              <button class="treat-type-btn active" id="btnChooseRoll" data-type="rollito">🍥 Rollito</button>
-              <button class="treat-type-btn" id="btnChooseLolly" data-type="paleta">🍭 Paleta</button>
+            <div class="doom-hero-pill">
+              <span>Jugando como: <strong>${hero.name}</strong> ${hero.treatEmoji}</span>
             </div>
+            <button class="btn-change-hero" id="btnChangeHero">🔄 Cambiar Personaje</button>
           </div>
 
-          <!-- Minimapa / Radar de amigos -->
+          <!-- Radar / Minimap -->
           <canvas id="doomMinimap" class="doom-radar-canvas" width="120" height="100"></canvas>
 
-          <!-- Bandeja de Cinnamoroll en primer plano (First-Person paws & tray) -->
+          <!-- Bandeja y patitas en primer plano del personaje elegido -->
           <div class="cinna-firstperson-tray" id="cinnaHands">
-            <div class="tray-treat-display" id="trayTreatGraphic">🍥</div>
-            <div class="cinna-paw paw-left">🐾</div>
-            <div class="cinna-paw paw-right">🐾</div>
+            <div class="tray-treat-display" id="trayTreatGraphic">${hero.treatEmoji}</div>
+            <div class="hero-firstperson-paw paw-left" style="background-color: ${hero.pawColor};">🐾</div>
+            <div class="hero-firstperson-paw paw-right" style="background-color: ${hero.pawColor};">🐾</div>
           </div>
 
-          <!-- Controles virtuales en pantalla para tablets / iPad -->
+          <!-- Controles táctiles transparentes -->
           <div class="doom-touch-controls">
             <div class="doom-dpad">
               <button class="doom-touch-btn dpad-up" id="btnDoomUp">⬆️</button>
@@ -111,23 +216,20 @@
             </div>
 
             <button class="doom-launch-big-btn" id="btnDoomLaunch">
-              <span class="launch-ico" id="launchBtnIcon">🍥</span>
+              <span class="launch-ico">${hero.treatEmoji}</span>
               <span class="launch-label">¡Repartir Dulce!</span>
             </button>
           </div>
 
-          <!-- Victoria cuando todos los amigos comen -->
+          <!-- Pantalla de Victoria -->
           <div class="doom-victory-overlay hidden" id="doomVictoryOverlay">
             <div class="doom-victory-box">
               <div class="victory-ribbon">💖 ¡MISIÓN DE AMISTAD CUMPLIDA! 💖</div>
-              <h2>¡Ningún amigo tiene hambre hoy!</h2>
-              <div class="victory-friends-parade">
-                <div class="parade-item"><span>🍼 Milk</span><strong>¡Llenito!</strong></div>
-                <div class="parade-item"><span>🎀 Mocha</span><strong>¡Delicioso!</strong></div>
-                <div class="parade-item"><span>🍮 Purin</span><strong>¡Feliz!</strong></div>
-                <div class="parade-item"><span>🌸 Chiffon</span><strong>¡Gracias!</strong></div>
+              <h2>¡Todos los amigos están felices y llenitos!</h2>
+              <div class="victory-hero-celebrate">
+                <img src="${hero.imgSrc}" alt="${hero.name}" />
+                <h3>¡Gran trabajo, ${hero.name} y Amanda!</h3>
               </div>
-              <p>¡Amanda, eres la mejor pastelera de todo el mundo de Cinnamoroll!</p>
               <button class="btn-doom-replay" id="btnDoomReplay">▶ ¡Repartir dulces otra vez!</button>
             </div>
           </div>
@@ -138,28 +240,9 @@
     setupCanvas() {
       this.canvas = this.container.querySelector('#doomCanvas');
       this.ctx = this.canvas.getContext('2d');
-      this.resize();
-      window.addEventListener('resize', () => this.resize());
-    }
-
-    resize() {
-      if (!this.canvas) return;
-      this.canvas.width = this.canvas.clientWidth || window.innerWidth;
-      this.canvas.height = this.canvas.clientHeight || (window.innerHeight - 60);
-    }
-
-    resetGame() {
-      this.player.x = 1.5;
-      this.player.y = 3.5;
-      this.player.angle = 0;
-      this.treatProjectiles = [];
-      this.fedCount = 0;
-      this.friends = FRIENDS_DEF.map(f => ({ ...f, hungry: true }));
-      this.updateHUD();
     }
 
     bindInputs() {
-      // Teclado (WASD / Flechas / Espacio)
       window.addEventListener('keydown', (e) => {
         if (e.code === 'KeyW' || e.code === 'ArrowUp') this.keys.forward = true;
         if (e.code === 'KeyS' || e.code === 'ArrowDown') this.keys.backward = true;
@@ -178,7 +261,6 @@
         if (e.code === 'KeyD' || e.code === 'ArrowRight') this.keys.right = false;
       });
 
-      // Controles táctiles
       const hook = (id, prop) => {
         const el = this.container.querySelector(id);
         if (!el) return;
@@ -193,7 +275,6 @@
       hook('#btnDoomLeft', 'left');
       hook('#btnDoomRight', 'right');
 
-      // Botón lanzar dulce
       const btnLaunch = this.container.querySelector('#btnDoomLaunch');
       if (btnLaunch) {
         btnLaunch.addEventListener('pointerdown', (e) => {
@@ -203,53 +284,45 @@
         });
       }
 
-      // Selector de dulce (Rollito vs Paleta)
-      this.container.querySelectorAll('.treat-type-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+      const btnChange = this.container.querySelector('#btnChangeHero');
+      if (btnChange) {
+        btnChange.addEventListener('click', () => {
           A.unlock();
-          A.bubblePop(1);
-          this.currentTreat = e.currentTarget.dataset.type;
-          this.container.querySelectorAll('.treat-type-btn').forEach(b => b.classList.remove('active'));
-          e.currentTarget.classList.add('active');
-
-          const icon = this.currentTreat === 'rollito' ? '🍥' : '🍭';
-          this.container.querySelector('#trayTreatGraphic').textContent = icon;
-          this.container.querySelector('#launchBtnIcon').textContent = icon;
+          this.stop();
+          this.init(this.container);
         });
-      });
+      }
 
-      // Botón revancha
       const btnReplay = this.container.querySelector('#btnDoomReplay');
       if (btnReplay) {
         btnReplay.addEventListener('click', () => {
           A.unlock();
           A.bubblePop(1);
           this.container.querySelector('#doomVictoryOverlay').classList.add('hidden');
-          this.resetGame();
+          this.setupFriendsList();
+          this.updateHUD();
         });
       }
     }
 
     shootTreat() {
       A.whoosh(true);
-      // Animación de impulso en las patitas
       const tray = this.container.querySelector('#cinnaHands');
       if (tray) {
         tray.classList.add('launch-recoil');
-        setTimeout(() => tray.classList.remove('launch-recoil'), 250);
+        setTimeout(() => tray.classList.remove('launch-recoil'), 220);
       }
 
-      // Crear proyectil en 3D
       const dirX = Math.cos(this.player.angle);
       const dirY = Math.sin(this.player.angle);
 
-      this.treatProjectiles.push({
-        x: this.player.x + dirX * 0.3,
-        y: this.player.y + dirY * 0.3,
-        vx: dirX * 4.8,
-        vy: dirY * 4.8,
-        emoji: this.currentTreat === 'rollito' ? '🍥' : '🍭',
-        life: 2.2
+      this.projectiles.push({
+        x: this.player.x + dirX * 0.35,
+        y: this.player.y + dirY * 0.35,
+        vx: dirX * 5.2,
+        vy: dirY * 5.2,
+        emoji: this.selectedHero.treatEmoji,
+        life: 2.4
       });
     }
 
@@ -278,11 +351,9 @@
     update(dt) {
       const p = this.player;
 
-      // Rotación
       if (this.keys.left) p.angle -= p.rotSpeed * dt;
       if (this.keys.right) p.angle += p.rotSpeed * dt;
 
-      // Movimiento con detección de colisión con muros
       let moveStep = 0;
       if (this.keys.forward) moveStep = p.speed * dt;
       if (this.keys.backward) moveStep = -p.speed * dt;
@@ -290,22 +361,20 @@
       if (moveStep !== 0) {
         const nextX = p.x + Math.cos(p.angle) * moveStep;
         const nextY = p.y + Math.sin(p.angle) * moveStep;
-
         if (!this.isWall(nextX, p.y)) p.x = nextX;
         if (!this.isWall(p.x, nextY)) p.y = nextY;
       }
 
-      // Actualizar proyectiles de dulces
-      for (const pr of this.treatProjectiles) {
+      // Proyectiles
+      for (const pr of this.projectiles) {
         pr.x += pr.vx * dt;
         pr.y += pr.vy * dt;
         pr.life -= dt;
 
-        // Comprobar si golpeó a algún amigo hambriento
         for (const fr of this.friends) {
-          if (fr.hungry && Math.hypot(pr.x - fr.x, pr.y - fr.y) < 0.6) {
+          if (fr.hungry && Math.hypot(pr.x - fr.x, pr.y - fr.y) < 0.65) {
             fr.hungry = false;
-            pr.life = -1; // Desaparece el proyectil
+            pr.life = -1;
             this.fedCount++;
             A.celebrate();
             A.collect(this.fedCount);
@@ -319,12 +388,11 @@
           }
         }
 
-        // Chocar con muro
         if (this.isWall(pr.x, pr.y)) {
           pr.life = -1;
         }
       }
-      this.treatProjectiles = this.treatProjectiles.filter(pr => pr.life > 0);
+      this.projectiles = this.projectiles.filter(pr => pr.life > 0);
     }
 
     isWall(x, y) {
@@ -335,31 +403,41 @@
     }
 
     updateHUD() {
-      const el = this.container.querySelector('#doomFedCount');
+      const el = this.container ? this.container.querySelector('#doomFedCount') : null;
       if (el) el.textContent = `${this.fedCount} / ${this.totalFriends}`;
     }
 
     render() {
       const ctx = this.ctx;
-      const W = this.canvas.width;
-      const H = this.canvas.height;
       const p = this.player;
 
-      // 1. Cielo pastel y suelo de damero dulce
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, H / 2);
-      skyGrad.addColorStop(0, '#aee0ff');
-      skyGrad.addColorStop(1, '#e3f3ff');
+      // 1. Cielo soleado pastel
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, VH / 2);
+      skyGrad.addColorStop(0, '#7ec8f8');
+      skyGrad.addColorStop(1, '#d8efff');
       ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, W, H / 2);
+      ctx.fillRect(0, 0, VW, VH / 2);
 
-      const floorGrad = ctx.createLinearGradient(0, H / 2, 0, H);
-      floorGrad.addColorStop(0, '#ffdce9');
-      floorGrad.addColorStop(1, '#ffc2d8');
+      // Nubes decorativas en el cielo
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      for (let i = 0; i < 4; i++) {
+        const cx = ((i * 180 - p.angle * 80) % VW + VW) % VW;
+        ctx.beginPath();
+        ctx.arc(cx, 40, 24, 0, Math.PI * 2);
+        ctx.arc(cx + 20, 35, 30, 0, Math.PI * 2);
+        ctx.arc(cx + 45, 42, 22, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 2. Suelo ajedrezado pastel
+      const floorGrad = ctx.createLinearGradient(0, VH / 2, 0, VH);
+      floorGrad.addColorStop(0, '#ffd6e7');
+      floorGrad.addColorStop(1, '#ffb8d6');
       ctx.fillStyle = floorGrad;
-      ctx.fillRect(0, H / 2, W, H / 2);
+      ctx.fillRect(0, VH / 2, VW, VH / 2);
 
-      // 2. Raycasting de muros pastel
-      const numRays = Math.floor(W / 2);
+      // 3. Raycasting nítido
+      const numRays = VW / 2;
       const halfFov = p.fov / 2;
       const zBuffer = new Array(numRays);
 
@@ -368,12 +446,10 @@
         const cosRay = Math.cos(rayAngle);
         const sinRay = Math.sin(rayAngle);
 
-        // Algoritmo DDA
         let dist = 0;
-        let hitType = 0;
-        let side = 0;
+        let hitType = 1;
         const maxDist = 16;
-        const step = 0.04;
+        const step = 0.035;
 
         let curX = p.x;
         let curY = p.y;
@@ -392,31 +468,30 @@
           }
         }
 
-        // Corrección de efecto ojo de pez
         const correctDist = dist * Math.cos(rayAngle - p.angle);
         zBuffer[r] = correctDist;
 
-        // Altura del muro en pantalla
-        const wallH = Math.min(H * 1.5, (H / correctDist) * 0.9);
-        const topY = (H - wallH) / 2;
+        const wallH = Math.min(VH * 1.6, (VH / correctDist) * 1.05);
+        const topY = (VH - wallH) / 2;
 
-        // Color del muro según tipo (Galleta, Oblea rosa, Menta)
-        let wallColor = '#f5c98d';
-        if (hitType === 2) wallColor = '#ff9ebb'; // Oblea
-        if (hitType === 3) wallColor = '#a7e8bd'; // Menta
+        let wallColor = '#f5c98d'; // Galleta
+        if (hitType === 2) wallColor = '#ff8fab'; // Oblea rosa
+        if (hitType === 3) wallColor = '#81e6a9'; // Seto menta
 
-        // Sombreado por distancia
-        const shade = Math.max(0.35, 1 - correctDist / 12);
+        const shade = Math.max(0.4, 1 - correctDist / 14);
         ctx.fillStyle = wallColor;
         ctx.globalAlpha = shade;
         ctx.fillRect(r * 2, topY, 2.2, wallH);
+
+        // Borde superior de galleta
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillRect(r * 2, topY, 2.2, 3);
       }
       ctx.globalAlpha = 1;
 
-      // 3. Render de Sprites de Amigos y Proyectiles (Ordenados por distancia)
+      // 4. Sprites de los amigos oficiales en 3D (Billboard)
       const sprites = [];
 
-      // Añadir amigos
       for (const fr of this.friends) {
         const dx = fr.x - p.x;
         const dy = fr.y - p.y;
@@ -424,51 +499,56 @@
         sprites.push({ type: 'friend', data: fr, dist, x: fr.x, y: fr.y });
       }
 
-      // Añadir proyectiles de dulces volando
-      for (const pr of this.treatProjectiles) {
+      for (const pr of this.projectiles) {
         const dx = pr.x - p.x;
         const dy = pr.y - p.y;
         const dist = Math.hypot(dx, dy);
         sprites.push({ type: 'projectile', data: pr, dist, x: pr.x, y: pr.y });
       }
 
-      // Ordenar de más lejano a más cercano (Painter's algorithm)
       sprites.sort((a, b) => b.dist - a.dist);
 
       for (const sp of sprites) {
         const dx = sp.x - p.x;
         const dy = sp.y - p.y;
 
-        // Transformación al espacio de la cámara del jugador
-        const angleToSprite = Math.atan2(dy, dx) - p.angle;
-        let normAngle = angleToSprite;
-        while (normAngle < -Math.PI) normAngle += Math.PI * 2;
-        while (normAngle > Math.PI) normAngle -= Math.PI * 2;
+        let angleToSprite = Math.atan2(dy, dx) - p.angle;
+        while (angleToSprite < -Math.PI) angleToSprite += Math.PI * 2;
+        while (angleToSprite > Math.PI) angleToSprite -= Math.PI * 2;
 
-        if (Math.abs(normAngle) < halfFov + 0.3 && sp.dist > 0.2) {
-          const screenX = (W / 2) + Math.tan(normAngle) * (W / (2 * Math.tan(halfFov)));
-          const spriteSize = Math.min(H * 0.9, (H / sp.dist) * 0.8);
-          const rayIdx = Math.floor((screenX / W) * numRays);
+        if (Math.abs(angleToSprite) < halfFov + 0.35 && sp.dist > 0.25) {
+          const screenX = (VW / 2) + Math.tan(angleToSprite) * (VW / (2 * Math.tan(halfFov)));
+          const spriteH = Math.min(VH * 1.1, (VH / sp.dist) * 0.95);
+          const spriteW = spriteH * 1.1;
+          const rayIdx = Math.floor((screenX / VW) * numRays);
 
-          // Verificar si no está tapado por un muro
-          if (rayIdx >= 0 && rayIdx < numRays && sp.dist < zBuffer[rayIdx] + 0.3) {
-            const screenY = H / 2 - spriteSize / 2;
+          if (rayIdx >= 0 && rayIdx < numRays && sp.dist < zBuffer[rayIdx] + 0.4) {
+            const screenY = VH / 2 - spriteH / 2 + 10;
 
             if (sp.type === 'friend') {
               const fr = sp.data;
-              ctx.font = `${Math.floor(spriteSize * 0.75)}px sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.fillText(fr.emoji, screenX, screenY + spriteSize * 0.75);
+              const img = this.friendImages[fr.imgKey];
 
-              // Burbuja sobre la cabeza
+              if (img && img.complete) {
+                ctx.drawImage(img, screenX - spriteW / 2, screenY, spriteW, spriteH);
+              }
+
+              // Burbuja animada sobre la cabeza
               const bubbleText = fr.hungry ? fr.phrase : '¡Yummy! 💖';
-              ctx.font = `bold ${Math.max(14, Math.floor(spriteSize * 0.24))}px sans-serif`;
-              ctx.fillStyle = fr.hungry ? '#ff4081' : '#4caf50';
-              ctx.fillText(bubbleText, screenX, screenY - 12);
-            } else if (sp.type === 'projectile') {
-              ctx.font = `${Math.floor(spriteSize * 0.6)}px sans-serif`;
+              ctx.font = `bold ${Math.max(14, Math.floor(spriteH * 0.22))}px sans-serif`;
+              ctx.fillStyle = '#ffffff';
+              ctx.strokeStyle = '#5c3d2e';
+              ctx.lineWidth = 3;
               ctx.textAlign = 'center';
-              ctx.fillText(sp.data.emoji, screenX, screenY + spriteSize * 0.6);
+
+              const bubbleY = screenY - 14;
+              ctx.strokeText(bubbleText, screenX, bubbleY);
+              ctx.fillStyle = fr.hungry ? '#ff1493' : '#2e7d32';
+              ctx.fillText(bubbleText, screenX, bubbleY);
+            } else if (sp.type === 'projectile') {
+              ctx.font = `${Math.floor(spriteH * 0.6)}px sans-serif`;
+              ctx.textAlign = 'center';
+              ctx.fillText(sp.data.emoji, screenX, screenY + spriteH * 0.5);
             }
           }
         }
@@ -483,10 +563,9 @@
       const cellH = canvas.height / MAP_H;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Dibujar celdas
       for (let y = 0; y < MAP_H; y++) {
         for (let x = 0; x < MAP_W; x++) {
           if (MAP[y][x] > 0) {
@@ -496,15 +575,13 @@
         }
       }
 
-      // Dibujar amigos
       for (const fr of this.friends) {
-        ctx.fillStyle = fr.hungry ? '#ff4081' : '#4caf50';
+        ctx.fillStyle = fr.hungry ? '#ff1493' : '#4caf50';
         ctx.beginPath();
-        ctx.arc(fr.x * cellW, fr.y * cellH, 4, 0, Math.PI * 2);
+        ctx.arc(fr.x * cellW, fr.y * cellH, 4.5, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Dibujar jugador
       const px = this.player.x * cellW;
       const py = this.player.y * cellH;
       ctx.fillStyle = '#2196f3';
@@ -512,12 +589,11 @@
       ctx.arc(px, py, 4.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Línea de visión
       ctx.strokeStyle = '#2196f3';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(px, py);
-      ctx.lineTo(px + Math.cos(this.player.angle) * 10, py + Math.sin(this.player.angle) * 10);
+      ctx.lineTo(px + Math.cos(this.player.angle) * 12, py + Math.sin(this.player.angle) * 12);
       ctx.stroke();
     }
   }
