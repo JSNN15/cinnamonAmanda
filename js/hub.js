@@ -14,6 +14,17 @@
       this.cacheDOMElements();
       this.bindEvents();
       this.showScreen('hub');
+      this.dismissPreloader();
+    }
+
+    dismissPreloader() {
+      const p = document.getElementById('appPreloader');
+      if (p) {
+        setTimeout(() => {
+          p.classList.add('fade-out');
+          setTimeout(() => { try { p.remove(); } catch (_) {} }, 400);
+        }, 150);
+      }
     }
 
     cacheDOMElements() {
@@ -128,4 +139,11 @@
   window.addEventListener('DOMContentLoaded', () => {
     window.Cinnamo.hub.init();
   });
+
+  // Registro del Service Worker para carga instantánea (<100ms) y modo offline
+  if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
 })();

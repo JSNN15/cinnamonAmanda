@@ -23,6 +23,81 @@ html, body {
 
 .hidden { display: none !important; }
 
+/* ---------- PRELOADER INSTANTÁNEO ---------- */
+.app-preloader {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #e3f2fd 0%, #fff0f5 50%, #f3e5f5 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.app-preloader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.preloader-content {
+  text-align: center;
+  padding: 24px;
+}
+
+.preloader-mascot {
+  font-size: 56px;
+  animation: preloaderBounce 1s infinite alternate ease-in-out;
+  display: inline-block;
+}
+
+@keyframes preloaderBounce {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-16px) scale(1.1); }
+}
+
+.preloader-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #47689e;
+  margin: 12px 0 14px;
+  text-shadow: 0 2px 4px rgba(71, 104, 158, 0.12);
+}
+
+.preloader-bar {
+  width: 220px;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #bcd7ff;
+  border-radius: 999px;
+  margin: 0 auto 14px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.preloader-bar-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff8fbf, #ffe066, #6b8fc7);
+  background-size: 200% 100%;
+  border-radius: 999px;
+  animation: preloaderShimmer 1.2s infinite linear;
+}
+
+@keyframes preloaderShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.preloader-sub {
+  font-size: 16px;
+  font-weight: 700;
+  color: #7b8fb2;
+}
+
+
+
 /* ---------- BARRA SUPERIOR UNIVERSAL ---------- */
 #globalTopBar {
   position: fixed; top: 0; left: 0; right: 0;

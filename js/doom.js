@@ -86,7 +86,11 @@
       this.fedCount = 0;
       this.totalFriends = 4;
 
-      // Cargar imágenes de los amigos
+      this.friendImages = null;
+    }
+
+    ensureAssets() {
+      if (this.friendImages) return;
       this.friendImages = {
         milk: new Image(),
         purin: new Image(),
@@ -102,6 +106,7 @@
     }
 
     init(containerEl) {
+      this.ensureAssets();
       this.container = containerEl;
       this.inCharSelect = true;
       this.renderCharSelect();

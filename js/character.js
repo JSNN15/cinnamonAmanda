@@ -8,11 +8,22 @@
   const CENTER_X = 297;
   const CENTER_Y = 210;
 
-  // Cargar spritesheet auténtico
-  const img = new Image();
-  img.src = 'cinnamoroll_sheet.png';
+  // Cargar spritesheet auténtico bajo demanda (no bloquea el arranque)
+  let img = null;
   let imgLoaded = false;
-  img.onload = () => { imgLoaded = true; };
+  function ensureSprite() {
+    if (img) return;
+    img = new Image();
+    img.src = 'cinnamoroll_sheet.png';
+    img.onload = () => { imgLoaded = true; };
+  }
+
+  // Carga diferida en segundo plano tras renderizar el menú
+  if (typeof window !== 'undefined') {
+    window.addEventListener('load', () => {
+      setTimeout(ensureSprite, 1000);
+    });
+  }
 
   // Paleta oficial para fallback vectorial
   const OUT = '#5b3e31';       // contorno marrón chocolate cálido Sanrio
@@ -113,6 +124,7 @@
    * @param st { t, flapSpeed, flapAmp, mood:'idle'|'happy'|'wow', blink:boolean, tilt, spin, glow }
    */
   function draw(ctx, x, y, size, st) {
+    if (!img) ensureSprite();
     if (!imgLoaded) {
       drawVectorFallback(ctx, x, y, size, st);
       return;

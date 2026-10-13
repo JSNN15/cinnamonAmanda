@@ -17,18 +17,11 @@
       this.animId = null;
       this.running = false;
 
-      // Cargar sprites oficiales
-      this.cinnaImg = new Image();
-      this.cinnaImg.src = 'assets/cinnamoroll_fly.png';
-
-      this.milkImg = new Image();
-      this.milkImg.src = 'assets/milk_teddy.png';
-
-      this.purinImg = new Image();
-      this.purinImg.src = 'assets/pompompurin.png';
-
-      this.mochaImg = new Image();
-      this.mochaImg.src = 'assets/mocha.png';
+      // Sprites oficiales (carga bajo demanda)
+      this.cinnaImg = null;
+      this.milkImg = null;
+      this.purinImg = null;
+      this.mochaImg = null;
 
       // Estado del jugador
       this.p = {
@@ -57,7 +50,23 @@
       this.reachedGoal = false;
     }
 
+    ensureAssets() {
+      if (this.cinnaImg) return;
+      this.cinnaImg = new Image();
+      this.cinnaImg.src = 'assets/cinnamoroll_fly.png';
+
+      this.milkImg = new Image();
+      this.milkImg.src = 'assets/milk_teddy.png';
+
+      this.purinImg = new Image();
+      this.purinImg.src = 'assets/pompompurin.png';
+
+      this.mochaImg = new Image();
+      this.mochaImg.src = 'assets/mocha.png';
+    }
+
     init(containerEl) {
+      this.ensureAssets();
       this.container = containerEl;
       this.renderDOM();
       this.setupCanvas();

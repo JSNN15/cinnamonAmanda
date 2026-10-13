@@ -7,10 +7,25 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>Cinnamoroll & Amigos · Suite de Juegos</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" media="print" onload="this.media='all'" />
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
+  </noscript>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- PANTALLA DE CARGA INSTANTÁNEA (Splash Pastel) -->
+  <div id="appPreloader" class="app-preloader" aria-hidden="true">
+    <div class="preloader-content">
+      <div class="preloader-mascot">🌸</div>
+      <div class="preloader-title">Cinnamoroll Land</div>
+      <div class="preloader-bar"><div class="preloader-bar-fill"></div></div>
+      <div class="preloader-sub">¡Preparando dulces para Amanda! ✨</div>
+    </div>
+  </div>
+
   <!-- BARRA DE NAVEGACIÓN UNIVERSAL -->
   <header id="globalTopBar">
     <button id="globalBtnHome" class="top-nav-btn hidden" title="Volver al Menú Principal" aria-label="Inicio">
@@ -31,7 +46,7 @@
     <section id="screen-hub" class="screen active">
       <div class="hub-header">
         <div class="cinna-mascot-box">
-          <img src="cinnamoroll_sprite.png" class="cinna-mascot-img" alt="Cinnamoroll" />
+          <img src="cinnamoroll_sprite.png" class="cinna-mascot-img" alt="Cinnamoroll" width="180" height="96" fetchpriority="high" loading="eager" />
         </div>
         <h1>¡El Mundo de Cinnamoroll!</h1>
         <p class="subtitle">¡6 divertidos juegos para jugar con Cinnamoroll y sus amigos!</p>

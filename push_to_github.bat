@@ -4,6 +4,8 @@ echo ==========================================================
 echo   Subiendo Cinnamoroll Land a GitHub (cinnamonAmanda)
 echo ==========================================================
 echo.
+git add .
+git commit -m "update: sincronizacion de suite de juegos"
 git push -u origin main
 echo.
 if %ERRORLEVEL% equ 0 (
