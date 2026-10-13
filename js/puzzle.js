@@ -86,10 +86,24 @@
       this.boardWidth = 440;
       this.boardHeight = 304;
       this.activeDrag = null;
+      this.currentDragCleanup = null;
 
       // Temporizador amistoso
       this.timerSeconds = 0;
       this.timerInterval = null;
+    }
+
+    cleanupActiveDrag() {
+      if (this.currentDragCleanup) {
+        try { this.currentDragCleanup(); } catch (_) {}
+        this.currentDragCleanup = null;
+      }
+      document.querySelectorAll('.puzzle-piece-drag-clone').forEach(el => el.remove());
+      if (this.container) {
+        this.container.querySelectorAll('.tray-token-dragging').forEach(el => el.classList.remove('tray-token-dragging'));
+        this.container.querySelectorAll('.slot-magnet-match').forEach(el => el.classList.remove('slot-magnet-match'));
+      }
+      this.activeDrag = null;
     }
 
     init(containerEl) {
@@ -112,6 +126,7 @@
     }
 
     loadPuzzle(charIdx, pieceCount = 6) {
+      this.cleanupActiveDrag();
       this.currentCharIdx = charIdx;
       this.pieceCountMode = pieceCount;
       this.placedPieces = {};
@@ -169,6 +184,7 @@
     }
 
     render() {
+      this.cleanupActiveDrag();
       const char = PUZZLE_CHARACTERS[this.currentCharIdx];
       const { cols, rows } = this.getGridDimensions(this.pieceCountMode);
       const slotW = this.boardWidth / cols;
@@ -213,7 +229,7 @@
 
           <!-- Escenario Central -->
           <div class="puzzle-stage-card ${allDone ? 'puzzle-completed-glow' : ''}" style="background: ${char.bgGrad}">
-            <!-- Encabezado con estado y botón Ojo Mágico -->
+            <!-- Encabezado con estado y botón Marca de Agua -->
             <div class="puzzle-header-info">
               <div class="puzzle-mascot-avatar">
                 <img src="${char.avatarImg}" alt="${char.name}" />
@@ -227,9 +243,9 @@
                 <p>👇 Arrastra las piezas de madera a su lugar en el cuadro:</p>
               </div>
 
-              <!-- Interruptor Ojo Mágico (Silueta Guía ON/OFF) -->
-              <button class="btn-ghost-toggle ${this.showGhostGuide ? 'active' : ''}" id="btnToggleGhost" title="Activar o desactivar silueta de ayuda">
-                ${this.showGhostGuide ? '👁️ Silueta: ON (Pista)' : '🙈 Silueta: OFF (Desafío)'}
+              <!-- Interruptor Marca de Agua (Silueta Sutil ON/OFF) -->
+              <button class="btn-ghost-toggle ${this.showGhostGuide ? 'active' : ''}" id="btnToggleGhost" title="Activar o desactivar marca de agua de ayuda">
+                ${this.showGhostGuide ? '💧 Marca de agua: ON' : '🙈 Marca de agua: OFF (Desafío)'}
               </button>
             </div>
 
@@ -239,7 +255,7 @@
               <div class="puzzle-board-frame">
                 <div class="puzzle-board-box ${this.showGhostGuide ? 'with-ghost' : 'no-ghost'}" 
                      id="puzzleBoardBox"
-                     style="width: ${this.boardWidth}px; height: ${this.boardHeight}px; background-image: url('${char.imgSrc}');">
+                     style="width: ${this.boardWidth}px; height: ${this.boardHeight}px; --guide-bg: url('${char.imgSrc}');">
                   
                   <!-- Rejilla de ranuras del tablero -->
                   ${this.renderBoardSlots(cols, rows, slotW, slotH, char.imgSrc)}
@@ -406,7 +422,7 @@
     }
 
     /* -------------------------------------------------------------
-       ARRASTRE TÁCTIL Y ENCAJE MAGNÉTICO (POINTER EVENTS)
+       ARRASTRE TÁCTIL Y ENCAJE MAGNÉTICO ROBUSTO (POINTER EVENTS)
        ------------------------------------------------------------- */
     setupPuzzleDragAndDrop(cols, rows, slotW, slotH, imgSrc) {
       const trayTokens = this.container.querySelectorAll('.puzzle-tray-piece-token');
@@ -419,19 +435,25 @@
           if (this.placedPieces[pieceId]) return;
 
           e.preventDefault();
+          this.cleanupActiveDrag();
+
           A.unlock();
           A.bubblePop(1);
 
+          const pointerId = e.pointerId;
           if (token.setPointerCapture) {
-            try { token.setPointerCapture(e.pointerId); } catch (_) {}
+            try { token.setPointerCapture(pointerId); } catch (_) {}
           }
+
+          const isTouch = e.pointerType === 'touch';
+          const touchOffsetY = isTouch ? -32 : 0;
 
           const clone = document.createElement('div');
           clone.className = 'puzzle-piece-drag-clone';
           clone.style.width = `${slotW}px`;
           clone.style.height = `${slotH}px`;
           clone.style.left = `${e.clientX}px`;
-          clone.style.top = `${e.clientY}px`;
+          clone.style.top = `${e.clientY + touchOffsetY}px`;
           clone.innerHTML = `
             <div class="drag-clone-inner"
                  style="background-image: url('${imgSrc}');
@@ -445,9 +467,10 @@
           token.classList.add('tray-token-dragging');
 
           const targetSlot = this.container.querySelector(`#slot_${pieceId}`);
+          const magnetRadius = Math.max(72, Math.max(slotW, slotH) * 0.88);
 
           const dragState = {
-            pointerId: e.pointerId,
+            pointerId,
             pieceId,
             col,
             row,
@@ -465,20 +488,22 @@
             if (!this.activeDrag || this.activeDrag.pointerId !== moveEv.pointerId) return;
             const dx = moveEv.clientX - dragState.startX;
             const dy = moveEv.clientY - dragState.startY;
-            if (Math.hypot(dx, dy) > 6) {
+            if (Math.hypot(dx, dy) > 8) {
               dragState.moved = true;
             }
 
-            clone.style.left = `${moveEv.clientX}px`;
-            clone.style.top = `${moveEv.clientY}px`;
+            const currentX = moveEv.clientX;
+            const currentY = moveEv.clientY + touchOffsetY;
+            clone.style.left = `${currentX}px`;
+            clone.style.top = `${currentY}px`;
 
             if (targetSlot) {
               const r = targetSlot.getBoundingClientRect();
               const cx = r.left + r.width / 2;
               const cy = r.top + r.height / 2;
-              const dist = Math.hypot(moveEv.clientX - cx, moveEv.clientY - cy);
+              const dist = Math.hypot(currentX - cx, currentY - cy);
 
-              if (dist < 80) {
+              if (dist <= magnetRadius) {
                 dragState.isOverTarget = true;
                 targetSlot.classList.add('slot-magnet-match');
               } else {
@@ -488,23 +513,20 @@
             }
           };
 
-          const onUp = (upEv) => {
-            if (!this.activeDrag || this.activeDrag.pointerId !== upEv.pointerId) return;
-
-            window.removeEventListener('pointermove', onMove);
-            window.removeEventListener('pointerup', onUp);
-            window.removeEventListener('pointercancel', onUp);
-
-            if (token.releasePointerCapture) {
-              try { token.releasePointerCapture(upEv.pointerId); } catch (_) {}
+          const finishDrag = (upEv) => {
+            if (this.currentDragCleanup) {
+              this.currentDragCleanup();
+              this.currentDragCleanup = null;
             }
 
             const cur = this.activeDrag;
             this.activeDrag = null;
+            if (!cur) return;
 
             cur.token.classList.remove('tray-token-dragging');
             if (cur.targetSlot) cur.targetSlot.classList.remove('slot-magnet-match');
 
+            // Tap rápido sin arrastre -> asistencia de toque para niñas de 5 a 8 años
             if (!cur.moved) {
               cur.clone.remove();
               this.placePieceSuccess(cur.pieceId);
@@ -525,6 +547,7 @@
               return;
             }
 
+            // Si soltó en lugar incorrecto o fuera, regresa suave a la bandeja
             A.softBoing();
             const tokenRect = cur.token.getBoundingClientRect();
             cur.clone.style.transition = 'all 0.22s ease-out';
@@ -538,9 +561,19 @@
             }, 220);
           };
 
+          const cleanup = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', finishDrag);
+            window.removeEventListener('pointercancel', finishDrag);
+            if (token.releasePointerCapture) {
+              try { token.releasePointerCapture(pointerId); } catch (_) {}
+            }
+          };
+
+          this.currentDragCleanup = cleanup;
           window.addEventListener('pointermove', onMove, { passive: false });
-          window.addEventListener('pointerup', onUp);
-          window.addEventListener('pointercancel', onUp);
+          window.addEventListener('pointerup', finishDrag);
+          window.addEventListener('pointercancel', finishDrag);
         });
       });
     }

@@ -291,6 +291,47 @@
       o.stop(t + 0.26);
     }
 
+    // Campanita cristalina suave para encaje de letras y piezas de rompecabezas
+    bellChime(freq = 587.33) {
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.exponentialRampToValueAtTime(freq * 1.02, t + 0.08);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.32, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
+
+      osc.connect(gain).connect(this.sfxGain);
+      osc.start(t);
+      osc.stop(t + 0.4);
+    }
+
+    // Campanitas mágicas en cascada de estrellas
+    sparkleChime() {
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime;
+      const freqs = [880, 1046.50, 1318.51, 1760];
+      freqs.forEach((f, idx) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, t + idx * 0.04);
+
+        gain.gain.setValueAtTime(0.001, t + idx * 0.04);
+        gain.gain.linearRampToValueAtTime(0.2, t + idx * 0.04 + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + idx * 0.04 + 0.28);
+
+        osc.connect(gain).connect(this.sfxGain);
+        osc.start(t + idx * 0.04);
+        osc.stop(t + idx * 0.04 + 0.3);
+      });
+    }
+
     /* ---------- MÚSICA PROCEDURAL DE CAJA DE MÚSICA ---------- */
 
     getTracks() {

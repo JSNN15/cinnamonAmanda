@@ -361,7 +361,25 @@
       return WORDS.filter(w => w.tier === this.currentTier);
     }
 
+    cleanupActiveDrag() {
+      if (this.currentDragCleanup) {
+        try { this.currentDragCleanup(); } catch (_) {}
+        this.currentDragCleanup = null;
+      }
+      document.querySelectorAll('.letter-cookie-drag-clone, .sentence-pill-drag-clone').forEach(el => el.remove());
+      if (this.container) {
+        this.container.querySelectorAll('.cookie-dragging-origin, .pill-dragging-origin').forEach(el => {
+          el.classList.remove('cookie-dragging-origin', 'pill-dragging-origin');
+        });
+        this.container.querySelectorAll('.slot-magnet-hover, .slot-magnet-match').forEach(el => {
+          el.classList.remove('slot-magnet-hover', 'slot-magnet-match');
+        });
+      }
+      this.activeDrag = null;
+    }
+
     loadWord(idx) {
+      this.cleanupActiveDrag();
       const list = this.getFilteredWords();
       this.currentWordIdx = Math.max(0, Math.min(idx, list.length - 1));
       const w = list[this.currentWordIdx];
@@ -390,6 +408,7 @@
     }
 
     loadSentence(idx) {
+      this.cleanupActiveDrag();
       this.currentSentenceIdx = idx % SENTENCES.length;
       const s = SENTENCES[this.currentSentenceIdx];
       this.placedSentenceWords = new Array(s.words.length).fill(null);
@@ -412,6 +431,7 @@
     }
 
     render() {
+      this.cleanupActiveDrag();
       const list = this.getFilteredWords();
       const w = list[this.currentWordIdx] || WORDS[0];
 
@@ -868,10 +888,13 @@
        ARRASTRE TÁCTIL MONTESSORI DE GALLETAS DE LETRAS
        ------------------------------------------------------------- */
     setupCookieDragAndDrop() {
+      this.cleanupActiveDrag();
       const cookieButtons = this.container.querySelectorAll('.letter-cookie-btn');
 
       cookieButtons.forEach(btn => {
         btn.addEventListener('pointerdown', (e) => {
+          if (e.button !== undefined && e.button !== 0) return;
+
           const cookieIdx = parseInt(btn.dataset.cookie, 10);
           const cookie = this.availableCookies[cookieIdx];
           if (!cookie || cookie.used) return;
@@ -881,15 +904,20 @@
           A.bubblePop(1);
           this.speak(cookie.letter);
 
+          this.cleanupActiveDrag();
+
           if (btn.setPointerCapture) {
             try { btn.setPointerCapture(e.pointerId); } catch (_) {}
           }
+
+          const isTouch = e.pointerType === 'touch';
+          const touchOffsetY = isTouch ? -28 : 0;
 
           const clone = document.createElement('div');
           clone.className = 'letter-cookie-drag-clone';
           clone.innerHTML = `<span class="cookie-char">${cookie.letter}</span><span class="cookie-deco">✨</span>`;
           clone.style.left = `${e.clientX}px`;
-          clone.style.top = `${e.clientY}px`;
+          clone.style.top = `${e.clientY + touchOffsetY}px`;
           document.body.appendChild(clone);
 
           btn.classList.add('cookie-dragging-origin');
@@ -902,21 +930,27 @@
             clone,
             startX: e.clientX,
             startY: e.clientY,
+            touchOffsetY,
             moved: false,
             hoveredSlot: null
           };
           this.activeDrag = dragState;
 
           const onMove = (moveEv) => {
-            if (!this.activeDrag || this.activeDrag.pointerId !== moveEv.pointerId) return;
+            if (!this.activeDrag) return;
+            if (moveEv.pointerId !== undefined && moveEv.pointerId !== dragState.pointerId) return;
+            moveEv.preventDefault();
+
             const dx = moveEv.clientX - dragState.startX;
             const dy = moveEv.clientY - dragState.startY;
             if (Math.hypot(dx, dy) > 6) {
               dragState.moved = true;
             }
 
-            clone.style.left = `${moveEv.clientX}px`;
-            clone.style.top = `${moveEv.clientY}px`;
+            const curX = moveEv.clientX;
+            const curY = moveEv.clientY + dragState.touchOffsetY;
+            clone.style.left = `${curX}px`;
+            clone.style.top = `${curY}px`;
 
             const emptySlots = this.container.querySelectorAll('.letter-slot.empty');
             let closestSlot = null;
@@ -926,7 +960,7 @@
               const r = slot.getBoundingClientRect();
               const cx = r.left + r.width / 2;
               const cy = r.top + r.height / 2;
-              const dist = Math.hypot(moveEv.clientX - cx, moveEv.clientY - cy);
+              const dist = Math.hypot(curX - cx, curY - cy);
               if (dist < closestDist) {
                 closestDist = dist;
                 closestSlot = slot;
@@ -937,7 +971,8 @@
               s.classList.remove('slot-magnet-hover', 'slot-magnet-match');
             });
 
-            if (closestSlot && closestDist < 75) {
+            const magnetRadius = 85;
+            if (closestSlot && closestDist < magnetRadius) {
               dragState.hoveredSlot = closestSlot;
               const slotIdx = parseInt(closestSlot.dataset.slot, 10);
               const list = this.getFilteredWords();
@@ -954,16 +989,18 @@
             }
           };
 
-          const onUp = (upEv) => {
-            if (!this.activeDrag || this.activeDrag.pointerId !== upEv.pointerId) return;
+          const finishDrag = (upEv) => {
+            if (!this.activeDrag) return;
+            if (upEv && upEv.pointerId !== undefined && upEv.pointerId !== dragState.pointerId) return;
 
-            window.removeEventListener('pointermove', onMove);
-            window.removeEventListener('pointerup', onUp);
-            window.removeEventListener('pointercancel', onUp);
-
-            if (btn.releasePointerCapture) {
+            if (btn.releasePointerCapture && upEv && upEv.pointerId !== undefined) {
               try { btn.releasePointerCapture(upEv.pointerId); } catch (_) {}
             }
+
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', finishDrag);
+            window.removeEventListener('pointercancel', finishDrag);
+            this.currentDragCleanup = null;
 
             const cur = this.activeDrag;
             this.activeDrag = null;
@@ -973,12 +1010,14 @@
               s.classList.remove('slot-magnet-hover', 'slot-magnet-match');
             });
 
+            // 1. Toque Rápido (Tap-to-Snap):
             if (!cur.moved) {
               cur.clone.remove();
               this.handleCookieTap(cur.cookieIdx);
               return;
             }
 
+            // 2. Encaje si coincide el molde:
             if (cur.hoveredSlot) {
               const slotIdx = parseInt(cur.hoveredSlot.dataset.slot, 10);
               const list = this.getFilteredWords();
@@ -1000,30 +1039,40 @@
               } else {
                 A.softBoing();
                 cur.hoveredSlot.classList.add('wobble-friendly');
-                setTimeout(() => cur.hoveredSlot.classList.remove('wobble-friendly'), 450);
+                setTimeout(() => {
+                  if (cur.hoveredSlot) cur.hoveredSlot.classList.remove('wobble-friendly');
+                }, 450);
               }
             }
 
-            const btnRect = cur.btn.getBoundingClientRect();
-            cur.clone.style.transition = 'all 0.22s ease-out';
-            cur.clone.style.left = `${btnRect.left + btnRect.width / 2}px`;
-            cur.clone.style.top = `${btnRect.top + btnRect.height / 2}px`;
+            // 3. Retorno elástico a la bandeja:
+            const originRect = cur.btn.getBoundingClientRect();
+            cur.clone.style.transition = 'all 0.2s ease-out';
+            cur.clone.style.left = `${originRect.left + originRect.width / 2}px`;
+            cur.clone.style.top = `${originRect.top + originRect.height / 2}px`;
             cur.clone.style.transform = 'translate(-50%, -50%) scale(0.9)';
-            cur.clone.style.opacity = '0.5';
+            cur.clone.style.opacity = '0.4';
 
             setTimeout(() => {
               cur.clone.remove();
-            }, 220);
+            }, 200);
+          };
+
+          this.currentDragCleanup = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', finishDrag);
+            window.removeEventListener('pointercancel', finishDrag);
           };
 
           window.addEventListener('pointermove', onMove, { passive: false });
-          window.addEventListener('pointerup', onUp);
-          window.addEventListener('pointercancel', onUp);
+          window.addEventListener('pointerup', finishDrag);
+          window.addEventListener('pointercancel', finishDrag);
         });
       });
     }
 
     handleCookieTap(cookieIdx) {
+      this.cleanupActiveDrag();
       const cookie = this.availableCookies[cookieIdx];
       if (!cookie || cookie.used) return;
 
@@ -1050,6 +1099,7 @@
     }
 
     placeLetterSuccess(cookieIdx, slotIdx) {
+      this.cleanupActiveDrag();
       const cookie = this.availableCookies[cookieIdx];
       if (!cookie) return;
 
@@ -1080,10 +1130,13 @@
        ARRASTRE TÁCTIL DE PALABRAS EN MODO FRASES (6 A 8 AÑOS)
        ------------------------------------------------------------- */
     setupSentenceDragAndDrop() {
+      this.cleanupActiveDrag();
       const pillButtons = this.container.querySelectorAll('.sentence-pill-btn');
 
       pillButtons.forEach(btn => {
         btn.addEventListener('pointerdown', (e) => {
+          if (e.button !== undefined && e.button !== 0) return;
+
           const pillIdx = parseInt(btn.dataset.pill, 10);
           const pill = this.availableSentencePills[pillIdx];
           if (!pill || pill.used) return;
@@ -1093,28 +1146,54 @@
           A.bubblePop(1);
           this.speak(pill.word);
 
+          this.cleanupActiveDrag();
+
           if (btn.setPointerCapture) {
             try { btn.setPointerCapture(e.pointerId); } catch (_) {}
           }
+
+          const isTouch = e.pointerType === 'touch';
+          const touchOffsetY = isTouch ? -28 : 0;
 
           const clone = document.createElement('div');
           clone.className = 'sentence-pill-drag-clone';
           clone.innerHTML = `<span class="pill-word-text">${pill.word}</span><span class="pill-deco">✨</span>`;
           clone.style.left = `${e.clientX}px`;
-          clone.style.top = `${e.clientY}px`;
+          clone.style.top = `${e.clientY + touchOffsetY}px`;
           document.body.appendChild(clone);
 
           btn.classList.add('pill-dragging-origin');
 
           const s = SENTENCES[this.currentSentenceIdx];
-          let isMoved = false;
+          const dragState = {
+            pointerId: e.pointerId,
+            pillIdx,
+            pill,
+            btn,
+            clone,
+            startX: e.clientX,
+            startY: e.clientY,
+            touchOffsetY,
+            moved: false,
+            hoveredSlot: null
+          };
+          this.activeDrag = dragState;
 
           const onMove = (moveEv) => {
-            if (Math.hypot(moveEv.clientX - e.clientX, moveEv.clientY - e.clientY) > 6) {
-              isMoved = true;
+            if (!this.activeDrag) return;
+            if (moveEv.pointerId !== undefined && moveEv.pointerId !== dragState.pointerId) return;
+            moveEv.preventDefault();
+
+            const dx = moveEv.clientX - dragState.startX;
+            const dy = moveEv.clientY - dragState.startY;
+            if (Math.hypot(dx, dy) > 6) {
+              dragState.moved = true;
             }
-            clone.style.left = `${moveEv.clientX}px`;
-            clone.style.top = `${moveEv.clientY}px`;
+
+            const curX = moveEv.clientX;
+            const curY = moveEv.clientY + dragState.touchOffsetY;
+            clone.style.left = `${curX}px`;
+            clone.style.top = `${curY}px`;
 
             const emptySlots = this.container.querySelectorAll('.sentence-slot.empty');
             let closestSlot = null;
@@ -1124,7 +1203,7 @@
               const r = slot.getBoundingClientRect();
               const cx = r.left + r.width / 2;
               const cy = r.top + r.height / 2;
-              const dist = Math.hypot(moveEv.clientX - cx, moveEv.clientY - cy);
+              const dist = Math.hypot(curX - cx, curY - cy);
               if (dist < closestDist) {
                 closestDist = dist;
                 closestSlot = slot;
@@ -1135,7 +1214,9 @@
               sl.classList.remove('slot-magnet-hover', 'slot-magnet-match');
             });
 
-            if (closestSlot && closestDist < 85) {
+            const magnetRadius = 85;
+            if (closestSlot && closestDist < magnetRadius) {
+              dragState.hoveredSlot = closestSlot;
               const slotIdx = parseInt(closestSlot.dataset.sslot, 10);
               const targetWord = s.words[slotIdx];
               if (pill.word === targetWord) {
@@ -1143,82 +1224,87 @@
               } else {
                 closestSlot.classList.add('slot-magnet-hover');
               }
+            } else {
+              dragState.hoveredSlot = null;
             }
           };
 
-          const onUp = (upEv) => {
-            window.removeEventListener('pointermove', onMove);
-            window.removeEventListener('pointerup', onUp);
-            window.removeEventListener('pointercancel', onUp);
+          const finishDrag = (upEv) => {
+            if (!this.activeDrag) return;
+            if (upEv && upEv.pointerId !== undefined && upEv.pointerId !== dragState.pointerId) return;
 
-            if (btn.releasePointerCapture) {
+            if (btn.releasePointerCapture && upEv && upEv.pointerId !== undefined) {
               try { btn.releasePointerCapture(upEv.pointerId); } catch (_) {}
             }
 
-            btn.classList.remove('pill-dragging-origin');
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', finishDrag);
+            window.removeEventListener('pointercancel', finishDrag);
+            this.currentDragCleanup = null;
+
+            const cur = this.activeDrag;
+            this.activeDrag = null;
+
+            cur.btn.classList.remove('pill-dragging-origin');
             this.container.querySelectorAll('.sentence-slot').forEach(sl => {
               sl.classList.remove('slot-magnet-hover', 'slot-magnet-match');
             });
 
-            if (!isMoved) {
-              clone.remove();
-              this.handlePillTap(pillIdx);
+            // 1. Toque Rápido (Tap-to-Snap):
+            if (!cur.moved) {
+              cur.clone.remove();
+              this.handlePillTap(cur.pillIdx);
               return;
             }
 
-            const emptySlots = this.container.querySelectorAll('.sentence-slot.empty');
-            let targetSlot = null;
-            let closestDist = 9999;
-
-            emptySlots.forEach(slot => {
-              const r = slot.getBoundingClientRect();
-              const cx = r.left + r.width / 2;
-              const cy = r.top + r.height / 2;
-              const dist = Math.hypot(upEv.clientX - cx, upEv.clientY - cy);
-              if (dist < closestDist) {
-                closestDist = dist;
-                targetSlot = slot;
-              }
-            });
-
-            if (targetSlot && closestDist < 85) {
-              const slotIdx = parseInt(targetSlot.dataset.sslot, 10);
+            // 2. Encaje si coincide la palabra:
+            if (cur.hoveredSlot) {
+              const slotIdx = parseInt(cur.hoveredSlot.dataset.sslot, 10);
               const targetWord = s.words[slotIdx];
 
-              if (pill.word === targetWord) {
-                const sRect = targetSlot.getBoundingClientRect();
-                clone.style.transition = 'all 0.14s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                clone.style.left = `${sRect.left + sRect.width / 2}px`;
-                clone.style.top = `${sRect.top + sRect.height / 2}px`;
-                clone.style.transform = 'translate(-50%, -50%) scale(1)';
+              if (cur.pill.word === targetWord) {
+                const sRect = cur.hoveredSlot.getBoundingClientRect();
+                cur.clone.style.transition = 'all 0.14s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                cur.clone.style.left = `${sRect.left + sRect.width / 2}px`;
+                cur.clone.style.top = `${sRect.top + sRect.height / 2}px`;
+                cur.clone.style.transform = 'translate(-50%, -50%) scale(1)';
 
                 setTimeout(() => {
-                  clone.remove();
-                  this.placeSentenceWordSuccess(pillIdx, slotIdx);
+                  cur.clone.remove();
+                  this.placeSentenceWordSuccess(cur.pillIdx, slotIdx);
                 }, 140);
                 return;
               } else {
                 A.softBoing();
-                targetSlot.classList.add('wobble-friendly');
-                setTimeout(() => targetSlot.classList.remove('wobble-friendly'), 450);
+                cur.hoveredSlot.classList.add('wobble-friendly');
+                setTimeout(() => {
+                  if (cur.hoveredSlot) cur.hoveredSlot.classList.remove('wobble-friendly');
+                }, 450);
               }
             }
 
-            const btnRect = btn.getBoundingClientRect();
-            clone.style.transition = 'all 0.22s ease-out';
-            clone.style.left = `${btnRect.left + btnRect.width / 2}px`;
-            clone.style.top = `${btnRect.top + btnRect.height / 2}px`;
-            clone.style.transform = 'translate(-50%, -50%) scale(0.9)';
-            clone.style.opacity = '0.5';
+            // 3. Retorno elástico a la bandeja:
+            const btnRect = cur.btn.getBoundingClientRect();
+            cur.clone.style.transition = 'all 0.2s ease-out';
+            cur.clone.style.left = `${btnRect.left + btnRect.width / 2}px`;
+            cur.clone.style.top = `${btnRect.top + btnRect.height / 2}px`;
+            cur.clone.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            cur.clone.style.opacity = '0.4';
 
             setTimeout(() => {
-              clone.remove();
-            }, 220);
+              cur.clone.remove();
+            }, 200);
+          };
+
+          this.currentDragCleanup = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', finishDrag);
+            window.removeEventListener('pointercancel', finishDrag);
           };
 
           window.addEventListener('pointermove', onMove, { passive: false });
-          window.addEventListener('pointerup', onUp);
-          window.addEventListener('pointercancel', onUp);
+          window.addEventListener('pointerup', finishDrag);
+          window.addEventListener('pointercancel', finishDrag);
         });
       });
     }
