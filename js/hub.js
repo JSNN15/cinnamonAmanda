@@ -140,10 +140,20 @@
     window.Cinnamo.hub.init();
   });
 
-  // Registro del Service Worker para carga instantánea (<100ms) y modo offline
+  // Registro del Service Worker (network-first: sirve de respaldo offline)
   if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    // Si un SW nuevo toma el control (despliegue nuevo), recargar una sola vez para usar los archivos frescos
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || reloaded) return;
+      reloaded = true;
+      window.location.reload();
+    });
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
+        .then((reg) => reg.update())
+        .catch(() => {});
     });
   }
 })();
