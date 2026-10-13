@@ -63,6 +63,9 @@
 
       this.mochaImg = new Image();
       this.mochaImg.src = 'assets/mocha.png';
+
+      this.chiffonImg = new Image();
+      this.chiffonImg.src = 'assets/chiffon.png';
     }
 
     init(containerEl) {
@@ -458,10 +461,13 @@
         ctx.drawImage(this.milkImg, 2900, 365, 80, 70);
       }
       if (this.purinImg.complete) {
-        ctx.drawImage(this.purinImg, 2990, 360, 75, 75);
+        ctx.drawImage(this.purinImg, 2985, 360, 75, 75);
       }
       if (this.mochaImg.complete) {
-        ctx.drawImage(this.mochaImg, 3070, 370, 80, 65);
+        ctx.drawImage(this.mochaImg, 3065, 370, 80, 65);
+      }
+      if (this.chiffonImg && this.chiffonImg.complete) {
+        ctx.drawImage(this.chiffonImg, 3150, 362, 85, 70);
       }
 
       // 7. Cinnamoroll oficial
