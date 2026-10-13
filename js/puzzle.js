@@ -1,14 +1,18 @@
 /* Puzzles de Lógica y Rompecabezas Visuales con Cinnamoroll
- * Diseñado con pedagogía preescolar para Amanda (4-5 años).
+ * Diseñado y calibrado para niñas de 5 a 8 años (Kínder a 3° Básico).
  * 
- * Principios de Diseño para Niñas de Prebásica:
- *  1. CERO texto necesario para jugar: todo es reconocimiento visual de patrones y siluetas.
- *  2. Ilustraciones auténticas y nítidas de Sanrio: Cinnamoroll, Milk, Chiffon, Pompompurin y Mocha.
- *  3. Tablero con Silueta Guía ("Ghost Image"): marca de agua suave para que la niña compare y asocie.
- *  4. Piezas Reales de Madera Ilustrada: cada pieza es un recorte visual directo del dibujo (orejas, carita, colita, etc.).
- *  5. Arrastre táctil magnético fluido (Drag & Drop) y toque directo asistido (Tap-to-Place).
- *  6. Selección adaptativa: 4 piezas grandes (2x2) o 6 piezas (3x2).
- *  7. Celebración mágica con purpurina, sonidos dulces y confeti.
+ * Enfoque Pedagógico Progresivo (5 a 8 Años):
+ *  1. Dificultad Adaptativa de Piezas:
+ *     - 🧩 6 Piezas (3x2): 5-6 años (Kínder)
+ *     - ⭐ 9 Piezas (3x3): 6-7 años (1° Básico)
+ *     - 👑 12 Piezas (4x3): 7-8 años (2° Básico)
+ *     - 💎 16 Piezas (4x4): 8+ años (3° Básico - Desafío Experta)
+ *  2. Ojo Mágico (Silueta Guía Conmutable ON/OFF):
+ *     - Modo Desafío (OFF): tablero de madera limpia solo con rejilla de encaje (fomenta la deducción mental de primaria).
+ *     - Modo Pista (ON): silueta translúcida al 28% de apoyo.
+ *  3. Temporizador amigable y estrellas de logro para autosuperación.
+ *  4. Arrastre táctil fluido (Pointer Events), encaje magnético y asistencia de toque rápido.
+ *  5. 100% visual y libre de bloqueos frustrantes.
  */
 (function () {
   const { audio: A } = window.Cinnamo;
@@ -71,41 +75,55 @@
     }
   ];
 
-  class SeniorPreschoolJigsawGame {
+  class SeniorSchoolJigsawGame {
     constructor() {
       this.container = null;
       this.currentCharIdx = 0;
-      this.pieceCountMode = 4; // 4 (2x2) o 6 (3x2)
+      this.pieceCountMode = 6; // 6, 9, 12, 16
+      this.showGhostGuide = true; // Interruptor Ojo Mágico
       this.placedPieces = {}; // pieceId -> true
-      this.trayPieces = []; // array de piezas en la bandeja
+      this.trayPieces = []; // array de piezas en bandeja
       this.boardWidth = 440;
       this.boardHeight = 304;
       this.activeDrag = null;
+
+      // Temporizador amistoso
+      this.timerSeconds = 0;
+      this.timerInterval = null;
     }
 
     init(containerEl) {
       this.container = containerEl;
       this.currentCharIdx = 0;
-      this.pieceCountMode = 4;
-      this.loadPuzzle(0, 4);
+      this.pieceCountMode = 6;
+      this.showGhostGuide = true;
+      this.loadPuzzle(0, 6);
       this.render();
     }
 
-    loadPuzzle(charIdx, pieceCount = 4) {
+    getGridDimensions(pieceCount) {
+      switch (pieceCount) {
+        case 6:  return { cols: 3, rows: 2 };
+        case 9:  return { cols: 3, rows: 3 };
+        case 12: return { cols: 4, rows: 3 };
+        case 16: return { cols: 4, rows: 4 };
+        default: return { cols: 3, rows: 2 };
+      }
+    }
+
+    loadPuzzle(charIdx, pieceCount = 6) {
       this.currentCharIdx = charIdx;
       this.pieceCountMode = pieceCount;
       this.placedPieces = {};
       this.activeDrag = null;
 
-      // Dimensiones adaptativas de tablero para smartphones y PC
+      // Dimensiones adaptativas de pantalla
       const availW = this.container && this.container.clientWidth ? this.container.clientWidth : window.innerWidth;
-      const targetW = Math.min(440, Math.max(290, availW - 48));
+      const targetW = Math.min(460, Math.max(290, availW - 48));
       this.boardWidth = targetW;
       this.boardHeight = Math.round(targetW * (304 / 440));
 
-      const cols = pieceCount === 6 ? 3 : 2;
-      const rows = 2;
-      const total = cols * rows;
+      const { cols, rows } = this.getGridDimensions(pieceCount);
 
       const pieces = [];
       for (let r = 0; r < rows; r++) {
@@ -121,8 +139,20 @@
         }
       }
 
-      // Barajar las piezas en la bandeja de madera
       this.trayPieces = [...pieces].sort(() => Math.random() - 0.5);
+
+      // Reiniciar temporizador amistoso
+      this.timerSeconds = 0;
+      if (this.timerInterval) clearInterval(this.timerInterval);
+      this.timerInterval = setInterval(() => {
+        this.timerSeconds++;
+        const timerEl = this.container ? this.container.querySelector('#puzzleTimerText') : null;
+        if (timerEl) {
+          const mins = Math.floor(this.timerSeconds / 60);
+          const secs = this.timerSeconds % 60;
+          timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+      }, 1000);
     }
 
     speak(text) {
@@ -131,8 +161,8 @@
           window.speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance(text);
           u.lang = 'es-ES';
-          u.rate = 0.85;
-          u.pitch = 1.3;
+          u.rate = 0.88;
+          u.pitch = 1.25;
           window.speechSynthesis.speak(u);
         } catch (_) {}
       }
@@ -140,16 +170,21 @@
 
     render() {
       const char = PUZZLE_CHARACTERS[this.currentCharIdx];
-      const cols = this.pieceCountMode === 6 ? 3 : 2;
-      const rows = 2;
+      const { cols, rows } = this.getGridDimensions(this.pieceCountMode);
       const slotW = this.boardWidth / cols;
       const slotH = this.boardHeight / rows;
-      const allDone = Object.keys(this.placedPieces).length === (cols * rows);
+      const totalPieces = cols * rows;
+      const allDone = Object.keys(this.placedPieces).length === totalPieces;
+
+      const mins = Math.floor(this.timerSeconds / 60);
+      const secs = this.timerSeconds % 60;
+      const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
       this.container.innerHTML = `
         <div class="puzzle-wrap">
-          <!-- Selector superior de personajes Sanrio -->
+          <!-- Barra superior de selección -->
           <div class="puzzle-top-bar">
+            <!-- Selector de personajes -->
             <div class="puzzle-pills-row">
               ${PUZZLE_CHARACTERS.map((item, idx) => `
                 <button class="puzzle-tab-btn ${idx === this.currentCharIdx ? 'active' : ''}" data-idx="${idx}">
@@ -158,36 +193,51 @@
               `).join('')}
             </div>
 
-            <!-- Selector de dificultad (4 o 6 piezas) -->
+            <!-- Selector de Dificultad para 5 a 8 Años -->
             <div class="puzzle-difficulty-row">
-              <button class="puz-diff-btn ${this.pieceCountMode === 4 ? 'active' : ''}" data-pieces="4">
-                🧩 4 Piezas (Fácil)
-              </button>
+              <span class="diff-title-tag">🧩 Nivel:</span>
               <button class="puz-diff-btn ${this.pieceCountMode === 6 ? 'active' : ''}" data-pieces="6">
-                ⭐ 6 Piezas (Desafío)
+                🌸 6 Piezas (5-6 años)
+              </button>
+              <button class="puz-diff-btn ${this.pieceCountMode === 9 ? 'active' : ''}" data-pieces="9">
+                ⭐ 9 Piezas (6-7 años)
+              </button>
+              <button class="puz-diff-btn ${this.pieceCountMode === 12 ? 'active' : ''}" data-pieces="12">
+                👑 12 Piezas (7-8 años)
+              </button>
+              <button class="puz-diff-btn ${this.pieceCountMode === 16 ? 'active' : ''}" data-pieces="16">
+                💎 16 Piezas (8+ años)
               </button>
             </div>
           </div>
 
-          <!-- Escenario Central del Rompecabezas -->
+          <!-- Escenario Central -->
           <div class="puzzle-stage-card ${allDone ? 'puzzle-completed-glow' : ''}" style="background: ${char.bgGrad}">
-            <!-- Encabezado con avatar grande -->
+            <!-- Encabezado con estado y botón Ojo Mágico -->
             <div class="puzzle-header-info">
               <div class="puzzle-mascot-avatar">
                 <img src="${char.avatarImg}" alt="${char.name}" />
               </div>
               <div class="puzzle-title-box">
-                <span class="puzzle-badge-pill">${char.badge}</span>
+                <div class="puzzle-badges-top-line">
+                  <span class="puzzle-badge-pill">${char.badge} · ${this.pieceCountMode} piezas</span>
+                  <span class="puzzle-timer-pill">⏱️ <span id="puzzleTimerText">${timeStr}</span></span>
+                </div>
                 <h1 style="color: ${char.themeColor}">${char.title}</h1>
-                <p>👇 <strong>Arrastra las piezas de madera</strong> a la silueta en el cuadro:</p>
+                <p>👇 Arrastra las piezas de madera a su lugar en el cuadro:</p>
               </div>
+
+              <!-- Interruptor Ojo Mágico (Silueta Guía ON/OFF) -->
+              <button class="btn-ghost-toggle ${this.showGhostGuide ? 'active' : ''}" id="btnToggleGhost" title="Activar o desactivar silueta de ayuda">
+                ${this.showGhostGuide ? '👁️ Silueta: ON (Pista)' : '🙈 Silueta: OFF (Desafío)'}
+              </button>
             </div>
 
             <!-- Zona de Juego: Tablero y Bandeja -->
             <div class="puzzle-gameplay-stage">
-              <!-- Tablero con Marco de Madera y Silueta Guía Montessori -->
+              <!-- Tablero con Marco de Madera y Guía Opcional -->
               <div class="puzzle-board-frame">
-                <div class="puzzle-board-box" 
+                <div class="puzzle-board-box ${this.showGhostGuide ? 'with-ghost' : 'no-ghost'}" 
                      id="puzzleBoardBox"
                      style="width: ${this.boardWidth}px; height: ${this.boardHeight}px; background-image: url('${char.imgSrc}');">
                   
@@ -196,10 +246,10 @@
                 </div>
               </div>
 
-              <!-- Bandeja Inferior de Piezas de Madera Ilustrada -->
+              <!-- Bandeja Inferior de Piezas de Madera -->
               <div class="puzzle-pieces-tray">
                 <div class="tray-title-tag">
-                  ✨ Piezas para encajar (${Object.keys(this.placedPieces).length} / ${cols * rows}):
+                  ✨ Piezas por encajar (${Object.keys(this.placedPieces).length} / ${totalPieces}):
                 </div>
 
                 <div class="pieces-bank-list" id="puzzlePiecesBank">
@@ -211,7 +261,7 @@
 
                   ${allDone ? `
                     <div class="puzzle-tray-complete-badge">
-                      🎉 ¡Todas las piezas encajaron perfecto!
+                      🎉 ¡Brillante! ¡Completaste el rompecabezas de ${this.pieceCountMode} piezas!
                     </div>
                   ` : ''}
                 </div>
@@ -254,7 +304,7 @@
                 </div>
               ` : `
                 <div class="slot-ghost-guide">
-                  <span class="slot-plus-guide">+</span>
+                  <span class="slot-coord-guide">${c + 1},${r + 1}</span>
                 </div>
               `}
             </div>
@@ -265,8 +315,12 @@
     }
 
     renderTrayPiece(piece, cols, rows, slotW, slotH, imgSrc) {
-      // Dimensiones de vista previa en bandeja (ligeramente compactas para pantalla táctil)
-      const scale = this.pieceCountMode === 6 ? 0.72 : 0.82;
+      // Escala visual adaptativa para que quepan holgadamente en la bandeja
+      let scale = 0.75;
+      if (this.pieceCountMode === 9) scale = 0.70;
+      if (this.pieceCountMode === 12) scale = 0.65;
+      if (this.pieceCountMode === 16) scale = 0.58;
+
       const previewW = Math.round(slotW * scale);
       const previewH = Math.round(slotH * scale);
       const bgLeft = Math.round(piece.col * slotW * scale);
@@ -306,7 +360,7 @@
         });
       });
 
-      // 2. Selector de dificultad (4 o 6 piezas)
+      // 2. Selector de dificultad (6, 9, 12, 16 piezas)
       this.container.querySelectorAll('.puz-diff-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
@@ -317,19 +371,29 @@
         });
       });
 
-      // 3. Toque directo en slot vacío del tablero (Asistencia Montessori)
+      // 3. Alternar Silueta Guía (Ojo Mágico ON/OFF)
+      const btnGhost = this.container.querySelector('#btnToggleGhost');
+      if (btnGhost) {
+        btnGhost.addEventListener('click', () => {
+          A.unlock();
+          A.bubblePop(1);
+          this.showGhostGuide = !this.showGhostGuide;
+          this.render();
+        });
+      }
+
+      // 4. Toque directo en slot vacío del tablero
       this.container.querySelectorAll('.puzzle-board-slot.empty').forEach(slot => {
         slot.addEventListener('click', (e) => {
           const targetPieceId = e.currentTarget.dataset.pieceId;
           if (this.placedPieces[targetPieceId]) return;
 
           A.unlock();
-          // Colocación asistida con animación
           this.placePieceSuccess(targetPieceId);
         });
       });
 
-      // 4. Botón reiniciar puzzle
+      // 5. Botón reiniciar puzzle
       const btnReset = this.container.querySelector('#btnResetPuzzle');
       if (btnReset) {
         btnReset.addEventListener('click', () => {
@@ -342,7 +406,7 @@
     }
 
     /* -------------------------------------------------------------
-       SISTEMA DE ARRASTRE TÁCTIL Y ENCAJE MAGNÉTICO (POINTER EVENTS)
+       ARRASTRE TÁCTIL Y ENCAJE MAGNÉTICO (POINTER EVENTS)
        ------------------------------------------------------------- */
     setupPuzzleDragAndDrop(cols, rows, slotW, slotH, imgSrc) {
       const trayTokens = this.container.querySelectorAll('.puzzle-tray-piece-token');
@@ -358,12 +422,10 @@
           A.unlock();
           A.bubblePop(1);
 
-          // Captura de puntero
           if (token.setPointerCapture) {
             try { token.setPointerCapture(e.pointerId); } catch (_) {}
           }
 
-          // Crear clon flotante a tamaño completo del molde
           const clone = document.createElement('div');
           clone.className = 'puzzle-piece-drag-clone';
           clone.style.width = `${slotW}px`;
@@ -407,18 +469,15 @@
               dragState.moved = true;
             }
 
-            // Seguir al dedo
             clone.style.left = `${moveEv.clientX}px`;
             clone.style.top = `${moveEv.clientY}px`;
 
-            // Comprobar cercanía al slot correspondiente
             if (targetSlot) {
               const r = targetSlot.getBoundingClientRect();
               const cx = r.left + r.width / 2;
               const cy = r.top + r.height / 2;
               const dist = Math.hypot(moveEv.clientX - cx, moveEv.clientY - cy);
 
-              // Radio magnético de 80px
               if (dist < 80) {
                 dragState.isOverTarget = true;
                 targetSlot.classList.add('slot-magnet-match');
@@ -446,14 +505,12 @@
             cur.token.classList.remove('tray-token-dragging');
             if (cur.targetSlot) cur.targetSlot.classList.remove('slot-magnet-match');
 
-            // 1. Toque Rápido (Tap-to-Snap): vuela directo al molde
             if (!cur.moved) {
               cur.clone.remove();
               this.placePieceSuccess(cur.pieceId);
               return;
             }
 
-            // 2. Arrastrado sobre el slot correspondiente: ¡SNAP!
             if (cur.isOverTarget && cur.targetSlot) {
               const r = cur.targetSlot.getBoundingClientRect();
               cur.clone.style.transition = 'all 0.14s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
@@ -468,7 +525,6 @@
               return;
             }
 
-            // 3. Fuera del slot: aviso boing amigable y retorno elástico a la bandeja
             A.softBoing();
             const tokenRect = cur.token.getBoundingClientRect();
             cur.clone.style.transition = 'all 0.22s ease-out';
@@ -496,26 +552,23 @@
       const count = Object.keys(this.placedPieces).length;
       const total = this.pieceCountMode;
 
-      // Sonido musical de campanita ascendente
-      A.bellChime(520 + count * 65);
+      A.bellChime(500 + count * 45);
       A.sparkleChime();
 
-      // Frases de elogio dulce y espontáneo
-      const cheers = ['¡Eso!', '¡Qué bien!', '¡Perfecto!', '¡Bravo Amanda!', '¡Genial!'];
-      if (count < total) {
+      const cheers = ['¡Excelente!', '¡Genial!', '¡Qué bien!', '¡Perfecto!', '¡Bravo Amanda!'];
+      if (count < total && count % 2 === 0) {
         this.speak(cheers[count % cheers.length]);
       }
 
       this.render();
 
-      // Efecto de estrellitas en el slot encajado
       const slotEl = this.container.querySelector(`#slot_${pieceId}`);
       if (slotEl) {
         this.spawnStarsOnSlot(slotEl);
       }
 
-      // Comprobar victoria total
       if (count >= total) {
+        if (this.timerInterval) clearInterval(this.timerInterval);
         setTimeout(() => {
           this.triggerVictory();
         }, 450);
@@ -545,20 +598,23 @@
 
     triggerVictory() {
       const char = PUZZLE_CHARACTERS[this.currentCharIdx];
-      A.celebrate();
-      this.speak(`¡Hurra Amanda! ¡Armaste completo el puzzle de ${char.name}!`);
+      const mins = Math.floor(this.timerSeconds / 60);
+      const secs = this.timerSeconds % 60;
+      const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
-      // Modal de Gran Victoria
+      A.celebrate();
+      this.speak(`¡Hurra Amanda! ¡Completaste el rompecabezas de ${this.pieceCountMode} piezas de ${char.name} en ${this.timerSeconds} segundos!`);
+
       const modal = document.createElement('div');
       modal.className = 'w-victory-modal-overlay';
       modal.innerHTML = `
         <div class="w-victory-card">
-          <div class="w-victory-badge">🧩 ¡ROMPECABEZAS MÁGICO COMPLETADO! 🧩</div>
+          <div class="w-victory-badge">🧩 ¡ROMPECABEZAS ${this.pieceCountMode} PIEZAS COMPLETADO! 🧩</div>
           <h2 style="color: ${char.themeColor}">${char.title}</h2>
           <div class="w-victory-img-box">
             <img src="${char.imgSrc}" alt="${char.name}" style="border-radius: 16px; border: 3px solid #fbcfe8;" />
           </div>
-          <p>¡Amanda, eres una campeona de la lógica en Cinnamoroll Land! 💖</p>
+          <p>¡Amanda, tiempo récord: <strong>${timeStr}</strong>! ¡Eres una experta de la lógica en Cinnamoroll Land! 💖 ⭐⭐⭐</p>
           <div class="w-victory-actions">
             <button class="btn-w-next" id="btnNextPuzzleModal">▶ Siguiente Rompecabezas</button>
             <button class="btn-w-repeat" id="btnRepeatPuzzleModal">🔄 Jugar de nuevo</button>
@@ -586,5 +642,5 @@
   }
 
   window.Cinnamo = window.Cinnamo || {};
-  window.Cinnamo.puzzleGame = new SeniorPreschoolJigsawGame();
+  window.Cinnamo.puzzleGame = new SeniorSchoolJigsawGame();
 })();

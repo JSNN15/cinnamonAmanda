@@ -1,7 +1,10 @@
 /* La Pastelería Mágica de Cinnamoroll & Milk
- * Juego preescolar de sumas y restas con los personajes OFICIALES de Sanrio.
- * Cinnamoroll y Milk (con su osito, chupete y rulo), guía pedagógica amorosa
- * "¿Estás segura Amanda? ¡Contemos juntas!" y conteo táctil interactivo.
+ * Juego de cálculo mental y aritmética adaptado para 5 a 8 años (Kínder a 3° Básico).
+ * 
+ * Enfoque Pedagógico por Edades:
+ *  - 🍼 Kínder (5-6 años): Sumas y restas hasta 10 con conteo interactivo con el dedo.
+ *  - 🎒 1° Básico (6-7 años): Sumas y restas hasta 20 con cálculo mental.
+ *  - 🚀 2°-3° Básico (7-8 años): Operaciones hasta 40 y multiplicaciones dulces (2x, 3x, 4x, 5x).
  */
 (function () {
   const { audio: A } = window.Cinnamo;
@@ -17,7 +20,8 @@
   class MathBakeryGame {
     constructor() {
       this.container = null;
-      this.mode = 'add'; // 'add', 'sub', 'mix'
+      this.ageTier = '5-6'; // '5-6', '6-7', '7-8'
+      this.mode = 'add'; // 'add', 'sub', 'mult', 'mix'
       this.score = 0;
       this.totalGoal = 5;
       this.currentOp = '+';
@@ -36,6 +40,11 @@
       this.nextRound();
     }
 
+    setTier(newTier) {
+      this.ageTier = newTier;
+      this.nextRound();
+    }
+
     setMode(newMode) {
       this.mode = newMode;
       this.nextRound();
@@ -46,8 +55,12 @@
       this.isCountingHelpActive = false;
       this.countedItems.clear();
 
+      // Determinar operador según modo y edad
       if (this.mode === 'mix') {
-        this.currentOp = Math.random() > 0.5 ? '+' : '-';
+        const ops = (this.ageTier === '7-8') ? ['+', '-', 'x'] : ['+', '-'];
+        this.currentOp = ops[Math.floor(Math.random() * ops.length)];
+      } else if (this.mode === 'mult') {
+        this.currentOp = 'x';
       } else if (this.mode === 'sub') {
         this.currentOp = '-';
       } else {
@@ -57,32 +70,82 @@
       this.treatType = TREAT_TYPES[Math.floor(Math.random() * TREAT_TYPES.length)];
 
       if (this.currentOp === '+') {
-        this.numA = 1 + Math.floor(Math.random() * 3); // 1..3
-        this.numB = 1 + Math.floor(Math.random() * 3); // 1..3
+        if (this.ageTier === '5-6') {
+          this.numA = 1 + Math.floor(Math.random() * 4); // 1..4
+          this.numB = 1 + Math.floor(Math.random() * 4); // 1..4
+        } else if (this.ageTier === '6-7') {
+          this.numA = 3 + Math.floor(Math.random() * 8); // 3..10
+          this.numB = 2 + Math.floor(Math.random() * 7); // 2..8
+        } else {
+          // 7-8 años: sumas hasta 35
+          this.numA = 7 + Math.floor(Math.random() * 14); // 7..20
+          this.numB = 5 + Math.floor(Math.random() * 12); // 5..16
+        }
         this.total = this.numA + this.numB;
-      } else {
-        this.numA = 2 + Math.floor(Math.random() * 4); // 2..5
-        this.numB = 1 + Math.floor(Math.random() * (this.numA - 1)); // 1..A-1
+      } else if (this.currentOp === '-') {
+        if (this.ageTier === '5-6') {
+          this.numA = 3 + Math.floor(Math.random() * 5); // 3..7
+          this.numB = 1 + Math.floor(Math.random() * (this.numA - 1));
+        } else if (this.ageTier === '6-7') {
+          this.numA = 8 + Math.floor(Math.random() * 11); // 8..18
+          this.numB = 2 + Math.floor(Math.random() * (this.numA - 3));
+        } else {
+          // 7-8 años: restas de dos dígitos
+          this.numA = 15 + Math.floor(Math.random() * 18); // 15..32
+          this.numB = 4 + Math.floor(Math.random() * (this.numA - 5));
+        }
         this.total = this.numA - this.numB;
+      } else {
+        // Multiplicación dulce (2x, 3x, 4x, 5x para 7-8 años)
+        this.numA = 2 + Math.floor(Math.random() * 4); // 2..5
+        this.numB = 2 + Math.floor(Math.random() * 4); // 2..5
+        this.total = this.numA * this.numB;
       }
 
       this.render();
     }
 
     render() {
-      const pool = [1, 2, 3, 4, 5, 6, 7].filter(n => n !== this.total);
-      pool.sort(() => Math.random() - 0.5);
-      const options = [this.total, pool[0], pool[1]].sort((a, b) => a - b);
+      // Generar 3 opciones inteligentes alrededor del resultado
+      const offsets = [-3, -2, -1, 1, 2, 3].sort(() => Math.random() - 0.5);
+      const candidates = new Set([this.total]);
+      for (const off of offsets) {
+        const val = this.total + off;
+        if (val > 0 && val !== this.total) {
+          candidates.add(val);
+          if (candidates.size === 3) break;
+        }
+      }
+      const options = Array.from(candidates).sort((a, b) => a - b);
 
       this.container.innerHTML = `
         <div class="math-wrap">
-          <!-- Barra superior de Modo y Progreso -->
+          <!-- Barra superior: Selector de Edad y Modos -->
           <div class="math-top-bar">
+            <!-- Selector de Edad para 5 a 8 años -->
+            <div class="math-age-tier-row">
+              <span class="math-tier-title">🎯 Nivel:</span>
+              <button class="math-tier-btn ${this.ageTier === '5-6' ? 'active' : ''}" data-tier="5-6">
+                🍼 5-6 Años (Kínder)
+              </button>
+              <button class="math-tier-btn ${this.ageTier === '6-7' ? 'active' : ''}" data-tier="6-7">
+                🎒 6-7 Años (1° Básico)
+              </button>
+              <button class="math-tier-btn ${this.ageTier === '7-8' ? 'active' : ''}" data-tier="7-8">
+                🚀 7-8 Años (2°-3° Básico)
+              </button>
+            </div>
+
+            <!-- Selector de Operaciones -->
             <div class="mode-toggles">
               <button class="mode-btn ${this.mode === 'add' ? 'active' : ''}" data-mode="add">➕ Sumas</button>
               <button class="mode-btn ${this.mode === 'sub' ? 'active' : ''}" data-mode="sub">➖ Restas</button>
+              ${this.ageTier === '7-8' ? `
+                <button class="mode-btn ${this.mode === 'mult' ? 'active' : ''}" data-mode="mult">✖️ Tablas</button>
+              ` : ''}
               <button class="mode-btn ${this.mode === 'mix' ? 'active' : ''}" data-mode="mix">🎲 Mezcla</button>
             </div>
+
             <div class="math-progress-pills">
               ${Array.from({ length: this.totalGoal }).map((_, i) => `
                 <span class="math-star-pill ${i < this.score ? 'done' : ''}">🍪</span>
@@ -92,7 +155,7 @@
 
           <!-- Escenario con personajes OFICIALES -->
           <div class="bakery-stage">
-            <!-- Cinnamoroll Oficial a la izquierda -->
+            <!-- Cinnamoroll Oficial -->
             <div class="baker-char cinna-side" id="cinnaBaker">
               <div class="cinna-avatar-wrap">
                 <img src="assets/cinnamoroll_fly.png" class="official-baker-img cinna-official" alt="Cinnamoroll" />
@@ -100,7 +163,9 @@
               <div class="char-bubble cinna-bubble" id="cinnaBubble">
                 ${this.currentOp === '+' 
                   ? `¡Tengo <strong>${this.numA}</strong> ${this.treatType.emoji}!` 
-                  : `¡Preparé <strong>${this.numA}</strong> ${this.treatType.emoji}!`}
+                  : (this.currentOp === '-'
+                    ? `¡Preparé <strong>${this.numA}</strong> ${this.treatType.emoji}!`
+                    : `¡Horneé <strong>${this.numA}</strong> bandejas!`)}
               </div>
             </div>
 
@@ -109,51 +174,11 @@
               <div class="tray-hint">👆 ¡Toca los dulces para contarlos con tu dedo!</div>
               
               <div class="sweet-tray">
-                ${this.currentOp === '+' ? `
-                  <div class="treat-cluster group-left">
-                    ${Array.from({ length: this.numA }).map((_, i) => `
-                      <button class="treat-btn" data-idx="a-${i}" aria-label="Dulce ${i + 1}">
-                        <span class="treat-graphic">${this.treatType.emoji}</span>
-                        <span class="treat-count hidden"></span>
-                      </button>
-                    `).join('')}
-                  </div>
-
-                  <div class="math-sign-symbol">➕</div>
-
-                  <div class="treat-cluster group-right">
-                    ${Array.from({ length: this.numB }).map((_, i) => `
-                      <button class="treat-btn" data-idx="b-${i}" aria-label="Dulce ${this.numA + i + 1}">
-                        <span class="treat-graphic">${this.treatType.emoji}</span>
-                        <span class="treat-count hidden"></span>
-                      </button>
-                    `).join('')}
-                  </div>
-                ` : `
-                  <div class="treat-cluster group-remain">
-                    ${Array.from({ length: this.total }).map((_, i) => `
-                      <button class="treat-btn remain-item" data-idx="r-${i}">
-                        <span class="treat-graphic">${this.treatType.emoji}</span>
-                        <span class="treat-count hidden"></span>
-                      </button>
-                    `).join('')}
-                  </div>
-
-                  <div class="math-sign-symbol">➖</div>
-
-                  <div class="treat-cluster group-eaten">
-                    ${Array.from({ length: this.numB }).map((_, i) => `
-                      <div class="treat-btn eaten-item" title="¡Milk se comió este dulce!">
-                        <span class="treat-graphic muted">${this.treatType.emoji}</span>
-                        <span class="eaten-badge">😋</span>
-                      </div>
-                    `).join('')}
-                  </div>
-                `}
+                ${this.renderTrayElements()}
               </div>
             </div>
 
-            <!-- Milk Oficial con su osito y chupete a la derecha -->
+            <!-- Milk Oficial -->
             <div class="baker-char milk-side" id="milkBaker">
               <div class="milk-avatar-wrap">
                 <img src="assets/milk_teddy.png" class="official-baker-img milk-official" id="milkImg" alt="Milk" />
@@ -161,7 +186,9 @@
               <div class="char-bubble milk-bubble" id="milkBubble">
                 ${this.currentOp === '+' 
                   ? `¡Y yo traje <strong>${this.numB}</strong>! 🍼` 
-                  : `¡Me comí <strong>${this.numB}</strong>! 😋`}
+                  : (this.currentOp === '-'
+                    ? `¡Me comí <strong>${this.numB}</strong>! 😋`
+                    : `¡Con <strong>${this.numB}</strong> ${this.treatType.emoji} cada una!`)}
               </div>
             </div>
           </div>
@@ -170,14 +197,16 @@
           <div class="math-question-panel">
             <h2 id="mathQuestionText">
               ${this.currentOp === '+' 
-                ? '¿Cuántos dulces hay en total en la mesa?' 
-                : '¿Cuántos dulces quedaron en la bandeja?'}
+                ? `¿Cuánto es ${this.numA} + ${this.numB}?` 
+                : (this.currentOp === '-'
+                  ? `¿Cuánto es ${this.numA} - ${this.numB}?`
+                  : `¿Cuánto es ${this.numA} × ${this.numB}?`)}
             </h2>
             <div class="options-grid">
               ${options.map(val => `
                 <button class="math-ans-btn" data-val="${val}">
                   <span class="math-ans-number">${val}</span>
-                  <span class="math-ans-dots">${'🍓'.repeat(val)}</span>
+                  <span class="math-ans-dots">${val <= 6 ? this.treatType.emoji.repeat(val) : `✨ ${val} dulces ✨`}</span>
                 </button>
               `).join('')}
             </div>
@@ -188,7 +217,89 @@
       this.bindEvents();
     }
 
+    renderTrayElements() {
+      // Limitar renderizado de elementos individuales a max 15 para evitar saturación visual en pantallas
+      const maxVisualA = Math.min(this.numA, 10);
+      const maxVisualB = Math.min(this.numB, 10);
+
+      if (this.currentOp === '+') {
+        return `
+          <div class="treat-cluster group-left">
+            ${Array.from({ length: maxVisualA }).map((_, i) => `
+              <button class="treat-btn" data-idx="a-${i}" aria-label="Dulce ${i + 1}">
+                <span class="treat-graphic">${this.treatType.emoji}</span>
+                <span class="treat-count hidden"></span>
+              </button>
+            `).join('')}
+            ${this.numA > 10 ? `<span class="extra-count-badge">+${this.numA - 10}</span>` : ''}
+          </div>
+
+          <div class="math-sign-symbol">➕</div>
+
+          <div class="treat-cluster group-right">
+            ${Array.from({ length: maxVisualB }).map((_, i) => `
+              <button class="treat-btn" data-idx="b-${i}" aria-label="Dulce ${this.numA + i + 1}">
+                <span class="treat-graphic">${this.treatType.emoji}</span>
+                <span class="treat-count hidden"></span>
+              </button>
+            `).join('')}
+            ${this.numB > 10 ? `<span class="extra-count-badge">+${this.numB - 10}</span>` : ''}
+          </div>
+        `;
+      } else if (this.currentOp === '-') {
+        const visualRemain = Math.min(this.total, 10);
+        return `
+          <div class="treat-cluster group-remain">
+            ${Array.from({ length: visualRemain }).map((_, i) => `
+              <button class="treat-btn remain-item" data-idx="r-${i}">
+                <span class="treat-graphic">${this.treatType.emoji}</span>
+                <span class="treat-count hidden"></span>
+              </button>
+            `).join('')}
+            ${this.total > 10 ? `<span class="extra-count-badge">+${this.total - 10}</span>` : ''}
+          </div>
+
+          <div class="math-sign-symbol">➖</div>
+
+          <div class="treat-cluster group-eaten">
+            ${Array.from({ length: maxVisualB }).map((_, i) => `
+              <div class="treat-btn eaten-item" title="¡Milk se comió este dulce!">
+                <span class="treat-graphic muted">${this.treatType.emoji}</span>
+                <span class="eaten-badge">😋</span>
+              </div>
+            `).join('')}
+            ${this.numB > 10 ? `<span class="extra-count-badge">+${this.numB - 10}</span>` : ''}
+          </div>
+        `;
+      } else {
+        // Multiplicación
+        return `
+          <div class="treat-cluster group-mult">
+            ${Array.from({ length: this.numA }).map((_, gIdx) => `
+              <div class="mult-group-box">
+                ${Array.from({ length: this.numB }).map((_, bIdx) => `
+                  <button class="treat-btn" data-idx="m-${gIdx}-${bIdx}">
+                    <span class="treat-graphic">${this.treatType.emoji}</span>
+                    <span class="treat-count hidden"></span>
+                  </button>
+                `).join('')}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+
     bindEvents() {
+      // Selector de Edad
+      this.container.querySelectorAll('.math-tier-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          A.unlock();
+          A.bubblePop(1);
+          this.setTier(e.currentTarget.dataset.tier);
+        });
+      });
+
       // Cambio de modo
       this.container.querySelectorAll('.mode-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -199,7 +310,7 @@
       });
 
       // Conteo táctil de dulces
-      this.container.querySelectorAll('.treat-btn').forEach(btn => {
+      this.container.querySelectorAll('.treat-btn:not(.eaten-item)').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
           const target = e.currentTarget;
@@ -258,97 +369,78 @@
 
       const activeTreats = this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)');
       activeTreats.forEach((item, i) => {
-        const badge = item.querySelector('.treat-count');
-        if (badge) {
-          badge.textContent = i + 1;
-          badge.classList.remove('hidden');
-        }
+        setTimeout(() => item.classList.add('dance-bounce'), i * 80);
       });
 
       setTimeout(() => {
         if (this.score >= this.totalGoal) {
-          this.showVictoryScreen();
+          this.triggerPartyVictory();
         } else {
           this.nextRound();
         }
-      }, 1900);
+      }, 1500);
     }
 
     handleDoubtAndGuide(btnEl) {
+      this.isCountingHelpActive = true;
+      btnEl.classList.add('wobble');
       A.softBoing();
-      btnEl.classList.add('wobble-friendly');
-      setTimeout(() => btnEl.classList.remove('wobble-friendly'), 600);
 
-      const milk = this.container.querySelector('#milkBaker');
       const milkBubble = this.container.querySelector('#milkBubble');
+      const cinnaBubble = this.container.querySelector('#cinnaBubble');
       const tray = this.container.querySelector('#trayContainer');
 
-      if (milk) {
-        milk.classList.add('curious-tilt');
-        setTimeout(() => milk.classList.remove('curious-tilt'), 2000);
-      }
+      if (cinnaBubble) cinnaBubble.innerHTML = '¿Estás segura Amanda? 🤔';
+      if (milkBubble) milkBubble.innerHTML = '¡Toquemos los dulces para contar juntas! 👆';
+      if (tray) tray.classList.add('highlight-tray');
 
-      if (milkBubble) {
-        milkBubble.innerHTML = '¿Estás segura Amanda? 🤔 ¡Contemos juntas!';
-        milkBubble.classList.add('highlight-speech');
-        setTimeout(() => milkBubble.classList.remove('highlight-speech'), 2200);
-      }
-
-      if (tray) {
-        tray.classList.add('gentle-pulse');
-        setTimeout(() => tray.classList.remove('gentle-pulse'), 1200);
-      }
-
-      this.isCountingHelpActive = true;
-      const targets = Array.from(this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)'));
-
-      targets.forEach((item, index) => {
+      const allActive = this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)');
+      allActive.forEach((btn, i) => {
         setTimeout(() => {
-          if (!this.container) return;
-          item.classList.add('glow-count');
-          A.bubblePop(index + 1);
-          const badge = item.querySelector('.treat-count');
+          btn.classList.add('pop-counted');
+          const badge = btn.querySelector('.treat-count');
           if (badge) {
-            badge.textContent = index + 1;
+            badge.textContent = i + 1;
             badge.classList.remove('hidden');
           }
-          setTimeout(() => item.classList.remove('glow-count'), 500);
-
-          if (index === targets.length - 1) {
-            setTimeout(() => {
-              this.isCountingHelpActive = false;
-            }, 600);
-          }
-        }, (index + 1) * 450);
+          A.bubblePop(i + 1);
+        }, (i + 1) * 350);
       });
+
+      const totalDelay = (allActive.length + 1) * 350 + 600;
+      setTimeout(() => {
+        if (cinnaBubble) cinnaBubble.innerHTML = `¡Hay <strong>${this.total}</strong> en total! 🌸`;
+        if (milkBubble) milkBubble.innerHTML = `¡Elige el número <strong>${this.total}</strong> Amanda! ✨`;
+        if (tray) tray.classList.remove('highlight-tray');
+        this.isCountingHelpActive = false;
+        btnEl.classList.remove('wobble');
+      }, totalDelay);
     }
 
-    showVictoryScreen() {
+    triggerPartyVictory() {
       A.celebrate();
-      this.container.innerHTML = `
-        <div class="math-victory-box">
-          <div class="victory-confetti-badge">🎉 ¡Excelente Pastelera Amanda! 🎉</div>
-          <h2>¡Completaste todos los pedidos de la pastelería!</h2>
-          <div class="victory-bakers-row">
-            <div class="victory-mascot-cinna">
-              <img src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" />
-              <span>Cinnamoroll</span>
-            </div>
-            <div class="giant-cake">🎂✨</div>
-            <div class="victory-mascot-milk">
-              <img src="assets/milk_teddy.png" alt="Milk" />
-              <span>Milk</span>
-            </div>
+      const modal = document.createElement('div');
+      modal.className = 'w-victory-modal-overlay';
+      modal.innerHTML = `
+        <div class="w-victory-card">
+          <div class="w-victory-badge">🧁 ¡MAESTRA PASTELERA DE SANRIO! 🧁</div>
+          <h2 style="color: #ea580c">¡Completaste tus 5 pedidos!</h2>
+          <div class="w-victory-img-box">
+            <img src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" />
           </div>
-          <p class="victory-cheer">¡Eres súper inteligente y cariñosa! 🌸</p>
-          <button id="btnMathReplay" class="btn-math-replay">▶ ¡Jugar otra ronda!</button>
+          <p>¡Amanda, eres una campeona de los números en Cinnamoroll Land! 💖 ⭐⭐⭐</p>
+          <div class="w-victory-actions">
+            <button class="btn-w-next" id="btnNextMathParty">▶ Seguir Horneando</button>
+          </div>
         </div>
       `;
+      this.container.appendChild(modal);
 
-      this.container.querySelector('#btnMathReplay').addEventListener('click', () => {
+      modal.querySelector('#btnNextMathParty').addEventListener('click', () => {
         A.unlock();
-        A.bubblePop(1);
-        this.init(this.container);
+        modal.remove();
+        this.score = 0;
+        this.nextRound();
       });
     }
   }

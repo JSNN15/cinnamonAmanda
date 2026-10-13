@@ -437,10 +437,29 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 
 .math-top-bar {
   display: flex; justify-content: space-between; align-items: center;
-  width: 100%; margin-bottom: 12px;
+  width: 100%; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;
 }
 
-.mode-toggles { display: flex; gap: 8px; }
+.math-age-tier-row {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.math-tier-title {
+  font-size: 13px; font-weight: 800; color: #475569;
+}
+.math-tier-btn {
+  background: #ffffff; border: 2.5px solid #cbd5e1; border-radius: 999px;
+  padding: 4px 12px; font: 800 13px var(--font); color: #475569; cursor: pointer;
+  box-shadow: 0 2px 0 #94a3b8; transition: transform 0.15s, background-color 0.15s, border-color 0.15s;
+}
+.math-tier-btn:hover {
+  transform: translateY(-1px);
+}
+.math-tier-btn.active {
+  background: #3b82f6; color: #ffffff; border-color: #2563eb;
+  box-shadow: 0 2px 0 #1d4ed8;
+}
+
+.mode-toggles { display: flex; gap: 8px; flex-wrap: wrap; }
 .mode-btn {
   background: #ffffff; border: 3px solid #ffd1e3; border-radius: 999px;
   padding: 5px 14px; font: 800 15px var(--font); color: var(--pink-d);
@@ -515,8 +534,26 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 .tray-hint {
   font-size: 13px; font-weight: 800; color: #e65100; margin-bottom: 6px;
 }
-.sweet-tray { display: flex; align-items: center; gap: 10px; }
-.treat-cluster { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 170px; }
+.treat-cluster { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; max-width: 220px; }
+.treat-cluster.group-mult { max-width: 380px; gap: 10px; }
+.mult-group-box {
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px dashed #f59e0b;
+  border-radius: 18px;
+  padding: 6px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.15);
+}
+.extra-count-badge {
+  background: #ef4444; color: #ffffff;
+  font-size: 13px; font-weight: 800;
+  padding: 3px 9px; border-radius: 999px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  display: inline-flex; align-items: center; align-self: center;
+}
 .math-sign-symbol { font-size: 26px; color: #ff9800; font-weight: 800; }
 
 .treat-btn {
@@ -741,6 +778,7 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 .grid-size-6 { grid-template-columns: repeat(3, minmax(90px, 140px)); }
 .grid-size-8 { grid-template-columns: repeat(4, minmax(80px, 130px)); }
 .grid-size-12 { grid-template-columns: repeat(4, minmax(75px, 120px)); }
+.grid-size-16 { grid-template-columns: repeat(4, minmax(65px, 110px)); }
 
 .memory-card-slot {
   aspect-ratio: 3 / 4; cursor: pointer; perspective: 1000px;
@@ -1160,6 +1198,109 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 }
 .word-selector-pills::-webkit-scrollbar { display: none; }
 
+.writing-age-tier-row {
+  display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; margin-bottom: 8px;
+}
+.tier-label-title {
+  font-size: 13px; font-weight: 800; color: #475569;
+}
+.tier-chip-btn {
+  background: #ffffff; border: 2.5px solid #cbd5e1; border-radius: 999px;
+  padding: 4px 14px; font: 800 13px var(--font); color: #475569;
+  cursor: pointer; box-shadow: 0 2px 0 #94a3b8; transition: transform 0.15s;
+}
+.tier-chip-btn.active {
+  background: #ec4899; color: #ffffff; border-color: #ffffff;
+  box-shadow: 0 3px 0 #be185d; transform: scale(1.05);
+}
+
+.sentence-chip-btn {
+  background: #ffffff; border: 3px solid #c7d2fe; border-radius: 999px;
+  padding: 5px 14px; font: 800 13px var(--font); color: #4338ca;
+  cursor: pointer; box-shadow: 0 3px 0 #a5b4fc; white-space: nowrap;
+  transition: transform 0.15s, background 0.15s; flex-shrink: 0;
+}
+.sentence-chip-btn.active {
+  background: #4f46e5; color: #ffffff; border-color: #ffffff;
+  box-shadow: 0 3px 0 #3730a3; transform: scale(1.05);
+}
+
+.distractor-badge {
+  font-size: 12px; font-weight: 800; color: #db2777; background: #fdf2f8;
+  padding: 2px 8px; border-radius: 999px; border: 1.5px solid #fbcfe8;
+}
+
+/* Modo Frases Mágicas */
+.sentences-workshop-container {
+  display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%;
+}
+.sentence-slots-row {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  padding: 14px 16px; background: rgba(255, 255, 255, 0.75);
+  border: 3px dashed #818cf8; border-radius: 26px; min-height: 84px;
+  width: 100%; max-width: 720px; align-items: center;
+}
+.sentence-slot {
+  min-width: 90px; height: 60px; padding: 0 14px; border-radius: 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; transition: transform 0.2s; cursor: pointer;
+}
+.sentence-slot.empty {
+  background: #f8fafc; border: 3px dashed #94a3b8;
+}
+.sentence-slot.empty .slot-word-preview {
+  font-size: 15px; font-weight: 800; color: #cbd5e1;
+}
+.sentence-slot.filled {
+  background: #eef2ff; border: 3px solid #6366f1;
+  box-shadow: 0 4px 0 #4f46e5, 0 6px 14px rgba(99, 102, 241, 0.25);
+  animation: popLetter 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.sentence-slot.filled .slot-word-preview {
+  font-size: 17px; font-weight: 800; color: #3730a3;
+}
+.sentence-slot.slot-magnet-hover {
+  transform: scale(1.08); border-color: #60a5fa !important; background: #eff6ff !important;
+}
+.sentence-slot.slot-magnet-match {
+  transform: scale(1.12); border-color: #ec4899 !important; background: #fdf2f8 !important;
+  box-shadow: 0 0 22px rgba(236, 72, 153, 0.7); animation: magnetPulse 0.4s infinite alternate;
+}
+
+.sentence-bank-tray {
+  width: 100%; max-width: 720px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.sentence-words-bank {
+  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  padding: 12px 16px; background: rgba(238, 242, 255, 0.9);
+  border: 4px solid #c7d2fe; border-radius: 28px; width: 100%;
+}
+.sentence-pill-btn {
+  background: radial-gradient(circle at 35% 35%, #ffffff, #e0e7ff);
+  border: 3px solid #6366f1; border-radius: 20px;
+  padding: 8px 18px; cursor: grab;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 5px 0 #4338ca, 0 8px 16px rgba(99, 102, 241, 0.2);
+  transition: transform 0.15s, opacity 0.2s; position: relative;
+  user-select: none; -webkit-user-select: none;
+}
+.sentence-pill-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #4338ca; cursor: grabbing; }
+.sentence-pill-btn.used { opacity: 0.22; pointer-events: none; filter: grayscale(0.85); box-shadow: none; }
+.sentence-pill-btn.pill-dragging-origin { opacity: 0.35; transform: scale(0.92); }
+.pill-word-text { font-size: 16px; font-weight: 800; color: #3730a3; pointer-events: none; }
+.pill-deco { font-size: 12px; pointer-events: none; }
+
+.sentence-pill-drag-clone {
+  position: fixed; pointer-events: none; z-index: 99999;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #e0e7ff);
+  border: 3.5px solid #6366f1; border-radius: 22px;
+  padding: 10px 22px;
+  box-shadow: 0 16px 32px rgba(99, 102, 241, 0.4), 0 0 16px rgba(129, 140, 248, 0.8);
+  display: flex; align-items: center; gap: 8px;
+  transform: translate(-50%, -50%) scale(1.15); cursor: grabbing;
+}
+.sentence-pill-drag-clone .pill-word-text { font-size: 18px; font-weight: 800; color: #3730a3; }
+
 .word-chip-btn {
   background: #ffffff; border: 3px solid #ffd1e8; border-radius: 999px;
   padding: 5px 14px; font: 800 14px var(--font); color: var(--pink-d);
@@ -1505,16 +1646,36 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 }
 
 .puzzle-difficulty-row {
-  display: flex; gap: 10px; justify-content: center;
+  display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap;
+}
+.diff-title-tag {
+  font-size: 13px; font-weight: 800; color: #475569;
 }
 .puz-diff-btn {
   background: #f8fafc; border: 2.5px solid #cbd5e1; border-radius: 999px;
-  padding: 4px 14px; font: 800 13px var(--font); color: #475569;
+  padding: 4px 12px; font: 800 12px var(--font); color: #475569;
   cursor: pointer; box-shadow: 0 2px 0 #94a3b8; transition: transform 0.15s;
 }
 .puz-diff-btn.active {
   background: #ec4899; color: #ffffff; border-color: #ffffff;
   box-shadow: 0 3px 0 #be185d; transform: scale(1.05);
+}
+
+.puzzle-badges-top-line {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 4px;
+}
+.puzzle-timer-pill {
+  background: #fef08a; border: 2px solid #facc15; border-radius: 999px;
+  padding: 2px 10px; font-size: 13px; font-weight: 800; color: #854d0e;
+}
+.btn-ghost-toggle {
+  background: #ffffff; border: 2.5px solid #cbd5e1; border-radius: 999px;
+  padding: 6px 14px; font: 800 13px var(--font); color: #334155;
+  cursor: pointer; box-shadow: 0 2px 0 #94a3b8; transition: transform 0.15s;
+}
+.btn-ghost-toggle:active { transform: translateY(2px); }
+.btn-ghost-toggle.active {
+  background: #dbeafe; border-color: #3b82f6; color: #1d4ed8; box-shadow: 0 2px 0 #2563eb;
 }
 
 .puzzle-stage-card {
@@ -1534,8 +1695,8 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 }
 
 .puzzle-header-info {
-  width: 100%; display: flex; align-items: center; gap: 14px;
-  margin-bottom: 14px; flex-wrap: wrap;
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; margin-bottom: 14px; flex-wrap: wrap;
 }
 .puzzle-mascot-avatar {
   width: 78px; height: 65px; display: flex; align-items: center; justify-content: center;
@@ -1577,7 +1738,13 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 .puzzle-board-box::before {
   content: ''; position: absolute; inset: 0;
   background: inherit; opacity: 0.28; filter: saturate(1.1);
-  z-index: 1; pointer-events: none;
+  z-index: 1; pointer-events: none; transition: opacity 0.3s;
+}
+.puzzle-board-box.no-ghost::before {
+  opacity: 0 !important;
+}
+.puzzle-board-box.with-ghost::before {
+  opacity: 0.28 !important;
 }
 
 .puzzle-board-slot {
@@ -1594,9 +1761,9 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 .slot-ghost-guide {
   width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
 }
-.slot-plus-guide {
-  font-size: 26px; font-weight: 800; color: rgba(255, 255, 255, 0.7);
-  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+.slot-coord-guide {
+  font-size: 13px; font-weight: 800; color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 .puzzle-board-slot.slot-magnet-match {
   border-color: #ec4899 !important;
@@ -1870,9 +2037,10 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
   .math-ans-number {
     font-size: 28px;
   }
-  .memory-grid.grid-size-12 {
+  .memory-grid.grid-size-12,
+  .memory-grid.grid-size-16 {
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    gap: 6px;
   }
   .card-art-box {
     width: 60px; height: 50px;

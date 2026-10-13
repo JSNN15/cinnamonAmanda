@@ -1,7 +1,7 @@
 /* Memorice de Sanrio (Juego de Memoria y Parejas)
  * Con los personajes OFICIALES de Cinnamoroll y sus amigos:
  * Cinnamoroll, Milk con su osito, Pompompurin con su boina, Mocha con sus flores, y Chiffon.
- * Cartas con volteo 3D, 3 niveles de dificultad, y celebración mágica de estrellas.
+ * Cartas con volteo 3D, niveles adaptados a 5 a 8 años (hasta 16 cartas / 8 parejas en rejilla 4x4).
  */
 (function () {
   const { audio: A } = window.Cinnamo;
@@ -26,14 +26,14 @@
       name: 'Pompompurin',
       emoji: '🍮',
       color: '#fff3b0',
-      imgSrc: 'assets/pompompurin.png'
+      imgSrc: 'assets/pompompurin_hq.png'
     },
     {
       id: 'mocha',
       name: 'Mocha',
       emoji: '🎀',
       color: '#faebd7',
-      imgSrc: 'assets/mocha.png'
+      imgSrc: 'assets/mocha_hq.png'
     },
     {
       id: 'chiffon',
@@ -48,13 +48,27 @@
       emoji: '🧸',
       color: '#e2f0cb',
       imgSrc: 'assets/milk_sitting.png'
+    },
+    {
+      id: 'purin_flan',
+      name: 'Flan Purin',
+      emoji: '🍮',
+      color: '#fef08a',
+      imgSrc: 'assets/puzzle_purin.png'
+    },
+    {
+      id: 'mocha_tea',
+      name: 'Té de Mocha',
+      emoji: '🎀',
+      color: '#fbcfe8',
+      imgSrc: 'assets/puzzle_mocha.png'
     }
   ];
 
   class MemoryGame {
     constructor() {
       this.container = null;
-      this.difficulty = 6;
+      this.difficulty = 8; // 8 (5-6 años), 12 (6-7 años), 16 (7-8 años)
       this.cards = [];
       this.flippedCards = [];
       this.matchedPairs = 0;
@@ -67,7 +81,7 @@
       this.startNewGame(this.difficulty);
     }
 
-    startNewGame(totalCards = 6) {
+    startNewGame(totalCards = 8) {
       this.difficulty = totalCards;
       this.moves = 0;
       this.matchedPairs = 0;
@@ -96,9 +110,9 @@
         <div class="memory-wrap">
           <div class="memory-top-bar">
             <div class="diff-selector">
-              <button class="diff-btn ${this.difficulty === 6 ? 'active' : ''}" data-diff="6">🌸 Fácil (3 Parejas)</button>
-              <button class="diff-btn ${this.difficulty === 8 ? 'active' : ''}" data-diff="8">⭐ Medio (4 Parejas)</button>
-              <button class="diff-btn ${this.difficulty === 12 ? 'active' : ''}" data-diff="12">🌟 Estrella (6 Parejas)</button>
+              <button class="diff-btn ${this.difficulty === 8 ? 'active' : ''}" data-diff="8">🌸 8 Cartas (5-6 años)</button>
+              <button class="diff-btn ${this.difficulty === 12 ? 'active' : ''}" data-diff="12">⭐ 12 Cartas (6-7 años)</button>
+              <button class="diff-btn ${this.difficulty === 16 ? 'active' : ''}" data-diff="16">👑 16 Cartas (7-8 años)</button>
             </div>
             <div class="memory-stats-pill">
               <span>💖 Parejas: <strong id="matchedCount">${this.matchedPairs}</strong> / ${numPairs}</span>
@@ -118,7 +132,7 @@
                       <img src="${card.imgSrc}" class="memory-char-sprite" alt="${card.name}" />
                     </div>
                     <div class="card-char-name">${card.name}</div>
-                    <div class="card-char-emoji">${card.emoji}</div>
+                    <span class="card-char-emoji">${card.emoji}</span>
                   </div>
                 </div>
               </div>
@@ -142,42 +156,47 @@
 
       this.container.querySelectorAll('.memory-card-slot').forEach(slot => {
         slot.addEventListener('click', (e) => {
-          if (this.isLocked) return;
-          const target = e.currentTarget;
-          const idx = parseInt(target.dataset.index, 10);
-          const cardData = this.cards[idx];
-
-          if (target.classList.contains('flipped') || target.classList.contains('matched')) return;
-
-          A.unlock();
-          A.bubblePop(this.flippedCards.length + 1);
-
-          target.classList.add('flipped');
-          this.flippedCards.push({ el: target, data: cardData });
-
-          if (this.flippedCards.length === 2) {
-            this.moves++;
-            this.checkMatch();
-          }
+          const idx = parseInt(e.currentTarget.dataset.index, 10);
+          this.handleCardClick(idx);
         });
       });
     }
 
+    handleCardClick(index) {
+      if (this.isLocked) return;
+
+      const card = this.cards[index];
+      const slotEl = this.container.querySelector(`.memory-card-slot[data-index="${index}"]`);
+
+      if (!slotEl || slotEl.classList.contains('flipped') || slotEl.classList.contains('matched')) {
+        return;
+      }
+
+      A.unlock();
+      A.whoosh();
+
+      slotEl.classList.add('flipped');
+      this.flippedCards.push({ index, card, el: slotEl });
+
+      if (this.flippedCards.length === 2) {
+        this.moves++;
+        this.checkMatch();
+      }
+    }
+
     checkMatch() {
-      const [c1, c2] = this.flippedCards;
-      const isMatch = c1.data.matchKey === c2.data.matchKey;
+      const [first, second] = this.flippedCards;
+      this.isLocked = true;
 
-      if (isMatch) {
-        this.matchedPairs++;
-        this.isLocked = true;
-
+      if (first.card.matchKey === second.card.matchKey) {
         setTimeout(() => {
-          A.kawaiiChirp('cheer');
-          A.collect(this.matchedPairs);
+          A.collect(this.matchedPairs + 1);
+          A.sparkleChime();
 
-          c1.el.classList.add('matched');
-          c2.el.classList.add('matched');
+          first.el.classList.add('matched');
+          second.el.classList.add('matched');
 
+          this.matchedPairs++;
           const counter = this.container.querySelector('#matchedCount');
           if (counter) counter.textContent = this.matchedPairs;
 
@@ -185,51 +204,46 @@
           this.isLocked = false;
 
           if (this.matchedPairs === this.difficulty / 2) {
-            setTimeout(() => this.showVictoryScreen(), 600);
+            setTimeout(() => this.triggerVictory(), 400);
           }
         }, 400);
       } else {
-        this.isLocked = true;
         setTimeout(() => {
           A.softBoing();
-          c1.el.classList.remove('flipped');
-          c2.el.classList.remove('flipped');
+          first.el.classList.remove('flipped');
+          second.el.classList.remove('flipped');
+
           this.flippedCards = [];
           this.isLocked = false;
-        }, 1100);
+        }, 900);
       }
     }
 
-    showVictoryScreen() {
+    triggerVictory() {
       A.celebrate();
-      this.container.innerHTML = `
-        <div class="memory-victory-modal">
-          <div class="victory-ribbon">⭐ ¡BRAVO AMANDA! ⭐</div>
-          <h2>¡Tienes una memoria mágica!</h2>
-          <p>¡Encontraste todas las parejas de Cinnamoroll y sus amigos!</p>
-          <div class="victory-mascot-row">
-            <img src="assets/cinnamoroll_fly.png" class="victory-bounce-cinna" alt="Cinnamoroll" />
-            <img src="assets/milk_teddy.png" class="victory-bounce-cinna" alt="Milk" />
-            <div class="trophy-badge">🏆💖</div>
+      const numPairs = this.difficulty / 2;
+
+      const modal = document.createElement('div');
+      modal.className = 'w-victory-modal-overlay';
+      modal.innerHTML = `
+        <div class="w-victory-card">
+          <div class="w-victory-badge">🃏 ¡MEMORICE COMPLETADO! 🃏</div>
+          <h2 style="color: #ec4899">¡Encontraste las ${numPairs} parejas!</h2>
+          <div class="w-victory-img-box">
+            <img src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" />
           </div>
-          <div class="victory-stats">
-            <span>¡${this.matchedPairs} parejas encontradas en ${this.moves} intentos!</span>
-          </div>
-          <div class="victory-action-buttons">
-            <button class="btn-play-again-mem" data-diff="6">🌸 Jugar Fácil</button>
-            <button class="btn-play-again-mem" data-diff="8">⭐ Jugar Medio</button>
-            <button class="btn-play-again-mem" data-diff="12">🌟 Jugar Estrella</button>
+          <p>¡Amanda, tienes una memoria de campeona! 💖 ⭐⭐⭐</p>
+          <div class="w-victory-actions">
+            <button class="btn-w-next" id="btnPlayAgainMemory">▶ Jugar Otra Vez</button>
           </div>
         </div>
       `;
+      this.container.appendChild(modal);
 
-      this.container.querySelectorAll('.btn-play-again-mem').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          A.unlock();
-          A.bubblePop(1);
-          const diff = parseInt(e.currentTarget.dataset.diff, 10);
-          this.startNewGame(diff);
-        });
+      modal.querySelector('#btnPlayAgainMemory').addEventListener('click', () => {
+        A.unlock();
+        modal.remove();
+        this.startNewGame(this.difficulty);
       });
     }
   }
