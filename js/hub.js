@@ -129,6 +129,13 @@
 
       // El botón Home sólo se muestra cuando estamos dentro de un juego
       this.btnHome.classList.toggle('hidden', screenName === 'hub');
+
+      // Notificar a los mandos conectados del cambio de pantalla
+      if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
+        window.Cinnamo.controllerBridge.broadcastGameContext({
+          screen: screenName
+        });
+      }
     }
 
     launchGame(gameKey) {

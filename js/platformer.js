@@ -491,6 +491,14 @@
       this.burstParticles(this.p.x + this.p.w / 2, this.p.y + this.p.h / 2, 16, ['#ffffff', hero.trailColor, '#ffd1dc']);
     }
 
+    nextHero() {
+      const currentId = this.selectedHero?.id || 'cinna';
+      const idx = HEROES.findIndex(h => h.id === currentId);
+      const nextIdx = (idx + 1) % HEROES.length;
+      this.setHero(HEROES[nextIdx]);
+      if (A) A.celebrate();
+    }
+
     setupCanvas() {
       this.canvas = this.container.querySelector('#platformerCanvas');
       this.ctx = this.canvas.getContext('2d');

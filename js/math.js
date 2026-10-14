@@ -222,7 +222,7 @@
             <div class="options-grid">
               ${options.map(val => `
                 <button class="math-ans-btn" data-val="${val}">
-                  <span class="math-ans-number">${val}</span>
+                  <span class="math-ans-number ${val >= 10 ? 'double-digit' : ''}">${val}</span>
                   <span class="math-ans-dots">${val <= 6 ? this.treatType.emoji.repeat(val) : `✨ ${val} dulces ✨`}</span>
                 </button>
               `).join('')}
@@ -230,6 +230,20 @@
           </div>
         </div>
       `;
+
+      // Notificar al mando de celular el contexto actual de la pregunta
+      if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
+        window.Cinnamo.controllerBridge.broadcastGameContext({
+          screen: 'math',
+          question: this.currentOp === '+' 
+            ? `¿Cuánto es ${this.numA} + ${this.numB}?` 
+            : (this.currentOp === '-' ? `¿Cuánto es ${this.numA} - ${this.numB}?` : `¿Cuánto es ${this.numA} × ${this.numB}?`),
+          options: options,
+          treatEmoji: this.treatType.emoji,
+          score: this.score,
+          totalGoal: this.totalGoal
+        });
+      }
 
       this.bindEvents();
     }
@@ -364,6 +378,18 @@
           }
         });
       });
+    }
+
+    submitAnswer(val) {
+      if (this.answered || this.isCountingHelpActive) return;
+      A.unlock();
+      const chosen = parseInt(val, 10);
+      const btn = this.container ? this.container.querySelector(`.math-ans-btn[data-val="${chosen}"]`) : null;
+      if (chosen === this.total) {
+        if (btn) this.handleSuccess(btn);
+      } else {
+        if (btn) this.handleDoubtAndGuide(btn);
+      }
     }
 
     handleSuccess(btnEl) {

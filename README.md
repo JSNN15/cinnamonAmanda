@@ -51,8 +51,10 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 ---
 
 ### 2. 🧁 Pastelería de Números (Sumas y Conteo Preescolar)
-* **Mecánica:** Cinnamoroll y el pequeño **Milk** hornean delicias. Amanda cuenta cuántos dulces hay en la bandeja (sumas visuales del 1 al 8).
+* **Mecánica:** Cinnamoroll y el pequeño **Milk** hornean delicias. Amanda cuenta cuántos dulces hay en la bandeja (sumas visuales del 1 al 8, y desafíos matemáticos para niñas mayores).
 * **Interacción táctil:** Tocar cada pastelito hace que salte con un sonido de burbuja (*pop*) y muestre su número en orden (1, 2, 3...) para ayudarla a contar con el dedo.
+* **Tipografía Kawaii Homogénea (v15):** Los números grandes y de dos cifras (como el 23) conservan estrictamente la tipografía redondeada de ensueño (*Baloo 2*) con proporciones armonizadas (`.double-digit`) sin perder la estética mágica del juego.
+* **Control Remoto para Televisor (v15):** Al conectar el celular como mando, la pantalla del teléfono muestra un teclado numérico táctil interactivo con las opciones de respuesta gigantes, permitiendo jugar en la TV desde el sillón.
 * **Botones adaptados para no-lectores:** Cada botón de respuesta muestra el número grande y los puntitos correspondientes debajo (`● ● ●`) para comparar directamente con los dulces contados.
 * **Cero frustración:** Si elige otro número, la bandeja simplemente se balancea con un suave sonido elástico y el juego invita a contar de nuevo con alegría.
 
@@ -109,6 +111,7 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
   * Cupcakes flotantes para recolectar con sonido de campanita.
   * Rescate mágico: Si cae al vacío, una nube lo devuelve suavemente hacia arriba.
 * **Meta Picnic:** Al llegar al final (x = 2800), lo esperan en un mantel de picnic con globos todos sus amigos oficiales: **Milk, Pompompurin, Mocha y Chiffon**.
+* **Adaptabilidad Móvil 100% Calibrada (v15):** HUD superior reorganizado en dos filas compactas en smartphones para que el botón de cambio de héroe y la ciudad actual nunca queden fuera del borde de la pantalla (incluso en pantallas estrechas de 360px a 390px), con modales fijos adaptados a la pantalla táctil.
 
 ---
 
@@ -149,7 +152,7 @@ Diseñado con metodología preescolar multisensorial para que Amanda aprenda a e
   * **Normalización de Tildes:** Acepta tanto `Á` como `A` en palabras como `MAMÁ` y `PAPÁ` para evitar frustraciones ortográficas tempranas.
 * **3 Modos Pedagógicos:**
   1. 🍪 **Alfabeto Móvil Montessori:** Bandeja de galletitas horneadas con moldes en relieve.
-  2. ✨ **Trazado Sensorial con Estrellas:** Letras gigantes con guías punteadas que dejan una estela brillante de polvo de estrellas al pasar el dedo o ratón.
+  2. ✨ **Trazado Caligráfico de Trazo Único (v15):** A diferencia de dibujar un contorno hueco, este modo enseña a escribir la letra con su trazo natural central (esqueleto caligráfico de trazo simple). Incluye carriles suaves, líneas guía punteadas finas y números de orden de trazo (`①`, `②`, `③`). Cuenta con un **indicador de precisión en tiempo real (% de acierto)** y medidor de estrellas (`⭐⭐⭐ ¡Completado!`) con fanfarria y felicitación al superar el 75%.
   3. 🖍️ **Pizarra Libre con Tizas Pastel:** Pizarra de cuaderno caligráfico para escribir libremente con tizas de colores (rosa, celeste, amarillo sol, menta, blanco) y esponjita de borrar.
 * **Fónica con Voz en Español:** Pronunciación dulce y cariñosa mediante `SpeechSynthesis` (*"¡Ma-má! ¡Excelente Amanda!"*).
 
@@ -193,16 +196,21 @@ Diseñado desde cero bajo criterios de Game Design para niñas de prebásica (4 
 
 ---
 
-## 🎮 Mando Kawaii en tu Celular & Soporte de Gamepad Físico (v14)
+## 🎮 Mando Inteligente Kawaii en tu Celular & Gamepad Físico (v15)
 
-Permite transformar cualquier teléfono inteligente en un mando de consola o usar mandos físicos Bluetooth/USB:
+Permite transformar cualquier teléfono inteligente en un mando de consola inteligente de última generación o usar mandos físicos Bluetooth/USB:
 
-* **📱 Mando en el Celular (`controller.html`):**
-  * **Cero descargas:** No requiere instalar apps de la App Store ni Google Play.
-  * **Emparejamiento con Código QR:** Al presionar el botón `🎮 Mando` en la barra superior del juego en la PC, se despliega un código QR y un código de sala de 4 letras.
-  * **WebRTC P2P de Baja Latencia (PeerJS):** Conexión directa y ultra-rápida (< 15ms) entre el móvil y la computadora, con respaldo automático local por `BroadcastChannel`.
-  * **Diseño Ergonómico Pastel:** Cruz direccional celeste (D-pad), botón gigante de salto 🌸 y botón de dulce 🧁.
-  * **Feedback Táctil & Sonoro:** Respuesta háptica por vibración (`navigator.vibrate`) y pitidos de burbuja instantáneos para que la niña sienta el toque físico al jugar.
+* **📱 Mando Inteligente y Dinámico en el Celular (`controller.html`):**
+  * **Cero descargas:** No requiere instalar apps de la App Store ni Google Play; funciona en cualquier navegador móvil escaneando el código QR.
+  * **🕹️ Mando Palanca Virtual (Joystick Análogo 360°):** Reemplaza las flechas estáticas por una palanca táctil fluida con resorte que permite movimientos diagonales precisos (correr y saltar simultáneamente, planeo en diagonal, giros 360° en vuelo y desplazamiento omnidireccional en el laberinto 3D).
+  * **🎯 Botones Contextuales Adaptados al Juego Activo (Smart Companion):**
+    * **🧁 Modo Pastelería (Juego en Televisor / PC):** El teléfono detecta automáticamente la pregunta en pantalla y despliega un **teclado numérico táctil gigante** con los números de las alternativas (`[ 5 ] [ 6 ] [ 7 ]`). La niña puede responder desde el sillón mirando la tele directamente.
+    * **🏃 Modo Super Run:** Palanca analógica + Botón Salto 🌸 + Botón Dulce 🧁 + Botón `🔄 AMIGO` para alternar de héroe (Cinnamoroll, Milk, Purin, Chiffon) sin tocar la pantalla principal.
+    * **🛫 Modo Vuelo:** Palanca analógica + Botón Pirueta 🌀 + Botón Saludo 👋.
+    * **🎮 Modo Repartidor 3D:** Palanca analógica 360° + Botón Lanzar Dulce 🍬.
+    * **🏠 Modo Hub (Menú Principal):** Cuadrícula de acceso rápido para lanzar cualquiera de los 8 juegos remotamente desde el móvil, más botón `🏠 Menú` omnipresente.
+  * **WebRTC P2P de Ultrabaja Latencia (PeerJS):** Conexión directa y ultra-rápida (< 15ms) entre el móvil y la computadora/TV, con respaldo automático local por `BroadcastChannel`.
+  * **Feedback Táctil & Sonoro:** Respuesta háptica por vibración (`navigator.vibrate`) y pitidos de burbuja instantáneos para cada pulsación y movimiento.
 * **🕹️ Soporte Nativo de Mandos Físicos (Gamepad API):**
   * Conexión instantánea Plug-and-Play vía Bluetooth o USB.
   * Compatible con:

@@ -322,6 +322,47 @@
     return normalizeChar(a) === normalizeChar(b);
   }
 
+  // Trazos caligráficos reales (1 solo trazo por línea, no contorno hueco de tipografía)
+  const LETTER_STROKES = {
+    'A': [[{x:0.5,y:0.14},{x:0.22,y:0.88}],[{x:0.5,y:0.14},{x:0.78,y:0.88}],[{x:0.32,y:0.58},{x:0.68,y:0.58}]],
+    'Á': [[{x:0.5,y:0.18},{x:0.22,y:0.88}],[{x:0.5,y:0.18},{x:0.78,y:0.88}],[{x:0.32,y:0.60},{x:0.68,y:0.60}],[{x:0.42,y:0.04},{x:0.56,y:0.12}]],
+    'B': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.62,y:0.14},{x:0.72,y:0.22},{x:0.72,y:0.42},{x:0.62,y:0.50},{x:0.28,y:0.50}],[{x:0.28,y:0.50},{x:0.66,y:0.50},{x:0.76,y:0.60},{x:0.76,y:0.78},{x:0.66,y:0.88},{x:0.28,y:0.88}]],
+    'C': [[{x:0.74,y:0.26},{x:0.62,y:0.14},{x:0.46,y:0.14},{x:0.30,y:0.26},{x:0.26,y:0.50},{x:0.30,y:0.74},{x:0.46,y:0.88},{x:0.62,y:0.88},{x:0.74,y:0.76}]],
+    'D': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.52,y:0.14},{x:0.74,y:0.30},{x:0.74,y:0.70},{x:0.52,y:0.88},{x:0.28,y:0.88}]],
+    'E': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.74,y:0.14}],[{x:0.28,y:0.50},{x:0.62,y:0.50}],[{x:0.28,y:0.88},{x:0.74,y:0.88}]],
+    'F': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.74,y:0.14}],[{x:0.28,y:0.50},{x:0.62,y:0.50}]],
+    'G': [[{x:0.74,y:0.26},{x:0.62,y:0.14},{x:0.46,y:0.14},{x:0.30,y:0.26},{x:0.26,y:0.50},{x:0.30,y:0.74},{x:0.46,y:0.88},{x:0.68,y:0.88},{x:0.74,y:0.60}],[{x:0.52,y:0.60},{x:0.74,y:0.60}]],
+    'H': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.72,y:0.14},{x:0.72,y:0.88}],[{x:0.28,y:0.50},{x:0.72,y:0.50}]],
+    'I': [[{x:0.50,y:0.14},{x:0.50,y:0.88}],[{x:0.34,y:0.14},{x:0.66,y:0.14}],[{x:0.34,y:0.88},{x:0.66,y:0.88}]],
+    'Í': [[{x:0.50,y:0.20},{x:0.50,y:0.88}],[{x:0.34,y:0.20},{x:0.66,y:0.20}],[{x:0.34,y:0.88},{x:0.66,y:0.88}],[{x:0.45,y:0.04},{x:0.55,y:0.12}]],
+    'J': [[{x:0.66,y:0.14},{x:0.66,y:0.70},{x:0.58,y:0.84},{x:0.42,y:0.88},{x:0.30,y:0.78}]],
+    'K': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.72,y:0.18},{x:0.30,y:0.52}],[{x:0.42,y:0.42},{x:0.74,y:0.88}]],
+    'L': [[{x:0.30,y:0.14},{x:0.30,y:0.88}],[{x:0.30,y:0.88},{x:0.74,y:0.88}]],
+    'M': [[{x:0.22,y:0.88},{x:0.22,y:0.14}],[{x:0.22,y:0.14},{x:0.50,y:0.62}],[{x:0.50,y:0.62},{x:0.78,y:0.14}],[{x:0.78,y:0.14},{x:0.78,y:0.88}]],
+    'N': [[{x:0.25,y:0.88},{x:0.25,y:0.14}],[{x:0.25,y:0.14},{x:0.75,y:0.88}],[{x:0.75,y:0.88},{x:0.75,y:0.14}]],
+    'Ñ': [[{x:0.25,y:0.88},{x:0.25,y:0.20}],[{x:0.25,y:0.20},{x:0.75,y:0.88}],[{x:0.75,y:0.88},{x:0.75,y:0.20}],[{x:0.34,y:0.08},{x:0.46,y:0.05},{x:0.54,y:0.11},{x:0.66,y:0.08}]],
+    'O': [[{x:0.50,y:0.14},{x:0.34,y:0.18},{x:0.24,y:0.38},{x:0.24,y:0.62},{x:0.34,y:0.82},{x:0.50,y:0.88},{x:0.66,y:0.82},{x:0.76,y:0.62},{x:0.76,y:0.38},{x:0.66,y:0.18},{x:0.50,y:0.14}]],
+    'P': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.62,y:0.14},{x:0.74,y:0.24},{x:0.74,y:0.42},{x:0.62,y:0.54},{x:0.28,y:0.54}]],
+    'Q': [[{x:0.50,y:0.14},{x:0.34,y:0.18},{x:0.24,y:0.38},{x:0.24,y:0.62},{x:0.34,y:0.82},{x:0.50,y:0.88},{x:0.66,y:0.82},{x:0.76,y:0.62},{x:0.76,y:0.38},{x:0.66,y:0.18},{x:0.50,y:0.14}],[{x:0.58,y:0.68},{x:0.78,y:0.88}]],
+    'R': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.62,y:0.14},{x:0.74,y:0.24},{x:0.74,y:0.42},{x:0.62,y:0.54},{x:0.28,y:0.54}],[{x:0.48,y:0.54},{x:0.76,y:0.88}]],
+    'S': [[{x:0.72,y:0.24},{x:0.60,y:0.14},{x:0.44,y:0.14},{x:0.30,y:0.24},{x:0.32,y:0.40},{x:0.48,y:0.50},{x:0.68,y:0.60},{x:0.72,y:0.74},{x:0.60,y:0.88},{x:0.44,y:0.88},{x:0.28,y:0.78}]],
+    'T': [[{x:0.20,y:0.14},{x:0.80,y:0.14}],[{x:0.50,y:0.14},{x:0.50,y:0.88}]],
+    'U': [[{x:0.28,y:0.14},{x:0.28,y:0.68},{x:0.36,y:0.84},{x:0.50,y:0.88},{x:0.64,y:0.84},{x:0.72,y:0.68},{x:0.72,y:0.14}]],
+    'V': [[{x:0.24,y:0.14},{x:0.50,y:0.88}],[{x:0.50,y:0.88},{x:0.76,y:0.14}]],
+    'W': [[{x:0.18,y:0.14},{x:0.32,y:0.88}],[{x:0.32,y:0.88},{x:0.50,y:0.40}],[{x:0.50,y:0.40},{x:0.68,y:0.88}],[{x:0.68,y:0.88},{x:0.82,y:0.14}]],
+    'X': [[{x:0.26,y:0.16},{x:0.74,y:0.86}],[{x:0.74,y:0.16},{x:0.26,y:0.86}]],
+    'Y': [[{x:0.24,y:0.14},{x:0.50,y:0.50}],[{x:0.76,y:0.14},{x:0.50,y:0.50}],[{x:0.50,y:0.50},{x:0.50,y:0.88}]],
+    'Z': [[{x:0.26,y:0.16},{x:0.74,y:0.16},{x:0.26,y:0.86},{x:0.74,y:0.86}]]
+  };
+
+  function getLetterStrokes(char) {
+    const c = (char || 'A').toUpperCase();
+    if (LETTER_STROKES[c]) return LETTER_STROKES[c];
+    const clean = c.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    if (LETTER_STROKES[clean]) return LETTER_STROKES[clean];
+    return LETTER_STROKES['A'];
+  }
+
   class WritingWorkshopGame {
     constructor() {
       this.container = null;
@@ -672,7 +713,7 @@
         return `
           <div class="trace-sensory-container">
             <div class="trace-letters-selector">
-              <span>Elige qué letra trazar:</span>
+              <span>Elige qué letra escribir:</span>
               <div class="trace-letters-row">
                 ${w.letters.map((char, idx) => `
                   <button class="trace-pick-btn ${idx === this.selectedTraceLetterIdx ? 'active' : ''}" data-tidx="${idx}">
@@ -682,13 +723,25 @@
               </div>
             </div>
 
+            <div class="trace-stats-bar">
+              <div class="trace-accuracy-pill" id="traceAccuracyPill">
+                <span>🎯 Precisión:</span>
+                <strong id="traceAccuracyNum">0%</strong>
+                <span id="traceStarsText">☆☆☆</span>
+              </div>
+              <div class="trace-guide-hint">✍️ Sigue las líneas con números (① ➔ ②)</div>
+            </div>
+
             <div class="trace-board-stage">
               <canvas id="traceCanvas" width="460" height="340" class="trace-canvas"></canvas>
-              <div class="trace-prompt-badge">✨ Sigue el caminito de estrellas con tu dedo ✨</div>
+              <div id="traceCelebrationBanner" class="trace-celebration-banner hidden">
+                ✨ ¡Excelente trazado, Amanda! 🌟
+              </div>
             </div>
 
             <div class="w-actions-row">
               <button class="btn-w-reset" id="btnClearTrace">✨ Limpiar trazo</button>
+              <button class="btn-w-next hidden" id="btnNextTraceLetter">⭐ ¡Siguiente Letra! ▶</button>
             </div>
           </div>
         `;
@@ -862,6 +915,19 @@
           btnClearT.addEventListener('click', () => {
             A.unlock();
             this.setupTraceCanvas();
+          });
+        }
+
+        const btnNextT = this.container.querySelector('#btnNextTraceLetter');
+        if (btnNextT) {
+          btnNextT.addEventListener('click', () => {
+            A.unlock();
+            A.bubblePop(2);
+            const list = this.getFilteredWords();
+            const w = list[this.currentWordIdx] || WORDS[0];
+            this.selectedTraceLetterIdx = (this.selectedTraceLetterIdx + 1) % w.letters.length;
+            this.render();
+            this.speak(w.letters[this.selectedTraceLetterIdx]);
           });
         }
       }
@@ -1476,55 +1542,179 @@
       });
     }
 
-    // --- SETUP MODO 3: TRAZADO SENSORIAL CON ESTRELLAS ---
+    // --- SETUP MODO 3: TRAZADO SENSORIAL CON TRAZOS CALIGRÁFICOS REALES Y % DE PRECISIÓN ---
     setupTraceCanvas() {
       const canvas = this.container.querySelector('#traceCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const list = this.getFilteredWords();
       const w = list[this.currentWordIdx] || WORDS[0];
-      const char = w.letters[this.selectedTraceLetterIdx] || 'A';
+      const char = (w.letters[this.selectedTraceLetterIdx] || 'A').toUpperCase();
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      this.traceCompleted = false;
+      const accuracyNum = this.container.querySelector('#traceAccuracyNum');
+      const starsText = this.container.querySelector('#traceStarsText');
+      const banner = this.container.querySelector('#traceCelebrationBanner');
+      const btnNext = this.container.querySelector('#btnNextTraceLetter');
+      if (accuracyNum) accuracyNum.textContent = '0%';
+      if (starsText) starsText.textContent = '☆☆☆';
+      if (banner) banner.classList.add('hidden');
+      if (btnNext) btnNext.classList.add('hidden');
 
-      ctx.fillStyle = '#2d3748';
-      ctx.roundRect(0, 0, canvas.width, canvas.height, 24);
-      ctx.fill();
+      // Trazos caligráficos reales (un solo trazo por línea, no contorno hueco)
+      const strokeList = getLetterStrokes(char);
 
-      ctx.font = '800 220px "Baloo 2", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+      // Dimensiones de la caja centrada para la letra
+      const boxSize = Math.min(canvas.width * 0.72, canvas.height * 0.76);
+      const originX = (canvas.width - boxSize) / 2;
+      const originY = (canvas.height - boxSize) / 2 + 10;
 
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
-      ctx.lineWidth = 26;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.strokeText(char, canvas.width / 2, canvas.height / 2 + 10);
+      // Escalar coordenadas a píxeles y muestrear checkpoints
+      const checkpoints = [];
+      const pixelStrokes = strokeList.map((stroke, sIdx) => {
+        const pts = stroke.map(p => ({
+          x: originX + p.x * boxSize,
+          y: originY + p.y * boxSize
+        }));
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.fillText(char, canvas.width / 2, canvas.height / 2 + 10);
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p1 = pts[i];
+          const p2 = pts[i + 1];
+          const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+          const steps = Math.max(2, Math.floor(dist / 9));
+          for (let s = 0; s < steps; s++) {
+            const t = s / steps;
+            checkpoints.push({
+              x: p1.x + (p2.x - p1.x) * t,
+              y: p1.y + (p2.y - p1.y) * t,
+              covered: false,
+              strokeIdx: sIdx
+            });
+          }
+        }
+        if (pts.length > 0) {
+          const last = pts[pts.length - 1];
+          checkpoints.push({ x: last.x, y: last.y, covered: false, strokeIdx: sIdx });
+        }
+        return pts;
+      });
 
-      ctx.strokeStyle = '#ffd166';
-      ctx.lineWidth = 4;
-      ctx.setLineDash([8, 12]);
-      ctx.strokeText(char, canvas.width / 2, canvas.height / 2 + 10);
-      ctx.setLineDash([]);
+      // Dibujar fondo de pizarra y guías finas caligráficas
+      const drawBase = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Fondo pizarra suave
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.roundRect(0, 0, canvas.width, canvas.height, 24);
+        ctx.fill();
+
+        // Líneas guía caligráficas suaves (techo, centro y base)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = 1.5;
+        const lineY1 = originY + boxSize * 0.14;
+        const lineY2 = originY + boxSize * 0.50;
+        const lineY3 = originY + boxSize * 0.88;
+        [lineY1, lineY3].forEach(y => {
+          ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(canvas.width - 20, y); ctx.stroke();
+        });
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath(); ctx.moveTo(20, lineY2); ctx.lineTo(canvas.width - 20, lineY2); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Dibujar cada trazo caligráfico
+        pixelStrokes.forEach((pts, sIdx) => {
+          if (pts.length < 2) return;
+
+          // 1. Carril suave de fondo
+          ctx.beginPath();
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.13)';
+          ctx.lineWidth = 20;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+
+          // 2. Línea guía fina discontinua (caligrafía clara de 1 trazo)
+          ctx.beginPath();
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+          ctx.strokeStyle = '#ffd166';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([7, 8]);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // 3. Círculo numerado de inicio de trazo (①, ②, ③)
+          const startPt = pts[0];
+          ctx.beginPath();
+          ctx.arc(startPt.x, startPt.y, 11, 0, Math.PI * 2);
+          ctx.fillStyle = '#4ade80';
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.fillStyle = '#064e3b';
+          ctx.font = '800 12px "Baloo 2", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText((sIdx + 1).toString(), startPt.x, startPt.y);
+        });
+      };
+
+      drawBase();
 
       let drawing = false;
+      let lastPos = null;
+
       const getPos = (e) => {
         const r = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: clientX - r.left, y: clientY - r.top };
+        return {
+          x: (clientX - r.left) * (canvas.width / r.width),
+          y: (clientY - r.top) * (canvas.height / r.height)
+        };
+      };
+
+      const updateProgress = () => {
+        const covered = checkpoints.filter(c => c.covered).length;
+        const total = checkpoints.length;
+        const pct = Math.min(100, Math.round((covered / total) * 100));
+
+        if (accuracyNum) accuracyNum.textContent = `${pct}%`;
+        if (starsText) {
+          if (pct >= 80) starsText.textContent = '⭐⭐⭐ ¡Completado!';
+          else if (pct >= 55) starsText.textContent = '⭐⭐☆';
+          else if (pct >= 25) starsText.textContent = '⭐☆☆';
+          else starsText.textContent = '☆☆☆';
+        }
+
+        if (pct >= 75 && !this.traceCompleted) {
+          this.traceCompleted = true;
+          A.celebrate();
+          if (banner) {
+            banner.innerHTML = `
+              <div style="font-size: 36px; margin-bottom: 4px;">🎉 ⭐ 🌸</div>
+              <div>¡Increíble Amanda!</div>
+              <div style="font-size: 15px; margin-top: 4px; opacity: 0.95;">Trazaste la letra <strong>${char}</strong> con un <strong>${pct}%</strong> de precisión</div>
+            `;
+            banner.classList.remove('hidden');
+          }
+          if (btnNext) btnNext.classList.remove('hidden');
+          this.speak(`¡Excelente Amanda! Trazaste la letra ${char}`);
+        }
       };
 
       const start = (e) => {
         e.preventDefault();
         A.unlock();
         drawing = true;
-        const p = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
+        lastPos = getPos(e);
       };
 
       const move = (e) => {
@@ -1532,38 +1722,51 @@
         e.preventDefault();
         const p = getPos(e);
 
+        ctx.beginPath();
+        ctx.moveTo(lastPos.x, lastPos.y);
+        ctx.lineTo(p.x, p.y);
         ctx.strokeStyle = '#ff69b4';
-        ctx.lineWidth = 20;
+        ctx.lineWidth = 12;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.shadowColor = '#ff69b4';
-        ctx.shadowBlur = 12;
-
-        ctx.lineTo(p.x, p.y);
+        ctx.shadowBlur = 8;
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
-        if (Math.random() < 0.25) {
+        checkpoints.forEach(cp => {
+          if (!cp.covered) {
+            const d = Math.hypot(p.x - cp.x, p.y - cp.y);
+            if (d < 24) cp.covered = true;
+          }
+        });
+
+        if (Math.random() < 0.22) {
           ctx.save();
           ctx.fillStyle = '#fffbeb';
-          ctx.font = '16px serif';
+          ctx.font = '14px serif';
           ctx.fillText('✨', p.x, p.y);
           ctx.restore();
           A.bubblePop(1);
         }
+
+        lastPos = p;
+        updateProgress();
       };
 
       const stop = () => {
         if (drawing) {
           drawing = false;
-          ctx.shadowBlur = 0;
+          lastPos = null;
           A.sparkleChime();
+          updateProgress();
         }
       };
 
-      canvas.addEventListener('pointerdown', start);
-      canvas.addEventListener('pointermove', move);
-      canvas.addEventListener('pointerup', stop);
-      canvas.addEventListener('pointercancel', stop);
+      canvas.onpointerdown = start;
+      canvas.onpointermove = move;
+      canvas.onpointerup = stop;
+      canvas.onpointercancel = stop;
     }
 
     // --- SETUP MODO 4: PIZARRA LIBRE DE TIZAS PASTEL ---

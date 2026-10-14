@@ -55,18 +55,37 @@
       this.statusListeners.forEach(fn => { try { fn(state); } catch (_) {} });
     }
 
+    broadcastGameContext(ctx) {
+      this.lastContext = ctx;
+      const payload = { type: 'context', ...ctx };
+      this.connections.forEach(conn => {
+        if (conn && conn.open) {
+          try { conn.send(payload); } catch (_) {}
+        }
+      });
+      if (this.broadcastChannel) {
+        try { this.broadcastChannel.postMessage(payload); } catch (_) {}
+      }
+    }
+
     /* ---------- 1. BROADCAST CHANNEL (Fallback para misma máquina/pestañas) ---------- */
     initBroadcast() {
       try {
         if ('BroadcastChannel' in window) {
           this.broadcastChannel = new BroadcastChannel(`cinna_pad_${this.roomCode}`);
           this.broadcastChannel.onmessage = (ev) => {
-            if (ev.data && ev.data.type === 'input') {
-              this.handleRemoteInput(ev.data.btn, ev.data.pressed);
-            } else if (ev.data && ev.data.type === 'hello') {
+            if (!ev.data) return;
+            if (ev.data.type === 'hello') {
               this.connectedCount = Math.max(1, this.connectedCount);
               this.notifyStatus();
               this.broadcastChannel.postMessage({ type: 'welcome', room: this.roomCode });
+              if (this.lastContext) {
+                this.broadcastGameContext(this.lastContext);
+              } else if (window.Cinnamo?.hub?.currentScreen) {
+                this.broadcastGameContext({ screen: window.Cinnamo.hub.currentScreen });
+              }
+            } else {
+              this.handleRemoteData(ev.data);
             }
           };
         }
@@ -105,10 +124,14 @@
             A().celebrate();
           }
 
+          conn.on('open', () => {
+            conn.send({ type: 'welcome', room: this.roomCode });
+            const ctx = this.lastContext || { screen: window.Cinnamo?.hub?.currentScreen || 'hub' };
+            try { conn.send({ type: 'context', ...ctx }); } catch (_) {}
+          });
+
           conn.on('data', (data) => {
-            if (data && data.btn !== undefined) {
-              this.handleRemoteInput(data.btn, data.pressed);
-            }
+            this.handleRemoteData(data);
           });
 
           conn.on('close', () => {
@@ -119,7 +142,6 @@
         });
 
         this.peer.on('error', (err) => {
-          // Si el ID ya existía (por recarga rápida), regenerar código
           if (err.type === 'unavailable-id') {
             sessionStorage.removeItem('cinna_room_code');
             this.roomCode = this.getOrGenerateRoomCode();
@@ -134,6 +156,82 @@
     }
 
     /* ---------- 3. TRADUCCIÓN DE ENTRADA REMOTA HACIA LOS JUEGOS ---------- */
+    handleRemoteData(data) {
+      if (!data) return;
+
+      // Movimiento con Palanca Táctil Analógica (diagonales fluidas)
+      if (data.type === 'joystick') {
+        this.handleRemoteJoystick(data.x, data.y, data.angle, data.dist);
+        return;
+      }
+
+      // Respuesta de Matemática desde el Celular
+      if (data.type === 'mathAnswer') {
+        if (window.Cinnamo?.mathGame?.submitAnswer) {
+          window.Cinnamo.mathGame.submitAnswer(data.val);
+        }
+        return;
+      }
+
+      // Cambio rápido de personaje en Super Run
+      if (data.type === 'switchHero') {
+        if (window.Cinnamo?.platformerGame?.nextHero) {
+          window.Cinnamo.platformerGame.nextHero();
+        }
+        return;
+      }
+
+      // Navegación remota (Hub / Cambiar juego)
+      if (data.type === 'nav') {
+        if (data.screen === 'hub') {
+          const btnH = document.getElementById('globalBtnHome');
+          if (btnH) btnH.click();
+        } else if (window.Cinnamo?.hub?.launchGame) {
+          window.Cinnamo.hub.launchGame(data.screen);
+        }
+        return;
+      }
+
+      // Botón estándar (d-pad o botones de acción)
+      if (data.type === 'input' || data.btn !== undefined) {
+        this.handleRemoteInput(data.btn, data.pressed);
+        return;
+      }
+    }
+
+    handleRemoteJoystick(x, y, angle, dist) {
+      // 1. Super Cinnamoroll Run (Diagonales fluidas: correr y saltar/planear)
+      const plat = window.Cinnamo?.platformerGame;
+      if (plat && plat.keys) {
+        plat.keys.left = x < -0.26;
+        plat.keys.right = x > 0.26;
+        const wantsJump = y < -0.32;
+        if (wantsJump && !plat.keys.jump) {
+          plat.keys.jump = true;
+          if (plat.jump) plat.jump();
+        } else if (!wantsJump) {
+          plat.keys.jump = false;
+        }
+      }
+
+      // 2. Repartidor 3D (Caminar y rotar en simultáneo)
+      const doom = window.Cinnamo?.doomGame;
+      if (doom && doom.keys) {
+        doom.keys.forward = y < -0.26;
+        doom.keys.backward = y > 0.26;
+        doom.keys.left = x < -0.26;
+        doom.keys.right = x > 0.26;
+      }
+
+      // 3. A Volar (Vuelo 360° suave)
+      const input = IN();
+      if (input) {
+        if (y < -0.26) input.feed({ action: 'up' });
+        else if (y > 0.26) input.feed({ action: 'down' });
+        else input.feed({ action: null });
+      }
+    }
+
     handleRemoteInput(btn, pressed) {
       // 1. Despachar a Super Cinnamoroll Run (platformer.js)
       const plat = window.Cinnamo?.platformerGame;
