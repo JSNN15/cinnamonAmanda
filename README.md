@@ -59,19 +59,22 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 ---
 
 ### 3. 🎨 Taller de Dibujo (Colorear con Sanrio)
-* **5 Láminas Oficiales en Blanco y Negro (Centradas y Proporcionadas):**
+* **5 Láminas Oficiales Normalizadas con Calidad de Imprenta (600x500):**
   1. **Cinnamoroll:** Flotando en el cielo con sus orejitas extendidas.
   2. **Milk (みるく):** Con su chupete celeste y su osito de peluche.
-  3. **Pompompurin (ポムポムプリン):** Con su boina de chocolate y plato de flan.
-  4. **Mocha (モカ):** Con sus largas orejitas onduladas y flor rosa.
-  5. **Chiffon (シフォン):** Con sus orejas esponjosas como nubes y boina, re-escalada y centrada milimétricamente en el lienzo de 600x500 para armonizar con los otros personajes.
-* **Herramientas de Arte:**
+  3. **Pompompurin (ポムポムプリン):** Con su boina de chocolate y plato de flan con corazón.
+  4. **Mocha (モカ):** Con sus largas orejitas onduladas, flor en la oreja y contornos de cuello/barbilla restaurados.
+  5. **Chiffon (シフォン):** Con sus orejas esponjosas como nubes y boina, con tinta negra nítida y pura.
+  * **Normalización Milimétrica (v14):** Procesadas mediante supersampling Lanczos 2x, anti-aliasing subpixel y calibración de grosor de trazo (7-8px homogéneos en todos los personajes), eliminando bordes dentados y grises difusos.
+* **Herramientas de Arte & Experiencia Amanda:**
+  * **↩️ Botón Deshacer (Undo):** Pila de retroceso de 20 pasos para que Amanda pueda corregir trazos con total tranquilidad.
+  * **💾 Persistencia por Lámina:** Cambiar de personaje ya no borra el dibujo; el taller guarda en memoria el boceto de cada amigo.
   * **Crayón / Pincel libre:** Con 3 grosores (fino, medio, grueso), trazo suave redondeado y cursor dinámico con aro de previsualización de grosor.
   * **Contorno protegido:** Los colores se aplican con modo `multiply` bajo las líneas originales, garantizando que el contorno negro nunca quede cubierto por la pintura.
   * **Relleno Mágico (Tap-to-fill / Bucket):** Tocar cualquier zona cerrada rellena el área respetando el contorno negro.
   * **Borrador suave:** Para limpiar cualquier trazo.
   * **Sellitos y Estampas:** Estrellitas ✨, corazones 💖, florecitas 🌸 y brillos con partículas flotantes.
-  * **Botón Guardar:** Descarga la obra de arte terminada como imagen PNG.
+  * **Botón Guardar con Firma:** Descarga la obra terminada en PNG firmada con: *"✨ Obra de Arte de Amanda • Cinnamoroll Land"*.
 
 ---
 
@@ -187,6 +190,27 @@ Diseñado desde cero bajo criterios de Game Design para niñas de prebásica (4 
   4. 🌈 *"Aventura en el Arcoíris"* (Escala pentatónica saltarina en 4/4)
 * **Selector en la Barra Superior (`#globalBtnTrack`):** Amanda o sus padres pueden cambiar la melodía con un solo toque sin interrumpir el juego. Las canciones rotan automáticamente cada 2 repeticiones.
 * **Efectos Sintetizados:** Chimes de campanas, pops de burbujas, arpas de victoria y formantes infantiles suaves.
+
+---
+
+## 🎮 Mando Kawaii en tu Celular & Soporte de Gamepad Físico (v14)
+
+Permite transformar cualquier teléfono inteligente en un mando de consola o usar mandos físicos Bluetooth/USB:
+
+* **📱 Mando en el Celular (`controller.html`):**
+  * **Cero descargas:** No requiere instalar apps de la App Store ni Google Play.
+  * **Emparejamiento con Código QR:** Al presionar el botón `🎮 Mando` en la barra superior del juego en la PC, se despliega un código QR y un código de sala de 4 letras.
+  * **WebRTC P2P de Baja Latencia (PeerJS):** Conexión directa y ultra-rápida (< 15ms) entre el móvil y la computadora, con respaldo automático local por `BroadcastChannel`.
+  * **Diseño Ergonómico Pastel:** Cruz direccional celeste (D-pad), botón gigante de salto 🌸 y botón de dulce 🧁.
+  * **Feedback Táctil & Sonoro:** Respuesta háptica por vibración (`navigator.vibrate`) y pitidos de burbuja instantáneos para que la niña sienta el toque físico al jugar.
+* **🕹️ Soporte Nativo de Mandos Físicos (Gamepad API):**
+  * Conexión instantánea Plug-and-Play vía Bluetooth o USB.
+  * Compatible con:
+    * **Nintendo Switch:** Mandos Joy-Con individuales o emparejados, Pro Controller.
+    * **PlayStation:** DualShock 4 (PS4), DualSense (PS5).
+    * **Xbox:** Mandos Xbox One, Xbox Series X/S.
+    * **8BitDo & Genéricos:** Cualquier mando compatible con HID estándar.
+  * Mapeo unificado para salto, movimiento lateral, piruetas y navegación.
 
 ---
 

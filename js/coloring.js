@@ -36,11 +36,11 @@
   ];
 
   const SHEETS = [
-    { id: 'cinna', label: 'Cinnamoroll 🪽', title: 'Cinnamoroll Volando en el Cielo', src: 'assets/sheet_cinnamoroll.png' },
-    { id: 'milk', label: 'Milk 🍼', title: 'El Pequeño Bebé Milk con su Osito', src: 'assets/sheet_milk.png' },
-    { id: 'purin', label: 'Pompompurin 🍮', title: 'Pompompurin con su Boina y Corazón', src: 'assets/sheet_pompompurin.png' },
-    { id: 'mocha', label: 'Mocha 🎀', title: 'Mocha con sus Lazos de Flores', src: 'assets/sheet_mocha.png' },
-    { id: 'chiffon', label: 'Chiffon 🌸', title: 'Chiffon con sus Orejas Esponjosas', src: 'assets/sheet_chiffon.png' }
+    { id: 'cinna', label: 'Cinnamoroll 🪽', title: 'Cinnamoroll Volando en el Cielo', src: 'assets/sheet_cinnamoroll.png?v=14' },
+    { id: 'milk', label: 'Milk 🍼', title: 'El Pequeño Bebé Milk con su Osito', src: 'assets/sheet_milk.png?v=14' },
+    { id: 'purin', label: 'Pompompurin 🍮', title: 'Pompompurin con su Boina y Corazón', src: 'assets/sheet_pompompurin.png?v=14' },
+    { id: 'mocha', label: 'Mocha 🎀', title: 'Mocha con sus Lazos de Flores', src: 'assets/sheet_mocha.png?v=14' },
+    { id: 'chiffon', label: 'Chiffon 🌸', title: 'Chiffon con sus Orejas Esponjosas', src: 'assets/sheet_chiffon.png?v=14' }
   ];
 
   class ColoringStudio {
@@ -54,6 +54,8 @@
       this.isDrawing = false;
       this.lastPos = null;
       this.lastStampPos = null;
+      this.savedCanvases = {}; // Sheet ID -> DataURL de dibujo guardado
+      this.history = [];       // Pila de estados para Deshacer (Undo)
     }
 
     init(containerEl) {
@@ -136,6 +138,7 @@
 
             <!-- Acciones auxiliares -->
             <div class="aux-actions-row">
+              <button class="aux-btn" id="btnUndoArt" title="Deshacer el último trazo">↩️ Deshacer</button>
               <button class="aux-btn" id="btnClearSheet">📄 Hoja Nueva</button>
               <button class="aux-btn special" id="btnDownloadArt">📸 Guardar Foto</button>
             </div>
@@ -153,13 +156,27 @@
       const canvasBox = this.container.querySelector('#canvasBox');
       const brushCursor = this.container.querySelector('#brushCursor');
 
-      // 1. Cambio de lámina
+      // Restaurar dibujo guardado de esta lámina si existe
+      if (this.savedCanvases && this.savedCanvases[this.currentSheet.id]) {
+        const savedImg = new Image();
+        savedImg.onload = () => {
+          ctx.drawImage(savedImg, 0, 0);
+          this.history = [this.savedCanvases[this.currentSheet.id]];
+        };
+        savedImg.src = this.savedCanvases[this.currentSheet.id];
+      } else {
+        this.history = [];
+      }
+
+      // 1. Cambio de lámina (con memoria de dibujo)
       this.container.querySelectorAll('.sheet-tab-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           A.unlock();
           A.bubblePop(1);
           const found = SHEETS.find(s => s.id === e.currentTarget.dataset.id);
-          if (found) {
+          if (found && found.id !== this.currentSheet.id) {
+            // Guardar lo que Amanda dibujó en esta lámina antes de cambiar
+            this.savedCanvases[this.currentSheet.id] = canvas.toDataURL();
             this.currentSheet = found;
             this.render();
           }
@@ -392,11 +409,23 @@
         }
       };
 
+      const pushHistory = () => {
+        try {
+          const url = canvas.toDataURL();
+          this.history.push(url);
+          if (this.history.length > 20) this.history.shift();
+          if (this.savedCanvases) this.savedCanvases[this.currentSheet.id] = url;
+        } catch (_) {}
+      };
+
       const onPointerUp = (e) => {
         if (canvasBox.releasePointerCapture && e && e.pointerId !== undefined) {
           try { canvasBox.releasePointerCapture(e.pointerId); } catch (_) {}
         }
-        this.isDrawing = false;
+        if (this.isDrawing) {
+          this.isDrawing = false;
+          pushHistory();
+        }
         this.lastPos = null;
         this.lastStampPos = null;
       };
@@ -406,14 +435,41 @@
       window.addEventListener('pointerup', onPointerUp);
       window.addEventListener('pointercancel', onPointerUp);
 
-      // 8. Limpiar hoja (deja el dibujo en blanco manteniendo el contorno)
+      // 8. Deshacer el último trazo (Undo)
+      const btnUndo = this.container.querySelector('#btnUndoArt');
+      if (btnUndo) {
+        btnUndo.addEventListener('click', () => {
+          A.unlock();
+          if (this.history.length > 1) {
+            A.softBoing();
+            this.history.pop(); // descartar estado actual
+            const prev = this.history[this.history.length - 1];
+            const img = new Image();
+            img.onload = () => {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0);
+              if (this.savedCanvases) this.savedCanvases[this.currentSheet.id] = prev;
+            };
+            img.src = prev;
+          } else if (this.history.length === 1) {
+            A.softBoing();
+            this.history.pop();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (this.savedCanvases) delete this.savedCanvases[this.currentSheet.id];
+          }
+        });
+      }
+
+      // 9. Limpiar hoja (deja el dibujo en blanco manteniendo el contorno)
       this.container.querySelector('#btnClearSheet').addEventListener('click', () => {
         A.unlock();
         A.softBoing();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.history = [];
+        if (this.savedCanvases) delete this.savedCanvases[this.currentSheet.id];
       });
 
-      // 9. Guardar foto (combina el color con el contorno multiplicado)
+      // 10. Guardar foto (combina el color con el contorno multiplicado)
       this.container.querySelector('#btnDownloadArt').addEventListener('click', () => {
         A.unlock();
         A.celebrate();
@@ -456,6 +512,12 @@
       expCtx.globalCompositeOperation = 'multiply';
       expCtx.drawImage(sheetImg, 0, 0, exportCanvas.width, exportCanvas.height);
       expCtx.globalCompositeOperation = 'source-over';
+
+      // 4. Firma de Amanda en la esquina inferior derecha
+      expCtx.fillStyle = '#7a523a';
+      expCtx.font = 'bold 15px "Baloo 2", cursive, sans-serif';
+      expCtx.textAlign = 'right';
+      expCtx.fillText('✨ Obra de Arte de Amanda • Cinnamoroll Land', exportCanvas.width - 20, exportCanvas.height - 16);
 
       const a = document.createElement('a');
       a.download = `Dibujo_Amanda_${this.currentSheet.id}.png`;

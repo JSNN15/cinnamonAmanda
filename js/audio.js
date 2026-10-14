@@ -88,10 +88,15 @@
     }
 
     setMuted(m) {
-      this.muted = m;
+      this.muted = !!m;
       if (this.masterGain && this.ctx) {
-        this.masterGain.gain.setValueAtTime(m ? 0 : 0.35, this.ctx.currentTime);
+        this.masterGain.gain.setValueAtTime(this.muted ? 0 : 0.35, this.ctx.currentTime);
       }
+      return this.muted;
+    }
+
+    toggleMute() {
+      return this.setMuted(!this.muted);
     }
 
     /* ---------- SÍNTESIS DE INSTRUMENTOS MUSICALES CALMANTES ---------- */

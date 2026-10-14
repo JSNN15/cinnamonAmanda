@@ -3,10 +3,11 @@
  * y sólo usa la caché como respaldo cuando no hay conexión. Así un despliegue nuevo
  * nunca queda "atrapado" detrás de archivos viejos en caché.
  */
-const CACHE_NAME = 'cinnamoroll-land-v13';
+const CACHE_NAME = 'cinnamoroll-land-v14';
 const CORE_ASSETS = [
   './',
   './index.html',
+  './controller.html',
   './styles.css',
   './cinnamoroll_sprite.png',
   './assets/cinnamoroll_fly.png',
@@ -27,6 +28,9 @@ const CORE_ASSETS = [
   './assets/sheet_pompompurin.png',
   './assets/sheet_mocha.png',
   './assets/sheet_chiffon.png',
+  './js/peerjs.min.js',
+  './js/qrcode.min.js',
+  './js/controller-bridge.js',
   './js/audio.js',
   './js/input.js',
   './js/character.js',

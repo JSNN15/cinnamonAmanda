@@ -13,7 +13,7 @@
   <noscript>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
   </noscript>
-  <link rel="stylesheet" href="styles.css?v=13" />
+  <link rel="stylesheet" href="styles.css?v=14" />
 </head>
 <body>
   <!-- PANTALLA DE CARGA INSTANTÁNEA (Splash Pastel) -->
@@ -34,6 +34,10 @@
     </button>
     <div class="top-brand">Cinnamoroll Land 🌸</div>
     <div class="top-right-actions">
+      <button id="globalBtnGamepad" class="top-nav-btn gamepad-btn" title="Conectar Celular o Mando" aria-label="Mando Inalámbrico">
+        <span class="btn-icon">🎮</span>
+        <span class="btn-text">Mando</span>
+      </button>
       <button id="globalBtnTrack" class="top-nav-btn track-btn hidden" title="Cambiar Melodía" aria-label="Cambiar Melodía">
         <span id="trackIcon" class="btn-icon">🌸</span>
         <span id="trackName" class="btn-text">Nubes</span>
@@ -245,18 +249,47 @@
     </section>
   </main>
 
+  <!-- MODAL DE CONEXIÓN DE MANDO / CELULAR -->
+  <div id="gamepadModal" class="cinna-modal-overlay hidden" aria-hidden="true">
+    <div class="cinna-modal-card">
+      <button id="btnCloseGamepadModal" class="modal-close-btn" aria-label="Cerrar">✕</button>
+      <div class="modal-header">
+        <span class="modal-icon">📱</span>
+        <h2>¡Conecta tu Celular como Mando!</h2>
+      </div>
+      <p class="modal-desc">
+        Escanea este código con la cámara de tu celular para jugar a distancia como en una consola.
+      </p>
+      <div class="qr-container-box">
+        <div id="gamepadQrCode" class="qr-code-canvas"></div>
+        <div class="room-code-tag">
+          Código de Sala: <strong id="gamepadRoomDisplay">----</strong>
+        </div>
+      </div>
+      <div id="gamepadConnStatus" class="gamepad-status-pill">
+        🟡 Esperando celular...
+      </div>
+      <div class="physical-gamepad-hint">
+        💡 <strong>¿Tienes mando físico?</strong> Puedes conectar mandos de Nintendo Switch (Joy-Con), Xbox, PlayStation o 8BitDo por Bluetooth o cable USB.
+      </div>
+    </div>
+  </div>
+
   <!-- MÓDULOS DE LA SUITE -->
-  <script src="js/audio.js?v=13"></script>
-  <script src="js/input.js?v=13"></script>
-  <script src="js/character.js?v=13"></script>
-  <script src="js/game.js?v=13"></script>
-  <script src="js/math.js?v=13"></script>
-  <script src="js/coloring.js?v=13"></script>
-  <script src="js/memory.js?v=13"></script>
-  <script src="js/platformer.js?v=13"></script>
-  <script src="js/doom.js?v=13"></script>
-  <script src="js/writing.js?v=13"></script>
-  <script src="js/puzzle.js?v=13"></script>
-  <script src="js/hub.js?v=13"></script>
+  <script src="js/peerjs.min.js"></script>
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/audio.js?v=14"></script>
+  <script src="js/input.js?v=14"></script>
+  <script src="js/controller-bridge.js?v=14"></script>
+  <script src="js/character.js?v=14"></script>
+  <script src="js/game.js?v=14"></script>
+  <script src="js/math.js?v=14"></script>
+  <script src="js/coloring.js?v=14"></script>
+  <script src="js/memory.js?v=14"></script>
+  <script src="js/platformer.js?v=14"></script>
+  <script src="js/doom.js?v=14"></script>
+  <script src="js/writing.js?v=14"></script>
+  <script src="js/puzzle.js?v=14"></script>
+  <script src="js/hub.js?v=14"></script>
 </body>
 </html>

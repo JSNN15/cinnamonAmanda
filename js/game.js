@@ -501,7 +501,7 @@
 
   async function toggle(k) {
     if (k === 'sound') {
-      settings.sound = !settings.sound; A.muted = !settings.sound;
+      settings.sound = !settings.sound; A.setMuted(!settings.sound);
       if (!settings.sound && 'speechSynthesis' in window) speechSynthesis.cancel();
     } else if (k === 'invertTilt') {
       settings.invertTilt = !settings.invertTilt; IN.adapters.tilt.invert = settings.invertTilt;
@@ -526,7 +526,7 @@
   document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => { A.unlock(); toggle(ch.dataset.toggle); }));
 
   // restaurar settings: sonido/invertir directo; sensores requieren gesto del usuario → se re-activan al primer toque
-  A.muted = !settings.sound;
+  A.setMuted(!settings.sound);
   IN.adapters.tilt.invert = settings.invertTilt;
   const pending = ['voice', 'mic', 'tilt'].filter(k => settings[k]);
   pending.forEach(k => { settings[k] = false; });
