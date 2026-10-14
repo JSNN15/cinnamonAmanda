@@ -343,7 +343,7 @@
       strokes: [
         [{x:0.22, y:0.88}, {x:0.50, y:0.18}, {x:0.78, y:0.88}],
         [{x:0.32, y:0.60}, {x:0.68, y:0.60}],
-        [{x:0.42, y:0.04}, {x:0.56, y:0.12}]
+        [{x:0.56, y:0.03}, {x:0.44, y:0.12}]
       ],
       points: [
         {x:0.22, y:0.88, n:1},
@@ -351,15 +351,15 @@
         {x:0.78, y:0.88, n:3},
         {x:0.32, y:0.60, n:4},
         {x:0.68, y:0.60, n:5},
-        {x:0.42, y:0.04, n:6},
-        {x:0.56, y:0.12, n:7}
+        {x:0.56, y:0.03, n:6},
+        {x:0.44, y:0.12, n:7}
       ]
     },
     'B': {
       strokes: [
         [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
         [{x:0.28, y:0.14}, {x:0.62, y:0.14}, {x:0.74, y:0.24}, {x:0.74, y:0.42}, {x:0.62, y:0.50}, {x:0.28, y:0.50}],
-        [{x:0.28, y:0.50}, {x:0.66, y:0.50}, {x:0.78, y:0.60}, {x:0.78, y:0.78}, {x:0.66, y:0.88}, {x:0.28, y:0.88}]
+        [{x:0.28, y:0.50}, {x:0.66, y:0.50}, {x:0.78, y:0.60}, {x:0.78, y:0.78}, {x:0.66, y:0.88}, {x:0.34, y:0.88}]
       ],
       points: [
         {x:0.28, y:0.14, n:1},
@@ -367,7 +367,7 @@
         {x:0.74, y:0.32, n:3},
         {x:0.28, y:0.50, n:4},
         {x:0.78, y:0.69, n:5},
-        {x:0.28, y:0.88, n:6}
+        {x:0.36, y:0.88, n:6}
       ]
     },
     'C': {
@@ -383,13 +383,13 @@
     'D': {
       strokes: [
         [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
-        [{x:0.28, y:0.14}, {x:0.54, y:0.14}, {x:0.76, y:0.32}, {x:0.76, y:0.70}, {x:0.54, y:0.88}, {x:0.28, y:0.88}]
+        [{x:0.28, y:0.14}, {x:0.54, y:0.14}, {x:0.76, y:0.32}, {x:0.76, y:0.70}, {x:0.54, y:0.88}, {x:0.34, y:0.88}]
       ],
       points: [
         {x:0.28, y:0.14, n:1},
         {x:0.28, y:0.88, n:2},
         {x:0.76, y:0.51, n:3},
-        {x:0.28, y:0.88, n:4}
+        {x:0.36, y:0.88, n:4}
       ]
     },
     'E': {
@@ -413,7 +413,7 @@
         [{x:0.28, y:0.18}, {x:0.74, y:0.18}],
         [{x:0.28, y:0.52}, {x:0.62, y:0.52}],
         [{x:0.28, y:0.88}, {x:0.74, y:0.88}],
-        [{x:0.42, y:0.04}, {x:0.56, y:0.12}]
+        [{x:0.56, y:0.03}, {x:0.44, y:0.12}]
       ],
       points: [
         {x:0.28, y:0.18, n:1},
@@ -421,8 +421,8 @@
         {x:0.74, y:0.18, n:3},
         {x:0.62, y:0.52, n:4},
         {x:0.74, y:0.88, n:5},
-        {x:0.42, y:0.04, n:6},
-        {x:0.56, y:0.12, n:7}
+        {x:0.56, y:0.03, n:6},
+        {x:0.44, y:0.12, n:7}
       ]
     },
     'F': {
@@ -461,8 +461,8 @@
         {x:0.28, y:0.88, n:2},
         {x:0.72, y:0.14, n:3},
         {x:0.72, y:0.88, n:4},
-        {x:0.28, y:0.50, n:5},
-        {x:0.72, y:0.50, n:6}
+        {x:0.34, y:0.50, n:5},
+        {x:0.66, y:0.50, n:6}
       ]
     },
     'I': {
@@ -485,7 +485,7 @@
         [{x:0.50, y:0.20}, {x:0.50, y:0.88}],
         [{x:0.34, y:0.20}, {x:0.66, y:0.20}],
         [{x:0.34, y:0.88}, {x:0.66, y:0.88}],
-        [{x:0.44, y:0.04}, {x:0.56, y:0.12}]
+        [{x:0.56, y:0.03}, {x:0.44, y:0.12}]
       ],
       points: [
         {x:0.50, y:0.20, n:1},
@@ -494,8 +494,8 @@
         {x:0.66, y:0.20, n:4},
         {x:0.34, y:0.88, n:5},
         {x:0.66, y:0.88, n:6},
-        {x:0.44, y:0.04, n:7},
-        {x:0.56, y:0.12, n:8}
+        {x:0.56, y:0.03, n:7},
+        {x:0.44, y:0.12, n:8}
       ]
     },
     'J': {
@@ -511,14 +511,14 @@
     'K': {
       strokes: [
         [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
-        [{x:0.72, y:0.18}, {x:0.30, y:0.52}],
+        [{x:0.72, y:0.18}, {x:0.34, y:0.52}],
         [{x:0.42, y:0.42}, {x:0.74, y:0.88}]
       ],
       points: [
         {x:0.28, y:0.14, n:1},
         {x:0.28, y:0.88, n:2},
         {x:0.72, y:0.18, n:3},
-        {x:0.30, y:0.52, n:4},
+        {x:0.34, y:0.52, n:4},
         {x:0.42, y:0.42, n:5},
         {x:0.74, y:0.88, n:6}
       ]
@@ -584,27 +584,27 @@
     'Ó': {
       strokes: [
         [{x:0.50, y:0.18}, {x:0.34, y:0.22}, {x:0.24, y:0.40}, {x:0.24, y:0.64}, {x:0.34, y:0.82}, {x:0.50, y:0.88}, {x:0.66, y:0.82}, {x:0.76, y:0.64}, {x:0.76, y:0.40}, {x:0.66, y:0.22}, {x:0.50, y:0.18}],
-        [{x:0.44, y:0.04}, {x:0.56, y:0.12}]
+        [{x:0.56, y:0.03}, {x:0.44, y:0.12}]
       ],
       points: [
         {x:0.50, y:0.18, n:1},
         {x:0.24, y:0.52, n:2},
         {x:0.50, y:0.88, n:3},
         {x:0.76, y:0.52, n:4},
-        {x:0.44, y:0.04, n:5},
-        {x:0.56, y:0.12, n:6}
+        {x:0.56, y:0.03, n:5},
+        {x:0.44, y:0.12, n:6}
       ]
     },
     'P': {
       strokes: [
         [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
-        [{x:0.28, y:0.14}, {x:0.62, y:0.14}, {x:0.74, y:0.24}, {x:0.74, y:0.42}, {x:0.62, y:0.54}, {x:0.28, y:0.54}]
+        [{x:0.28, y:0.14}, {x:0.62, y:0.14}, {x:0.74, y:0.24}, {x:0.74, y:0.42}, {x:0.62, y:0.54}, {x:0.34, y:0.54}]
       ],
       points: [
         {x:0.28, y:0.14, n:1},
         {x:0.28, y:0.88, n:2},
         {x:0.74, y:0.33, n:3},
-        {x:0.28, y:0.54, n:4}
+        {x:0.34, y:0.54, n:4}
       ]
     },
     'Q': {
@@ -624,14 +624,14 @@
     'R': {
       strokes: [
         [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
-        [{x:0.28, y:0.14}, {x:0.62, y:0.14}, {x:0.74, y:0.24}, {x:0.74, y:0.42}, {x:0.62, y:0.54}, {x:0.28, y:0.54}],
+        [{x:0.28, y:0.14}, {x:0.62, y:0.14}, {x:0.74, y:0.24}, {x:0.74, y:0.42}, {x:0.62, y:0.54}, {x:0.34, y:0.54}],
         [{x:0.48, y:0.54}, {x:0.76, y:0.88}]
       ],
       points: [
         {x:0.28, y:0.14, n:1},
         {x:0.28, y:0.88, n:2},
         {x:0.74, y:0.33, n:3},
-        {x:0.28, y:0.54, n:4},
+        {x:0.34, y:0.54, n:4},
         {x:0.48, y:0.54, n:5},
         {x:0.76, y:0.88, n:6}
       ]
@@ -656,7 +656,7 @@
       points: [
         {x:0.20, y:0.14, n:1},
         {x:0.80, y:0.14, n:2},
-        {x:0.50, y:0.14, n:3},
+        {x:0.50, y:0.22, n:3},
         {x:0.50, y:0.88, n:4}
       ]
     },
@@ -673,14 +673,14 @@
     'Ú': {
       strokes: [
         [{x:0.28, y:0.18}, {x:0.28, y:0.70}, {x:0.36, y:0.84}, {x:0.50, y:0.88}, {x:0.64, y:0.84}, {x:0.72, y:0.70}, {x:0.72, y:0.18}],
-        [{x:0.44, y:0.04}, {x:0.56, y:0.12}]
+        [{x:0.56, y:0.03}, {x:0.44, y:0.12}]
       ],
       points: [
         {x:0.28, y:0.18, n:1},
         {x:0.50, y:0.88, n:2},
         {x:0.72, y:0.18, n:3},
-        {x:0.44, y:0.04, n:4},
-        {x:0.56, y:0.12, n:5}
+        {x:0.56, y:0.03, n:4},
+        {x:0.44, y:0.12, n:5}
       ]
     },
     'V': {
@@ -1109,7 +1109,7 @@
         const list = this.getFilteredWords();
         const w = list[this.currentWordIdx] || WORDS[0];
         const currentChar = this.getCurrentTraceChar();
-        const ALPHABET = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+        const ALPHABET = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z','Á','É','Í','Ó','Ú'];
 
         return `
           <div class="trace-sensory-container">
@@ -1141,7 +1141,7 @@
                 <strong id="traceAccuracyNum">0%</strong>
                 <span id="traceStarsText">☆☆☆</span>
               </div>
-              <div class="trace-guide-hint">✍️ Sigue los puntos numerados (① ➔ ② ➔ ③...)</div>
+              <div class="trace-guide-hint" id="traceGuideHint">✍️ Sigue los puntos numerados (① ➔ ② ➔ ③...)</div>
             </div>
 
             <div class="trace-board-stage">
@@ -1348,7 +1348,7 @@
         const handleNextLetter = () => {
           A.unlock();
           A.bubblePop(2);
-          const ALPHABET = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+          const ALPHABET = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z','Á','É','Í','Ó','Ú'];
           if (this.customTraceChar) {
             const curIdx = ALPHABET.indexOf(this.customTraceChar);
             const nextIdx = (curIdx + 1) % ALPHABET.length;
@@ -1999,10 +1999,12 @@
       const bannerTitle = this.container.querySelector('#bannerTitleText');
       const bannerSub = this.container.querySelector('#bannerSubText');
       const btnNext = this.container.querySelector('#btnNextTraceLetter');
+      const guideHint = this.container.querySelector('#traceGuideHint');
       if (accuracyNum) accuracyNum.textContent = '0%';
       if (starsText) starsText.textContent = '☆☆☆';
       if (banner) banner.classList.add('hidden');
       if (btnNext) btnNext.classList.add('hidden');
+      if (guideHint) guideHint.innerHTML = '✍️ Sigue los puntos numerados (① ➔ ② ➔ ③...)';
 
       const conf = getLetterConfig(char);
 
@@ -2041,24 +2043,35 @@
         return pts;
       });
 
-      // Puntos numerados escalados a píxeles (con todos sus puntos de principio a fin)
+      // Puntos numerados escalados a píxeles con estado 'covered'
       const pixelPoints = conf.points.map(p => ({
         x: originX + p.x * boxSize,
         y: originY + p.y * boxSize,
-        n: p.n
+        n: p.n,
+        covered: false
       }));
 
-      // Dibujar fondo de pizarra y guías finas caligráficas
-      const drawBase = () => {
+      // Offscreen canvas para almacenar los trazos continuos del usuario sin tapar los waypoints
+      const userCanvas = document.createElement('canvas');
+      userCanvas.width = canvas.width;
+      userCanvas.height = canvas.height;
+      const uCtx = userCanvas.getContext('2d');
+
+      // Función de renderizado por capas:
+      // Capa 1: Fondo pizarra + líneas guía caligráficas suaves
+      // Capa 2: Carril ancho translúcido + línea punteada amarilla + flechas guía
+      // Capa 3: Trazos del usuario (desde userCanvas)
+      // Capa 4: Círculos numerados (SIEMPRE ENCIMA, jamás borrados ni tapados)
+      const renderScene = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Fondo pizarra suave
+        // 1. Fondo pizarra suave
         ctx.fillStyle = '#1e293b';
         ctx.beginPath();
         ctx.roundRect(0, 0, canvas.width, canvas.height, 24);
         ctx.fill();
 
-        // Líneas guía caligráficas suaves (techo, centro y base)
+        // 2. Líneas guía caligráficas suaves (techo, centro y base)
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.lineWidth = 1.5;
         const lineY1 = originY + boxSize * 0.14;
@@ -2071,11 +2084,11 @@
         ctx.beginPath(); ctx.moveTo(20, lineY2); ctx.lineTo(canvas.width - 20, lineY2); ctx.stroke();
         ctx.setLineDash([]);
 
-        // Dibujar cada trazo caligráfico
+        // 3. Dibujar cada trazo caligráfico
         pixelStrokes.forEach((pts) => {
           if (pts.length < 2) return;
 
-          // 1. Carril suave de fondo
+          // Carril suave de fondo
           ctx.beginPath();
           ctx.moveTo(pts[0].x, pts[0].y);
           for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
@@ -2085,7 +2098,7 @@
           ctx.lineJoin = 'round';
           ctx.stroke();
 
-          // 2. Línea guía fina discontinua
+          // Línea guía fina discontinua
           ctx.beginPath();
           ctx.moveTo(pts[0].x, pts[0].y);
           for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
@@ -2097,7 +2110,7 @@
           ctx.stroke();
           ctx.setLineDash([]);
 
-          // 3. Flechas direccionales en segmentos largos
+          // Flechas direccionales en segmentos largos
           for (let i = 0; i < pts.length - 1; i++) {
             const p1 = pts[i];
             const p2 = pts[i + 1];
@@ -2121,28 +2134,48 @@
           }
         });
 
-        // 4. Círculos numerados para TODOS los waypoints (inicio, giros y final)
+        // 4. Dibujar trazos realizados por la niña (desde userCanvas)
+        ctx.drawImage(userCanvas, 0, 0);
+
+        // 5. Círculos numerados para TODOS los waypoints (SIEMPRE ENCIMA, jamás tapados)
         pixelPoints.forEach((pt) => {
           const isStart = (pt.n === 1);
           const isEnd = (pt.n === pixelPoints.length);
 
           ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 11.5, 0, Math.PI * 2);
-          ctx.fillStyle = isStart ? '#22c55e' : (isEnd ? '#ec4899' : '#38bdf8');
-          ctx.fill();
-          ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2.5;
-          ctx.stroke();
+          ctx.arc(pt.x, pt.y, 12, 0, Math.PI * 2);
 
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '800 12px "Baloo 2", Nunito, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(pt.n.toString(), pt.x, pt.y + 0.5);
+          if (pt.covered) {
+            // Punto completado con éxito: destello dorado con checkmark
+            ctx.fillStyle = '#fbbf24';
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#78350f';
+            ctx.font = '900 12px "Baloo 2", Nunito, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('✓', pt.x, pt.y + 0.5);
+          } else {
+            // Punto pendiente de alcanzar: inicio verde brillante, final rosa, intermedios celestes
+            ctx.fillStyle = isStart ? '#22c55e' : (isEnd ? '#ec4899' : '#38bdf8');
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 12px "Baloo 2", Nunito, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pt.n.toString(), pt.x, pt.y + 0.5);
+          }
         });
       };
 
-      drawBase();
+      renderScene();
 
       let drawing = false;
       let lastPos = null;
@@ -2178,13 +2211,19 @@
         const total = checkpoints.length;
         const pct = Math.min(100, Math.round((covered / total) * 100));
 
-        const allStrokesVisited = pixelStrokes.every((_, sIdx) => {
+        // Todos los waypoints numerados deben haber sido alcanzados
+        const allPointsCovered = pixelPoints.every(pt => pt.covered);
+
+        // Cada trazo independiente debe tener al menos el 58% de checkpoints cubiertos
+        const allStrokesFinished = pixelStrokes.every((_, sIdx) => {
           const sCps = checkpoints.filter(c => c.strokeIdx === sIdx);
           if (sCps.length === 0) return true;
-          return sCps.filter(c => c.covered).length >= Math.min(2, Math.max(1, sCps.length * 0.3));
+          return (sCps.filter(c => c.covered).length / sCps.length) >= 0.58;
         });
 
-        if (((pct >= 80 && allStrokesVisited) || pct >= 85) && !this.traceCompleted) {
+        const isComplete = (pct >= 82) && allStrokesFinished && allPointsCovered;
+
+        if (isComplete && !this.traceCompleted) {
           this.traceCompleted = true;
           A.celebrate();
           if (starsText) starsText.textContent = '⭐⭐⭐ ¡Completado!';
@@ -2194,7 +2233,24 @@
             if (bannerSub) bannerSub.innerHTML = `Trazaste la letra <strong>${char}</strong> con un <strong>${pct}%</strong> de acierto`;
             banner.classList.remove('hidden');
           }
+          if (guideHint) guideHint.innerHTML = '✨ ¡Excelente Amanda! Presiona Siguiente Letra 🌸';
           this.speak(`¡Excelente Amanda! Trazaste la letra ${char}`);
+        } else if (!this.traceCompleted && guideHint) {
+          // Si soltó el dedo pero no ha terminado la letra, dar pista clara y motivadora
+          const unreachedPoints = pixelPoints.filter(pt => !pt.covered);
+          const hasTildeStroke = ['Á', 'É', 'Í', 'Ó', 'Ú'].includes(char);
+          const tildeStrokeIdx = pixelStrokes.length - 1;
+          const tildeCps = checkpoints.filter(c => c.strokeIdx === tildeStrokeIdx);
+          const tildeMissing = hasTildeStroke && tildeCps.length > 0 && (tildeCps.filter(c => c.covered).length / tildeCps.length < 0.58);
+
+          if (tildeMissing) {
+            guideHint.innerHTML = '✍️ ¡Casi listo! Falta trazar el tilde arriba 🌸';
+          } else if (unreachedPoints.length > 0) {
+            const nextPt = unreachedPoints[0];
+            guideHint.innerHTML = `✍️ ¡Vas muy bien Amanda! Continúa hacia el punto <strong>${nextPt.n}</strong> 💖`;
+          } else {
+            guideHint.innerHTML = '✍️ ¡Casi perfecto! Completa un poco más las líneas ⭐';
+          }
         }
       };
 
@@ -2203,6 +2259,20 @@
         A.unlock();
         drawing = true;
         lastPos = getPos(e);
+
+        // Comprobar waypoints y checkpoints al posar el dedo
+        pixelPoints.forEach(pt => {
+          if (!pt.covered && Math.hypot(lastPos.x - pt.x, lastPos.y - pt.y) < 28) {
+            pt.covered = true;
+          }
+        });
+        checkpoints.forEach(cp => {
+          if (!cp.covered && Math.hypot(lastPos.x - cp.x, lastPos.y - cp.y) < 26) {
+            cp.covered = true;
+          }
+        });
+        renderScene();
+        updateProgressPillOnly();
       };
 
       const move = (e) => {
@@ -2210,35 +2280,50 @@
         e.preventDefault();
         const p = getPos(e);
 
-        ctx.beginPath();
-        ctx.moveTo(lastPos.x, lastPos.y);
-        ctx.lineTo(p.x, p.y);
-        ctx.strokeStyle = '#ff69b4';
-        ctx.lineWidth = 12;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.shadowColor = '#ff69b4';
-        ctx.shadowBlur = 8;
-        ctx.stroke();
-        ctx.shadowBlur = 0;
+        // 1. Dibujar trazo en userCanvas offscreen
+        uCtx.beginPath();
+        uCtx.moveTo(lastPos.x, lastPos.y);
+        uCtx.lineTo(p.x, p.y);
+        uCtx.strokeStyle = '#ff69b4';
+        uCtx.lineWidth = 12;
+        uCtx.lineCap = 'round';
+        uCtx.lineJoin = 'round';
+        uCtx.shadowColor = '#ff69b4';
+        uCtx.shadowBlur = 8;
+        uCtx.stroke();
+        uCtx.shadowBlur = 0;
 
+        // 2. Verificar checkpoints alcanzados
         checkpoints.forEach(cp => {
           if (!cp.covered) {
             const d = Math.hypot(p.x - cp.x, p.y - cp.y);
-            if (d < 24) cp.covered = true;
+            if (d < 26) cp.covered = true;
           }
         });
 
+        // 3. Verificar waypoints alcanzados
+        pixelPoints.forEach(pt => {
+          if (!pt.covered) {
+            const d = Math.hypot(p.x - pt.x, p.y - pt.y);
+            if (d < 28) {
+              pt.covered = true;
+              A.bubblePop(2);
+            }
+          }
+        });
+
+        // 4. Efecto de destellos mágicos
         if (Math.random() < 0.22) {
-          ctx.save();
-          ctx.fillStyle = '#fffbeb';
-          ctx.font = '14px serif';
-          ctx.fillText('✨', p.x, p.y);
-          ctx.restore();
+          uCtx.save();
+          uCtx.fillStyle = '#fffbeb';
+          uCtx.font = '14px serif';
+          uCtx.fillText('✨', p.x, p.y);
+          uCtx.restore();
           A.bubblePop(1);
         }
 
         lastPos = p;
+        renderScene();
         updateProgressPillOnly();
       };
 
@@ -2249,6 +2334,7 @@
           A.sparkleChime();
           updateProgressPillOnly();
           checkCompletionOnRelease();
+          renderScene();
         }
       };
 
