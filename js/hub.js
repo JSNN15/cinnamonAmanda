@@ -13,7 +13,13 @@
     init() {
       this.cacheDOMElements();
       this.bindEvents();
-      this.showScreen('hub');
+      
+      const initialHash = (window.location.hash || '').replace('#', '');
+      if (initialHash && initialHash !== 'hub' && this.screens[initialHash]) {
+        this.launchGame(initialHash);
+      } else {
+        this.showScreen('hub');
+      }
       this.dismissPreloader();
     }
 
@@ -108,6 +114,17 @@
           this.launchGame(targetGame);
         });
       });
+
+      // Soporte para botón 'Atrás' en móviles Android/iOS y navegadores
+      window.addEventListener('popstate', () => {
+        const hash = (window.location.hash || '').replace('#', '');
+        if (!hash || hash === 'hub') {
+          this.stopActiveGames();
+          this.showScreen('hub');
+        } else if (this.screens[hash] && this.currentScreen !== hash) {
+          this.launchGame(hash);
+        }
+      });
     }
 
     stopActiveGames() {
@@ -129,6 +146,19 @@
 
       // El botón Home sólo se muestra cuando estamos dentro de un juego
       this.btnHome.classList.toggle('hidden', screenName === 'hub');
+
+      // Sincronizar hash de navegación para preservar el juego actual ante cualquier recarga
+      try {
+        if (screenName === 'hub') {
+          if (window.location.hash) {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+          }
+        } else {
+          if (window.location.hash !== `#${screenName}`) {
+            history.pushState(null, '', `#${screenName}`);
+          }
+        }
+      } catch (_) {}
 
       // Notificar a los mandos conectados del cambio de pantalla
       if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
@@ -191,16 +221,8 @@
     window.Cinnamo.hub.init();
   });
 
-  // Registro del Service Worker (network-first: sirve de respaldo offline)
+  // Registro del Service Worker (100% silencioso: nunca recarga la página ni interrumpe el juego)
   if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
-    const hadController = !!navigator.serviceWorker.controller;
-    let reloaded = false;
-    // Si un SW nuevo toma el control (despliegue nuevo), recargar una sola vez para usar los archivos frescos
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!hadController || reloaded) return;
-      reloaded = true;
-      window.location.reload();
-    });
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
         .then((reg) => reg.update())

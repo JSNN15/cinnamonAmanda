@@ -250,7 +250,8 @@ Para garantizar la fidelidad con los personajes oficiales de Sanrio:
 ## ⚡ Rendimiento, PWA y Cero Build Step
 
 * **Vanilla JavaScript:** 100% código nativo (ES6+), sin frameworks pesados, sin Webpack, sin npm, sin bundlers.
-* **Service Worker con Estrategia Network-First (`sw.js`):** La suite funciona sin internet una vez cargada, pero siempre prioriza las actualizaciones más recientes al conectarse.
+* **Service Worker Silencioso (v18):** Estrategia Network-First (`sw.js`). Se eliminó cualquier recarga automática intempestiva (`controllerchange` forzado); las actualizaciones se instalan de forma 100% transparente sin interrumpir la partida activa.
+* **Preservación de Estado por Hash (`#flight`, `#writing`, etc.):** Si la página se recarga manualmente o se refresca el navegador, el usuario continúa exactamente en el juego en que estaba. Además, integra el evento `popstate` para que el botón "Atrás" nativo de Android e iOS vuelva suavemente al menú principal sin cerrar la aplicación.
 * **Carga Inmediata:** Fuentes asíncronas (`media="print" onload="this.media='all'"`), splash screen pastel ultrarrápido y preloading de imágenes clave.
 
 ---
