@@ -91,27 +91,30 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 
 ---
 
-### 5. 🏃 Super Cinnamoroll Run (Aventura de Plataformas 2D)
-* **Selector de 4 Héroes de Sanrio Jugables:**
+### 5. 🏃 Super Cinnamoroll Run (Gira Mundial de Sanrio por 5 Ciudades · v19)
+Completamente renovado con arte vectorial artesanal Canvas 2D de alta calidad, niveles de larga duración (hasta 9.200 px), cero emojis desprolijos y HUD interactivo con barra de viaje:
+
+* **5 Ciudades Emblemáticas con Arte Vectorial Detallado y Parallax Profundo:**
+  * 🇨🇱 **Concepción (Chile · Nivel 1 · 5.800 px · 16 ítems):** Campus de la Universidad de Concepción con el icónico **Campanil UdeC** (reloj con manecillas, campanas de bronce, arcos belfry y cúpula de cobre), **Arco de Medicina** neoclásico con columnata, **Río Biobío** con el Puente Llacolén y bosques de **cerezos en flor (sakura)** con pétalos rosas flotando en la brisa.
+  * 🏖️ **La Serena (Chile · Nivel 2 · 6.600 px · 20 ítems):** Atardecer dorado en la **Avenida del Mar**, el histórico **Faro Monumental colonial** (muros almenados de piedra, franjas rojas carmesí, balcón con barandilla y un haz de luz giratorio volumétrico), olas rompientes del **Océano Pacífico** con espuma animada, palmeras costeras chilenas, gaviotas planeando y dunas de arena dorada.
+  * 🇧🇷 **Río de Janeiro (Brasil · Nivel 3 · 7.400 px · 24 ítems):** Crepúsculo tropical púrpura y magenta, la cumbre selvática del Corcovado coronada por el majestuoso **Cristo Redentor** con brazos abiertos y aura celestial, el **Morro Pan de Azúcar** con el teleférico *Bondinho* amarillo cruzando el cable sobre la bahía, paseo marítimo con el mosaico ondulado de Copacabana, flores de hibisco y confeti carnavalesco.
+  * 🏔️ **Santiago de Chile (Nivel 4 · 8.200 px · 28 ítems):** Espectacular **Cordillera de los Andes** con 3 planos de picos nevados iluminados por el resplandor andino (*Alpenglow*), la imponente **Gran Torre Costanera** con vidrios facetados y baliza roja estroboscópica de aviación, la red del **Teleférico San Cristóbal** con cabinas rojas, azules y amarillas animadas cruzando el cielo (además de cabinas como plataformas móviles), y bosques de **Araucarias milenarias**.
+  * 🏮 **China Mágica (Nivel 5 · Gran Final · 9.200 px · 32 ítems):** Picos kársticos de ensueño cubiertos de niebla mística, la **Gran Muralla** serpenteando por los riscos con torres de vigilancia y estandartes imperiales de dragón, **Pagodas imperiales de 5 pisos** con aleros curvos dorados, cañaverales de bambú verde esmeralda, linternas colgantes de seda roja con borlas doradas que se mecen con el viento y flores de loto sagradas.
+* **Cero Emojis en el Gameplay · 100% Arte Vectorial Kawaii:**
+  * **Coleccionables Temáticos:** Rollitos de canela glaseados con caritas sonrientes (Concepción), estrellas marinas pastel con ojitos y rubor (La Serena), cocos tropicales con pajita rayada y flor (Río), frutillas andinas rubí con pepitas doradas (Santiago), y dumplings dorados con rizos de vapor aromático (China), todos con halos de luz y destellos de estrellas de 4 puntas.
+  * **Trampolines Mecánicos de Flor:** Resortes espirales metálicos con animación física de compresión al pisarlos y cojines mullidos elásticos de color pastel.
+  * **Gran Arco Triunfal y Picnic Sanrio:** Columnas de caramelo rosa, cartel luminoso de bienvenida (`¡BIENVENIDA A [CIUDAD] AMANDA!`), arcoíris pastel en el fondo, racimos de globos de helio y los amigos oficiales (**Milk, Pompompurin, Mocha y Chiffon**) celebrando en la meta con confeti continuo.
+* **HUD con Barra de Recorrido en Tiempo Real:**
+  * Indicador de distancia dinámico con bandera de la ciudad y avatar miniatura de Cinnamoroll que corre a lo largo de la barra desde el 0% hasta el 100%.
+* **Selector de Personajes y Ciudades 100% Accesible en Móviles:**
+  * Toda la píldora superior es táctil para abrir los modales con un solo toque del dedo en pantallas táctiles.
+  * Modales con cuadrícula adaptable de 2 columnas en teléfonos, botones gigantes para niños y cierre suave por fondo o botón.
+* **Selector de 5 Héroes de Sanrio Jugables:**
   * 🐶 **Cinnamoroll:** Planeo de orejas extendidas (*Ear-Glide*) con caída ultra suave y estela celeste.
   * 🍼 **Milk:** Flotación de bebé (*Baby Float*) con saltitos tiernos y su osito de peluche.
   * 🍮 **Pompompurin:** Rebote elástico (*Custard Bounce*) con gran impulso como flan de caramelo.
   * 🌸 **Chiffon:** Salto alto y ágil (*Cloud Leap*) con sus orejitas de nube esponjosa.
-* **Física de Salto Moderna y Snappy:**
-  * Velocidad de salto ajustada a `-460` a `-490 px/s` calculada en tiempo continuo (delta-time).
-  * **Coyote Time (0.12s):** Permite saltar aunque el personaje acabe de dejar el borde de una plataforma.
-  * **Jump Buffering (0.15s):** Registra la pulsación de salto antes de tocar tierra para una respuesta inmediata.
-  * **Salto de Altura Variable:** Soltar la tecla o el botón táctil antes acorta la parábola para saltos de precisión.
-  * **Animación Squash & Stretch:** Deformación elástica viva en despegues y aterrizajes (`squashX`, `squashY`), balanceo rítmico de carrera (*walk bob*) y partículas de corazones y estrellas.
-* **Mundo de Dulces con Efecto Parallax:**
-  * Cielo degradado con nubes flotantes y gran arcoíris translúcido de fondo.
-  * Colinas lejanas de frutilla y algodón de azúcar a velocidad reducida (0.35x).
-  * Plataformas de waffle con glaseado chorreante, flores en flor y fresas silvestres.
-  * Trampolines de gelatina que impulsan alto (`vy = -680 px/s`).
-  * Cupcakes flotantes para recolectar con sonido de campanita.
-  * Rescate mágico: Si cae al vacío, una nube lo devuelve suavemente hacia arriba.
-* **Meta Picnic:** Al llegar al final (x = 2800), lo esperan en un mantel de picnic con globos todos sus amigos oficiales: **Milk, Pompompurin, Mocha y Chiffon**.
-* **Adaptabilidad Móvil 100% Calibrada (v15):** HUD superior reorganizado en dos filas compactas en smartphones para que el botón de cambio de héroe y la ciudad actual nunca queden fuera del borde de la pantalla (incluso en pantallas estrechas de 360px a 390px), con modales fijos adaptados a la pantalla táctil.
+  * 🎀 **Mocha:** Salto elegante y ágil (*Graceful Leap*) con flores rosas y estela lila.
 
 ---
 
