@@ -207,7 +207,7 @@ try:
     """)
     print("2. Math Typography & Submit Test:", res_math)
 
-    # 3. Test Writing Trace mode (accuracy % and single stroke calibration)
+    # 3. Test Writing Trace mode (letter M 5 points, alphabet selector, no premature completion)
     res_writing = eval_js(ws, """
     (() => {
         window.Cinnamo.hub.launchGame('writing');
@@ -218,30 +218,69 @@ try:
         const accPill = document.getElementById('traceAccuracyPill');
         const accNum = document.getElementById('traceAccuracyNum');
         const canvas = document.getElementById('traceCanvas');
+        const alphaBtns = document.querySelectorAll('.trace-alpha-btn');
+        const banner = document.getElementById('traceCelebrationBanner');
         
-        // Trace letter with synthetic touch
+        // Select letter M
+        const btnM = Array.from(document.querySelectorAll('.trace-pick-btn')).find(b => b.textContent.trim() === 'M');
+        if (btnM) btnM.click();
+        
+        const curChar = window.Cinnamo.writing.getCurrentTraceChar();
+        const confM = window.Cinnamo.writing.container ? true : false;
+        
+        // Simulate drawing part of M (less than complete)
         const rect = canvas.getBoundingClientRect();
-        const startX = rect.left + rect.width * 0.5;
-        const startY = rect.top + rect.height * 0.2;
-        const endX = rect.left + rect.width * 0.25;
-        const endY = rect.top + rect.height * 0.8;
+        canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: rect.left + rect.width * 0.22, clientY: rect.top + rect.height * 0.88, bubbles: true }));
+        window.dispatchEvent(new PointerEvent('pointermove', { clientX: rect.left + rect.width * 0.22, clientY: rect.top + rect.height * 0.14, bubbles: true }));
         
-        canvas.dispatchEvent(new PointerEvent('pointerdown', { clientX: startX, clientY: startY, bubbles: true }));
-        for (let i = 1; i <= 10; i++) {
-            const cx = startX + (endX - startX) * (i / 10);
-            const cy = startY + (endY - startY) * (i / 10);
-            window.dispatchEvent(new PointerEvent('pointermove', { clientX: cx, clientY: cy, bubbles: true }));
-        }
-        window.dispatchEvent(new PointerEvent('pointerup', { clientX: endX, clientY: endY, bubbles: true }));
+        const midPct = accNum ? accNum.textContent : '0%';
+        const prematureDone = window.Cinnamo.writing.traceCompleted;
+        const bannerHiddenMid = banner.classList.contains('hidden');
+        
+        // Release pointer without finishing
+        window.dispatchEvent(new PointerEvent('pointerup', { clientX: rect.left + rect.width * 0.22, clientY: rect.top + rect.height * 0.14, bubbles: true }));
+        const prematureDoneAfterUp = window.Cinnamo.writing.traceCompleted;
+        
+        // Test switching to 'Z' via alphabet ribbon
+        const btnZ = Array.from(alphaBtns).find(b => b.textContent.trim() === 'Z');
+        if (btnZ) btnZ.click();
+        const charAfterZ = window.Cinnamo.writing.getCurrentTraceChar();
         
         return {
-            accText: accNum ? accNum.textContent : 'none',
-            hasPill: !!accPill,
+            curChar,
+            alphaBtnsCount: alphaBtns.length,
+            midPct,
+            prematureDone,
+            bannerHiddenMid,
+            prematureDoneAfterUp,
+            charAfterZ,
             hasCanvas: !!canvas
         };
     })()
     """)
-    print("3. Writing Trace Mode Test:", res_writing)
+    print("3. Writing Trace Mode Test (M, Alphabet, No Premature Done):", res_writing)
+
+    # Take screenshot of M in trace mode
+    eval_js(ws, """
+    (() => {
+        const btnM = Array.from(document.querySelectorAll('.trace-pick-btn')).find(b => b.textContent.trim() === 'M');
+        if (btnM) btnM.click();
+        const canvas = document.getElementById('traceCanvas');
+        if (canvas) canvas.scrollIntoView({ behavior: 'instant', block: 'center' });
+    })()
+    """)
+    time.sleep(0.4)
+    req_id += 1
+    ws.send(json.dumps({'id': req_id, 'method': 'Page.captureScreenshot', 'params': {'format': 'png'}}))
+    while True:
+        msg = json.loads(ws.recv())
+        if msg.get('id') == req_id:
+            img_bytes = base64.b64decode(msg['result']['data'])
+            out_file = os.path.join(os.path.dirname(__file__), 'trace_m_preview.png')
+            with open(out_file, 'wb') as f:
+                f.write(img_bytes)
+            print("Screenshot of Letter M saved to:", out_file)
+            break
 
     # 4. Test controller.html directly
     eval_js(ws, "window.location.href = 'http://127.0.0.1:8999/controller.html?room=TEST';")

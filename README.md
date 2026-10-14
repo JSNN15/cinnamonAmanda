@@ -152,7 +152,11 @@ Diseñado con metodología preescolar multisensorial para que Amanda aprenda a e
   * **Normalización de Tildes:** Acepta tanto `Á` como `A` en palabras como `MAMÁ` y `PAPÁ` para evitar frustraciones ortográficas tempranas.
 * **3 Modos Pedagógicos:**
   1. 🍪 **Alfabeto Móvil Montessori:** Bandeja de galletitas horneadas con moldes en relieve.
-  2. ✨ **Trazado Caligráfico de Trazo Único (v15):** A diferencia de dibujar un contorno hueco, este modo enseña a escribir la letra con su trazo natural central (esqueleto caligráfico de trazo simple). Incluye carriles suaves, líneas guía punteadas finas y números de orden de trazo (`①`, `②`, `③`). Cuenta con un **indicador de precisión en tiempo real (% de acierto)** y medidor de estrellas (`⭐⭐⭐ ¡Completado!`) con fanfarria y felicitación al superar el 75%.
+  2. ✨ **Trazado Caligráfico de Trazo Único & Abecedario Completo (v16):**
+     * **Mapeo Integral de 32 Letras:** Cada letra del abecedario español (`A` a la `Z`, `Ñ`, `Á`, `É`, `Í`, `Ó`, `Ú`) cuenta con su esqueleto caligráfico oficial y sus **waypoints numerados de principio a fin** (`① ➔ ② ➔ ③ ➔ ④ ➔ ⑤`). Para la letra `M`, se incorporan sus 5 puntos completos resolviendo cualquier punto faltante en la pierna final.
+     * **Flujo Natural sin Bloqueos:** El porcentaje de precisión (`% de acierto`) y las estrellas (`☆☆☆` a `⭐⭐⭐`) se actualizan en vivo mientras dibuja, pero la felicitación y fanfarria se evalúan exclusivamente **al levantar el dedo o lápiz (`pointerup`) tras completar la letra**, permitiendo a Amanda trazar todos los segmentos con calma sin interrupciones ni pantallas bloqueantes intermedias.
+     * **Cinta del Abecedario Completo (A - Z):** Permite elegir y practicar cualquier letra del abecedario libremente o avanzar en orden con el botón *"Siguiente Letra 🌸"*.
+     * **Banner de Victoria No Invasivo:** El mensaje de felicitación aparece como una notificación inferior suave sin tapar la pizarra, dejando el trazo visible para su disfrute.
   3. 🖍️ **Pizarra Libre con Tizas Pastel:** Pizarra de cuaderno caligráfico para escribir libremente con tizas de colores (rosa, celeste, amarillo sol, menta, blanco) y esponjita de borrar.
 * **Fónica con Voz en Español:** Pronunciación dulce y cariñosa mediante `SpeechSynthesis` (*"¡Ma-má! ¡Excelente Amanda!"*).
 

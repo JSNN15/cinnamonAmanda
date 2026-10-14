@@ -322,45 +322,433 @@
     return normalizeChar(a) === normalizeChar(b);
   }
 
-  // Trazos caligráficos reales (1 solo trazo por línea, no contorno hueco de tipografía)
-  const LETTER_STROKES = {
-    'A': [[{x:0.5,y:0.14},{x:0.22,y:0.88}],[{x:0.5,y:0.14},{x:0.78,y:0.88}],[{x:0.32,y:0.58},{x:0.68,y:0.58}]],
-    'Á': [[{x:0.5,y:0.18},{x:0.22,y:0.88}],[{x:0.5,y:0.18},{x:0.78,y:0.88}],[{x:0.32,y:0.60},{x:0.68,y:0.60}],[{x:0.42,y:0.04},{x:0.56,y:0.12}]],
-    'B': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.62,y:0.14},{x:0.72,y:0.22},{x:0.72,y:0.42},{x:0.62,y:0.50},{x:0.28,y:0.50}],[{x:0.28,y:0.50},{x:0.66,y:0.50},{x:0.76,y:0.60},{x:0.76,y:0.78},{x:0.66,y:0.88},{x:0.28,y:0.88}]],
-    'C': [[{x:0.74,y:0.26},{x:0.62,y:0.14},{x:0.46,y:0.14},{x:0.30,y:0.26},{x:0.26,y:0.50},{x:0.30,y:0.74},{x:0.46,y:0.88},{x:0.62,y:0.88},{x:0.74,y:0.76}]],
-    'D': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.52,y:0.14},{x:0.74,y:0.30},{x:0.74,y:0.70},{x:0.52,y:0.88},{x:0.28,y:0.88}]],
-    'E': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.74,y:0.14}],[{x:0.28,y:0.50},{x:0.62,y:0.50}],[{x:0.28,y:0.88},{x:0.74,y:0.88}]],
-    'F': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.74,y:0.14}],[{x:0.28,y:0.50},{x:0.62,y:0.50}]],
-    'G': [[{x:0.74,y:0.26},{x:0.62,y:0.14},{x:0.46,y:0.14},{x:0.30,y:0.26},{x:0.26,y:0.50},{x:0.30,y:0.74},{x:0.46,y:0.88},{x:0.68,y:0.88},{x:0.74,y:0.60}],[{x:0.52,y:0.60},{x:0.74,y:0.60}]],
-    'H': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.72,y:0.14},{x:0.72,y:0.88}],[{x:0.28,y:0.50},{x:0.72,y:0.50}]],
-    'I': [[{x:0.50,y:0.14},{x:0.50,y:0.88}],[{x:0.34,y:0.14},{x:0.66,y:0.14}],[{x:0.34,y:0.88},{x:0.66,y:0.88}]],
-    'Í': [[{x:0.50,y:0.20},{x:0.50,y:0.88}],[{x:0.34,y:0.20},{x:0.66,y:0.20}],[{x:0.34,y:0.88},{x:0.66,y:0.88}],[{x:0.45,y:0.04},{x:0.55,y:0.12}]],
-    'J': [[{x:0.66,y:0.14},{x:0.66,y:0.70},{x:0.58,y:0.84},{x:0.42,y:0.88},{x:0.30,y:0.78}]],
-    'K': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.72,y:0.18},{x:0.30,y:0.52}],[{x:0.42,y:0.42},{x:0.74,y:0.88}]],
-    'L': [[{x:0.30,y:0.14},{x:0.30,y:0.88}],[{x:0.30,y:0.88},{x:0.74,y:0.88}]],
-    'M': [[{x:0.22,y:0.88},{x:0.22,y:0.14}],[{x:0.22,y:0.14},{x:0.50,y:0.62}],[{x:0.50,y:0.62},{x:0.78,y:0.14}],[{x:0.78,y:0.14},{x:0.78,y:0.88}]],
-    'N': [[{x:0.25,y:0.88},{x:0.25,y:0.14}],[{x:0.25,y:0.14},{x:0.75,y:0.88}],[{x:0.75,y:0.88},{x:0.75,y:0.14}]],
-    'Ñ': [[{x:0.25,y:0.88},{x:0.25,y:0.20}],[{x:0.25,y:0.20},{x:0.75,y:0.88}],[{x:0.75,y:0.88},{x:0.75,y:0.20}],[{x:0.34,y:0.08},{x:0.46,y:0.05},{x:0.54,y:0.11},{x:0.66,y:0.08}]],
-    'O': [[{x:0.50,y:0.14},{x:0.34,y:0.18},{x:0.24,y:0.38},{x:0.24,y:0.62},{x:0.34,y:0.82},{x:0.50,y:0.88},{x:0.66,y:0.82},{x:0.76,y:0.62},{x:0.76,y:0.38},{x:0.66,y:0.18},{x:0.50,y:0.14}]],
-    'P': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.62,y:0.14},{x:0.74,y:0.24},{x:0.74,y:0.42},{x:0.62,y:0.54},{x:0.28,y:0.54}]],
-    'Q': [[{x:0.50,y:0.14},{x:0.34,y:0.18},{x:0.24,y:0.38},{x:0.24,y:0.62},{x:0.34,y:0.82},{x:0.50,y:0.88},{x:0.66,y:0.82},{x:0.76,y:0.62},{x:0.76,y:0.38},{x:0.66,y:0.18},{x:0.50,y:0.14}],[{x:0.58,y:0.68},{x:0.78,y:0.88}]],
-    'R': [[{x:0.28,y:0.14},{x:0.28,y:0.88}],[{x:0.28,y:0.14},{x:0.62,y:0.14},{x:0.74,y:0.24},{x:0.74,y:0.42},{x:0.62,y:0.54},{x:0.28,y:0.54}],[{x:0.48,y:0.54},{x:0.76,y:0.88}]],
-    'S': [[{x:0.72,y:0.24},{x:0.60,y:0.14},{x:0.44,y:0.14},{x:0.30,y:0.24},{x:0.32,y:0.40},{x:0.48,y:0.50},{x:0.68,y:0.60},{x:0.72,y:0.74},{x:0.60,y:0.88},{x:0.44,y:0.88},{x:0.28,y:0.78}]],
-    'T': [[{x:0.20,y:0.14},{x:0.80,y:0.14}],[{x:0.50,y:0.14},{x:0.50,y:0.88}]],
-    'U': [[{x:0.28,y:0.14},{x:0.28,y:0.68},{x:0.36,y:0.84},{x:0.50,y:0.88},{x:0.64,y:0.84},{x:0.72,y:0.68},{x:0.72,y:0.14}]],
-    'V': [[{x:0.24,y:0.14},{x:0.50,y:0.88}],[{x:0.50,y:0.88},{x:0.76,y:0.14}]],
-    'W': [[{x:0.18,y:0.14},{x:0.32,y:0.88}],[{x:0.32,y:0.88},{x:0.50,y:0.40}],[{x:0.50,y:0.40},{x:0.68,y:0.88}],[{x:0.68,y:0.88},{x:0.82,y:0.14}]],
-    'X': [[{x:0.26,y:0.16},{x:0.74,y:0.86}],[{x:0.74,y:0.16},{x:0.26,y:0.86}]],
-    'Y': [[{x:0.24,y:0.14},{x:0.50,y:0.50}],[{x:0.76,y:0.14},{x:0.50,y:0.50}],[{x:0.50,y:0.50},{x:0.50,y:0.88}]],
-    'Z': [[{x:0.26,y:0.16},{x:0.74,y:0.16},{x:0.26,y:0.86},{x:0.74,y:0.86}]]
+  // Configuración caligráfica para todo el abecedario (A - Z, Ñ, y vocales acentuadas)
+  // Cada letra cuenta con sus trazos (strokes) y todos sus waypoints numerados (points)
+  // garantizando que ningún punto final quede sin círculo guía (ej. letra M con sus 5 puntos)
+  const LETTER_CONFIG = {
+    'A': {
+      strokes: [
+        [{x:0.22, y:0.88}, {x:0.50, y:0.14}, {x:0.78, y:0.88}],
+        [{x:0.32, y:0.58}, {x:0.68, y:0.58}]
+      ],
+      points: [
+        {x:0.22, y:0.88, n:1},
+        {x:0.50, y:0.14, n:2},
+        {x:0.78, y:0.88, n:3},
+        {x:0.32, y:0.58, n:4},
+        {x:0.68, y:0.58, n:5}
+      ]
+    },
+    'Á': {
+      strokes: [
+        [{x:0.22, y:0.88}, {x:0.50, y:0.18}, {x:0.78, y:0.88}],
+        [{x:0.32, y:0.60}, {x:0.68, y:0.60}],
+        [{x:0.42, y:0.04}, {x:0.56, y:0.12}]
+      ],
+      points: [
+        {x:0.22, y:0.88, n:1},
+        {x:0.50, y:0.18, n:2},
+        {x:0.78, y:0.88, n:3},
+        {x:0.32, y:0.60, n:4},
+        {x:0.68, y:0.60, n:5},
+        {x:0.42, y:0.04, n:6},
+        {x:0.56, y:0.12, n:7}
+      ]
+    },
+    'B': {
+      strokes: [
+        [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
+        [{x:0.28, y:0.14}, {x:0.62, y:0.14}, {x:0.74, y:0.24}, {x:0.74, y:0.42}, {x:0.62, y:0.50}, {x:0.28, y:0.50}],
+        [{x:0.28, y:0.50}, {x:0.66, y:0.50}, {x:0.78, y:0.60}, {x:0.78, y:0.78}, {x:0.66, y:0.88}, {x:0.28, y:0.88}]
+      ],
+      points: [
+        {x:0.28, y:0.14, n:1},
+        {x:0.28, y:0.88, n:2},
+        {x:0.74, y:0.32, n:3},
+        {x:0.28, y:0.50, n:4},
+        {x:0.78, y:0.69, n:5},
+        {x:0.28, y:0.88, n:6}
+      ]
+    },
+    'C': {
+      strokes: [
+        [{x:0.74, y:0.26}, {x:0.62, y:0.14}, {x:0.46, y:0.14}, {x:0.30, y:0.26}, {x:0.26, y:0.50}, {x:0.30, y:0.74}, {x:0.46, y:0.88}, {x:0.62, y:0.88}, {x:0.74, y:0.76}]
+      ],
+      points: [
+        {x:0.74, y:0.26, n:1},
+        {x:0.26, y:0.50, n:2},
+        {x:0.74, y:0.76, n:3}
+      ]
+    },
+    'D': {
+      strokes: [
+        [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
+        [{x:0.28, y:0.14}, {x:0.54, y:0.14}, {x:0.76, y:0.32}, {x:0.76, y:0.70}, {x:0.54, y:0.88}, {x:0.28, y:0.88}]
+      ],
+      points: [
+        {x:0.28, y:0.14, n:1},
+        {x:0.28, y:0.88, n:2},
+        {x:0.76, y:0.51, n:3},
+        {x:0.28, y:0.88, n:4}
+      ]
+    },
+    'E': {
+      strokes: [
+        [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
+        [{x:0.28, y:0.14}, {x:0.74, y:0.14}],
+        [{x:0.28, y:0.50}, {x:0.62, y:0.50}],
+        [{x:0.28, y:0.88}, {x:0.74, y:0.88}]
+      ],
+      points: [
+        {x:0.28, y:0.14, n:1},
+        {x:0.28, y:0.88, n:2},
+        {x:0.74, y:0.14, n:3},
+        {x:0.62, y:0.50, n:4},
+        {x:0.74, y:0.88, n:5}
+      ]
+    },
+    'É': {
+      strokes: [
+        [{x:0.28, y:0.18}, {x:0.28, y:0.88}],
+        [{x:0.28, y:0.18}, {x:0.74, y:0.18}],
+        [{x:0.28, y:0.52}, {x:0.62, y:0.52}],
+        [{x:0.28, y:0.88}, {x:0.74, y:0.88}],
+        [{x:0.42, y:0.04}, {x:0.56, y:0.12}]
+      ],
+      points: [
+        {x:0.28, y:0.18, n:1},
+        {x:0.28, y:0.88, n:2},
+        {x:0.74, y:0.18, n:3},
+        {x:0.62, y:0.52, n:4},
+        {x:0.74, y:0.88, n:5},
+        {x:0.42, y:0.04, n:6},
+        {x:0.56, y:0.12, n:7}
+      ]
+    },
+    'F': {
+      strokes: [
+        [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
+        [{x:0.28, y:0.14}, {x:0.74, y:0.14}],
+        [{x:0.28, y:0.50}, {x:0.62, y:0.50}]
+      ],
+      points: [
+        {x:0.28, y:0.14, n:1},
+        {x:0.28, y:0.88, n:2},
+        {x:0.74, y:0.14, n:3},
+        {x:0.62, y:0.50, n:4}
+      ]
+    },
+    'G': {
+      strokes: [
+        [{x:0.74, y:0.26}, {x:0.62, y:0.14}, {x:0.46, y:0.14}, {x:0.30, y:0.26}, {x:0.26, y:0.50}, {x:0.30, y:0.74}, {x:0.46, y:0.88}, {x:0.68, y:0.88}, {x:0.74, y:0.60}],
+        [{x:0.52, y:0.60}, {x:0.74, y:0.60}]
+      ],
+      points: [
+        {x:0.74, y:0.26, n:1},
+        {x:0.26, y:0.50, n:2},
+        {x:0.74, y:0.60, n:3},
+        {x:0.52, y:0.60, n:4}
+      ]
+    },
+    'H': {
+      strokes: [
+        [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
+        [{x:0.72, y:0.14}, {x:0.72, y:0.88}],
+        [{x:0.28, y:0.50}, {x:0.72, y:0.50}]
+      ],
+      points: [
+        {x:0.28, y:0.14, n:1},
+        {x:0.28, y:0.88, n:2},
+        {x:0.72, y:0.14, n:3},
+        {x:0.72, y:0.88, n:4},
+        {x:0.28, y:0.50, n:5},
+        {x:0.72, y:0.50, n:6}
+      ]
+    },
+    'I': {
+      strokes: [
+        [{x:0.50, y:0.14}, {x:0.50, y:0.88}],
+        [{x:0.34, y:0.14}, {x:0.66, y:0.14}],
+        [{x:0.34, y:0.88}, {x:0.66, y:0.88}]
+      ],
+      points: [
+        {x:0.50, y:0.14, n:1},
+        {x:0.50, y:0.88, n:2},
+        {x:0.34, y:0.14, n:3},
+        {x:0.66, y:0.14, n:4},
+        {x:0.34, y:0.88, n:5},
+        {x:0.66, y:0.88, n:6}
+      ]
+    },
+    'Í': {
+      strokes: [
+        [{x:0.50, y:0.20}, {x:0.50, y:0.88}],
+        [{x:0.34, y:0.20}, {x:0.66, y:0.20}],
+        [{x:0.34, y:0.88}, {x:0.66, y:0.88}],
+        [{x:0.44, y:0.04}, {x:0.56, y:0.12}]
+      ],
+      points: [
+        {x:0.50, y:0.20, n:1},
+        {x:0.50, y:0.88, n:2},
+        {x:0.34, y:0.20, n:3},
+        {x:0.66, y:0.20, n:4},
+        {x:0.34, y:0.88, n:5},
+        {x:0.66, y:0.88, n:6},
+        {x:0.44, y:0.04, n:7},
+        {x:0.56, y:0.12, n:8}
+      ]
+    },
+    'J': {
+      strokes: [
+        [{x:0.66, y:0.14}, {x:0.66, y:0.70}, {x:0.58, y:0.84}, {x:0.42, y:0.88}, {x:0.30, y:0.78}]
+      ],
+      points: [
+        {x:0.66, y:0.14, n:1},
+        {x:0.66, y:0.70, n:2},
+        {x:0.30, y:0.78, n:3}
+      ]
+    },
+    'K': {
+      strokes: [
+        [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
+        [{x:0.72, y:0.18}, {x:0.30, y:0.52}],
+        [{x:0.42, y:0.42}, {x:0.74, y:0.88}]
+      ],
+      points: [
+        {x:0.28, y:0.14, n:1},
+        {x:0.28, y:0.88, n:2},
+        {x:0.72, y:0.18, n:3},
+        {x:0.30, y:0.52, n:4},
+        {x:0.42, y:0.42, n:5},
+        {x:0.74, y:0.88, n:6}
+      ]
+    },
+    'L': {
+      strokes: [
+        [{x:0.30, y:0.14}, {x:0.30, y:0.88}, {x:0.74, y:0.88}]
+      ],
+      points: [
+        {x:0.30, y:0.14, n:1},
+        {x:0.30, y:0.88, n:2},
+        {x:0.74, y:0.88, n:3}
+      ]
+    },
+    'M': {
+      strokes: [
+        [{x:0.22, y:0.88}, {x:0.22, y:0.14}, {x:0.50, y:0.62}, {x:0.78, y:0.14}, {x:0.78, y:0.88}]
+      ],
+      points: [
+        {x:0.22, y:0.88, n:1},
+        {x:0.22, y:0.14, n:2},
+        {x:0.50, y:0.62, n:3},
+        {x:0.78, y:0.14, n:4},
+        {x:0.78, y:0.88, n:5}
+      ]
+    },
+    'N': {
+      strokes: [
+        [{x:0.25, y:0.88}, {x:0.25, y:0.14}, {x:0.75, y:0.88}, {x:0.75, y:0.14}]
+      ],
+      points: [
+        {x:0.25, y:0.88, n:1},
+        {x:0.25, y:0.14, n:2},
+        {x:0.75, y:0.88, n:3},
+        {x:0.75, y:0.14, n:4}
+      ]
+    },
+    'Ñ': {
+      strokes: [
+        [{x:0.25, y:0.88}, {x:0.25, y:0.20}, {x:0.75, y:0.88}, {x:0.75, y:0.20}],
+        [{x:0.34, y:0.08}, {x:0.46, y:0.05}, {x:0.54, y:0.11}, {x:0.66, y:0.08}]
+      ],
+      points: [
+        {x:0.25, y:0.88, n:1},
+        {x:0.25, y:0.20, n:2},
+        {x:0.75, y:0.88, n:3},
+        {x:0.75, y:0.20, n:4},
+        {x:0.34, y:0.08, n:5},
+        {x:0.66, y:0.08, n:6}
+      ]
+    },
+    'O': {
+      strokes: [
+        [{x:0.50, y:0.14}, {x:0.34, y:0.18}, {x:0.24, y:0.38}, {x:0.24, y:0.62}, {x:0.34, y:0.82}, {x:0.50, y:0.88}, {x:0.66, y:0.82}, {x:0.76, y:0.62}, {x:0.76, y:0.38}, {x:0.66, y:0.18}, {x:0.50, y:0.14}]
+      ],
+      points: [
+        {x:0.50, y:0.14, n:1},
+        {x:0.24, y:0.50, n:2},
+        {x:0.50, y:0.88, n:3},
+        {x:0.76, y:0.50, n:4}
+      ]
+    },
+    'Ó': {
+      strokes: [
+        [{x:0.50, y:0.18}, {x:0.34, y:0.22}, {x:0.24, y:0.40}, {x:0.24, y:0.64}, {x:0.34, y:0.82}, {x:0.50, y:0.88}, {x:0.66, y:0.82}, {x:0.76, y:0.64}, {x:0.76, y:0.40}, {x:0.66, y:0.22}, {x:0.50, y:0.18}],
+        [{x:0.44, y:0.04}, {x:0.56, y:0.12}]
+      ],
+      points: [
+        {x:0.50, y:0.18, n:1},
+        {x:0.24, y:0.52, n:2},
+        {x:0.50, y:0.88, n:3},
+        {x:0.76, y:0.52, n:4},
+        {x:0.44, y:0.04, n:5},
+        {x:0.56, y:0.12, n:6}
+      ]
+    },
+    'P': {
+      strokes: [
+        [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
+        [{x:0.28, y:0.14}, {x:0.62, y:0.14}, {x:0.74, y:0.24}, {x:0.74, y:0.42}, {x:0.62, y:0.54}, {x:0.28, y:0.54}]
+      ],
+      points: [
+        {x:0.28, y:0.14, n:1},
+        {x:0.28, y:0.88, n:2},
+        {x:0.74, y:0.33, n:3},
+        {x:0.28, y:0.54, n:4}
+      ]
+    },
+    'Q': {
+      strokes: [
+        [{x:0.50, y:0.14}, {x:0.34, y:0.18}, {x:0.24, y:0.38}, {x:0.24, y:0.62}, {x:0.34, y:0.82}, {x:0.50, y:0.88}, {x:0.66, y:0.82}, {x:0.76, y:0.62}, {x:0.76, y:0.38}, {x:0.66, y:0.18}, {x:0.50, y:0.14}],
+        [{x:0.58, y:0.68}, {x:0.78, y:0.88}]
+      ],
+      points: [
+        {x:0.50, y:0.14, n:1},
+        {x:0.24, y:0.50, n:2},
+        {x:0.50, y:0.88, n:3},
+        {x:0.76, y:0.50, n:4},
+        {x:0.58, y:0.68, n:5},
+        {x:0.78, y:0.88, n:6}
+      ]
+    },
+    'R': {
+      strokes: [
+        [{x:0.28, y:0.14}, {x:0.28, y:0.88}],
+        [{x:0.28, y:0.14}, {x:0.62, y:0.14}, {x:0.74, y:0.24}, {x:0.74, y:0.42}, {x:0.62, y:0.54}, {x:0.28, y:0.54}],
+        [{x:0.48, y:0.54}, {x:0.76, y:0.88}]
+      ],
+      points: [
+        {x:0.28, y:0.14, n:1},
+        {x:0.28, y:0.88, n:2},
+        {x:0.74, y:0.33, n:3},
+        {x:0.28, y:0.54, n:4},
+        {x:0.48, y:0.54, n:5},
+        {x:0.76, y:0.88, n:6}
+      ]
+    },
+    'S': {
+      strokes: [
+        [{x:0.72, y:0.24}, {x:0.60, y:0.14}, {x:0.44, y:0.14}, {x:0.30, y:0.24}, {x:0.32, y:0.40}, {x:0.48, y:0.50}, {x:0.68, y:0.60}, {x:0.72, y:0.74}, {x:0.60, y:0.88}, {x:0.44, y:0.88}, {x:0.28, y:0.78}]
+      ],
+      points: [
+        {x:0.72, y:0.24, n:1},
+        {x:0.30, y:0.24, n:2},
+        {x:0.48, y:0.50, n:3},
+        {x:0.72, y:0.74, n:4},
+        {x:0.28, y:0.78, n:5}
+      ]
+    },
+    'T': {
+      strokes: [
+        [{x:0.20, y:0.14}, {x:0.80, y:0.14}],
+        [{x:0.50, y:0.14}, {x:0.50, y:0.88}]
+      ],
+      points: [
+        {x:0.20, y:0.14, n:1},
+        {x:0.80, y:0.14, n:2},
+        {x:0.50, y:0.14, n:3},
+        {x:0.50, y:0.88, n:4}
+      ]
+    },
+    'U': {
+      strokes: [
+        [{x:0.28, y:0.14}, {x:0.28, y:0.68}, {x:0.36, y:0.84}, {x:0.50, y:0.88}, {x:0.64, y:0.84}, {x:0.72, y:0.68}, {x:0.72, y:0.14}]
+      ],
+      points: [
+        {x:0.28, y:0.14, n:1},
+        {x:0.50, y:0.88, n:2},
+        {x:0.72, y:0.14, n:3}
+      ]
+    },
+    'Ú': {
+      strokes: [
+        [{x:0.28, y:0.18}, {x:0.28, y:0.70}, {x:0.36, y:0.84}, {x:0.50, y:0.88}, {x:0.64, y:0.84}, {x:0.72, y:0.70}, {x:0.72, y:0.18}],
+        [{x:0.44, y:0.04}, {x:0.56, y:0.12}]
+      ],
+      points: [
+        {x:0.28, y:0.18, n:1},
+        {x:0.50, y:0.88, n:2},
+        {x:0.72, y:0.18, n:3},
+        {x:0.44, y:0.04, n:4},
+        {x:0.56, y:0.12, n:5}
+      ]
+    },
+    'V': {
+      strokes: [
+        [{x:0.24, y:0.14}, {x:0.50, y:0.88}, {x:0.76, y:0.14}]
+      ],
+      points: [
+        {x:0.24, y:0.14, n:1},
+        {x:0.50, y:0.88, n:2},
+        {x:0.76, y:0.14, n:3}
+      ]
+    },
+    'W': {
+      strokes: [
+        [{x:0.18, y:0.14}, {x:0.32, y:0.88}, {x:0.50, y:0.40}, {x:0.68, y:0.88}, {x:0.82, y:0.14}]
+      ],
+      points: [
+        {x:0.18, y:0.14, n:1},
+        {x:0.32, y:0.88, n:2},
+        {x:0.50, y:0.40, n:3},
+        {x:0.68, y:0.88, n:4},
+        {x:0.82, y:0.14, n:5}
+      ]
+    },
+    'X': {
+      strokes: [
+        [{x:0.26, y:0.16}, {x:0.74, y:0.86}],
+        [{x:0.74, y:0.16}, {x:0.26, y:0.86}]
+      ],
+      points: [
+        {x:0.26, y:0.16, n:1},
+        {x:0.74, y:0.86, n:2},
+        {x:0.74, y:0.16, n:3},
+        {x:0.26, y:0.86, n:4}
+      ]
+    },
+    'Y': {
+      strokes: [
+        [{x:0.24, y:0.14}, {x:0.50, y:0.50}],
+        [{x:0.76, y:0.14}, {x:0.50, y:0.50}],
+        [{x:0.50, y:0.50}, {x:0.50, y:0.88}]
+      ],
+      points: [
+        {x:0.24, y:0.14, n:1},
+        {x:0.50, y:0.50, n:2},
+        {x:0.76, y:0.14, n:3},
+        {x:0.50, y:0.88, n:4}
+      ]
+    },
+    'Z': {
+      strokes: [
+        [{x:0.26, y:0.16}, {x:0.74, y:0.16}, {x:0.26, y:0.86}, {x:0.74, y:0.86}]
+      ],
+      points: [
+        {x:0.26, y:0.16, n:1},
+        {x:0.74, y:0.16, n:2},
+        {x:0.26, y:0.86, n:3},
+        {x:0.74, y:0.86, n:4}
+      ]
+    }
   };
 
-  function getLetterStrokes(char) {
+  function getLetterConfig(char) {
     const c = (char || 'A').toUpperCase();
-    if (LETTER_STROKES[c]) return LETTER_STROKES[c];
+    if (LETTER_CONFIG[c]) return LETTER_CONFIG[c];
     const clean = c.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    if (LETTER_STROKES[clean]) return LETTER_STROKES[clean];
-    return LETTER_STROKES['A'];
+    if (LETTER_CONFIG[clean]) return LETTER_CONFIG[clean];
+    return LETTER_CONFIG['A'];
   }
 
   class WritingWorkshopGame {
@@ -375,6 +763,7 @@
       this.placedLetters = [];
       this.availableCookies = [];
       this.selectedTraceLetterIdx = 0;
+      this.customTraceChar = null; // Letra seleccionada del abecedario A-Z
       
       // Estado Frases
       this.placedSentenceWords = [];
@@ -393,8 +782,16 @@
       this.currentWordIdx = 0;
       this.currentSentenceIdx = 0;
       this.currentMode = 'montessori';
+      this.customTraceChar = null;
       this.loadWord(0);
       this.render();
+    }
+
+    getCurrentTraceChar() {
+      if (this.customTraceChar) return this.customTraceChar;
+      const list = this.getFilteredWords();
+      const w = list[this.currentWordIdx] || WORDS[0];
+      return (w.letters[this.selectedTraceLetterIdx] || 'A').toUpperCase();
     }
 
     getFilteredWords() {
@@ -459,6 +856,7 @@
         .sort(() => Math.random() - 0.5);
 
       this.selectedTraceLetterIdx = 0;
+      this.customTraceChar = null;
     }
 
     loadSentence(idx) {
@@ -707,19 +1105,33 @@
       }
 
       if (this.currentMode === 'trace') {
-        // MODO TRAZADO SENSORIAL CON ESTRELLAS
+        // MODO TRAZADO SENSORIAL CON ESTRELLAS Y ABECEDARIO COMPLETO
         const list = this.getFilteredWords();
         const w = list[this.currentWordIdx] || WORDS[0];
+        const currentChar = this.getCurrentTraceChar();
+        const ALPHABET = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+
         return `
           <div class="trace-sensory-container">
             <div class="trace-letters-selector">
-              <span>Elige qué letra escribir:</span>
-              <div class="trace-letters-row">
-                ${w.letters.map((char, idx) => `
-                  <button class="trace-pick-btn ${idx === this.selectedTraceLetterIdx ? 'active' : ''}" data-tidx="${idx}">
-                    ${char}
-                  </button>
-                `).join('')}
+              <div class="trace-word-context">
+                <span>Letras de <strong>${w.word}</strong>:</span>
+                <div class="trace-letters-row">
+                  ${w.letters.map((char, idx) => `
+                    <button class="trace-pick-btn ${(!this.customTraceChar && idx === this.selectedTraceLetterIdx) ? 'active' : ''}" data-tidx="${idx}">
+                      ${char}
+                    </button>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div class="trace-alphabet-wrap">
+                <div class="trace-alpha-label">🔤 O practica cualquier letra del Abecedario (A - Z):</div>
+                <div class="trace-alpha-row">
+                  ${ALPHABET.map(l => `
+                    <button class="trace-alpha-btn ${(this.customTraceChar === l || (!this.customTraceChar && currentChar === l)) ? 'active' : ''}" data-letter="${l}">${l}</button>
+                  `).join('')}
+                </div>
               </div>
             </div>
 
@@ -729,13 +1141,17 @@
                 <strong id="traceAccuracyNum">0%</strong>
                 <span id="traceStarsText">☆☆☆</span>
               </div>
-              <div class="trace-guide-hint">✍️ Sigue las líneas con números (① ➔ ②)</div>
+              <div class="trace-guide-hint">✍️ Sigue los puntos numerados (① ➔ ② ➔ ③...)</div>
             </div>
 
             <div class="trace-board-stage">
               <canvas id="traceCanvas" width="460" height="340" class="trace-canvas"></canvas>
               <div id="traceCelebrationBanner" class="trace-celebration-banner hidden">
-                ✨ ¡Excelente trazado, Amanda! 🌟
+                <div class="banner-text-box">
+                  <div class="banner-title" id="bannerTitleText">🎉 ¡Increíble Amanda! ⭐⭐⭐</div>
+                  <div class="banner-sub" id="bannerSubText">Letra trazada con éxito</div>
+                </div>
+                <button class="btn-banner-next" id="btnBannerNextTrace">Siguiente Letra 🌸</button>
               </div>
             </div>
 
@@ -902,11 +1318,22 @@
           btn.addEventListener('click', (e) => {
             A.unlock();
             A.bubblePop(1);
+            this.customTraceChar = null;
             this.selectedTraceLetterIdx = parseInt(e.currentTarget.dataset.tidx, 10);
             this.render();
             const list = this.getFilteredWords();
             const w = list[this.currentWordIdx] || WORDS[0];
             this.speak(w.letters[this.selectedTraceLetterIdx]);
+          });
+        });
+
+        this.container.querySelectorAll('.trace-alpha-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            A.unlock();
+            A.bubblePop(1);
+            this.customTraceChar = e.currentTarget.dataset.letter;
+            this.render();
+            this.speak(`Letra ${this.customTraceChar}`);
           });
         });
 
@@ -918,17 +1345,33 @@
           });
         }
 
-        const btnNextT = this.container.querySelector('#btnNextTraceLetter');
-        if (btnNextT) {
-          btnNextT.addEventListener('click', () => {
-            A.unlock();
-            A.bubblePop(2);
+        const handleNextLetter = () => {
+          A.unlock();
+          A.bubblePop(2);
+          const ALPHABET = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+          if (this.customTraceChar) {
+            const curIdx = ALPHABET.indexOf(this.customTraceChar);
+            const nextIdx = (curIdx + 1) % ALPHABET.length;
+            this.customTraceChar = ALPHABET[nextIdx];
+            this.render();
+            this.speak(`Letra ${this.customTraceChar}`);
+          } else {
             const list = this.getFilteredWords();
             const w = list[this.currentWordIdx] || WORDS[0];
             this.selectedTraceLetterIdx = (this.selectedTraceLetterIdx + 1) % w.letters.length;
             this.render();
             this.speak(w.letters[this.selectedTraceLetterIdx]);
-          });
+          }
+        };
+
+        const btnNextT = this.container.querySelector('#btnNextTraceLetter');
+        if (btnNextT) {
+          btnNextT.addEventListener('click', handleNextLetter);
+        }
+
+        const btnBannerNext = this.container.querySelector('#btnBannerNextTrace');
+        if (btnBannerNext) {
+          btnBannerNext.addEventListener('click', handleNextLetter);
         }
       }
 
@@ -1547,22 +1990,21 @@
       const canvas = this.container.querySelector('#traceCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      const list = this.getFilteredWords();
-      const w = list[this.currentWordIdx] || WORDS[0];
-      const char = (w.letters[this.selectedTraceLetterIdx] || 'A').toUpperCase();
+      const char = this.getCurrentTraceChar();
 
       this.traceCompleted = false;
       const accuracyNum = this.container.querySelector('#traceAccuracyNum');
       const starsText = this.container.querySelector('#traceStarsText');
       const banner = this.container.querySelector('#traceCelebrationBanner');
+      const bannerTitle = this.container.querySelector('#bannerTitleText');
+      const bannerSub = this.container.querySelector('#bannerSubText');
       const btnNext = this.container.querySelector('#btnNextTraceLetter');
       if (accuracyNum) accuracyNum.textContent = '0%';
       if (starsText) starsText.textContent = '☆☆☆';
       if (banner) banner.classList.add('hidden');
       if (btnNext) btnNext.classList.add('hidden');
 
-      // Trazos caligráficos reales (un solo trazo por línea, no contorno hueco)
-      const strokeList = getLetterStrokes(char);
+      const conf = getLetterConfig(char);
 
       // Dimensiones de la caja centrada para la letra
       const boxSize = Math.min(canvas.width * 0.72, canvas.height * 0.76);
@@ -1571,7 +2013,7 @@
 
       // Escalar coordenadas a píxeles y muestrear checkpoints
       const checkpoints = [];
-      const pixelStrokes = strokeList.map((stroke, sIdx) => {
+      const pixelStrokes = conf.strokes.map((stroke, sIdx) => {
         const pts = stroke.map(p => ({
           x: originX + p.x * boxSize,
           y: originY + p.y * boxSize
@@ -1581,7 +2023,7 @@
           const p1 = pts[i];
           const p2 = pts[i + 1];
           const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-          const steps = Math.max(2, Math.floor(dist / 9));
+          const steps = Math.max(2, Math.floor(dist / 8));
           for (let s = 0; s < steps; s++) {
             const t = s / steps;
             checkpoints.push({
@@ -1598,6 +2040,13 @@
         }
         return pts;
       });
+
+      // Puntos numerados escalados a píxeles (con todos sus puntos de principio a fin)
+      const pixelPoints = conf.points.map(p => ({
+        x: originX + p.x * boxSize,
+        y: originY + p.y * boxSize,
+        n: p.n
+      }));
 
       // Dibujar fondo de pizarra y guías finas caligráficas
       const drawBase = () => {
@@ -1623,7 +2072,7 @@
         ctx.setLineDash([]);
 
         // Dibujar cada trazo caligráfico
-        pixelStrokes.forEach((pts, sIdx) => {
+        pixelStrokes.forEach((pts) => {
           if (pts.length < 2) return;
 
           // 1. Carril suave de fondo
@@ -1631,12 +2080,12 @@
           ctx.moveTo(pts[0].x, pts[0].y);
           for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.13)';
-          ctx.lineWidth = 20;
+          ctx.lineWidth = 22;
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
           ctx.stroke();
 
-          // 2. Línea guía fina discontinua (caligrafía clara de 1 trazo)
+          // 2. Línea guía fina discontinua
           ctx.beginPath();
           ctx.moveTo(pts[0].x, pts[0].y);
           for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
@@ -1648,21 +2097,48 @@
           ctx.stroke();
           ctx.setLineDash([]);
 
-          // 3. Círculo numerado de inicio de trazo (①, ②, ③)
-          const startPt = pts[0];
+          // 3. Flechas direccionales en segmentos largos
+          for (let i = 0; i < pts.length - 1; i++) {
+            const p1 = pts[i];
+            const p2 = pts[i + 1];
+            const segDist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+            if (segDist > 45) {
+              const midX = (p1.x + p2.x) / 2;
+              const midY = (p1.y + p2.y) / 2;
+              const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+              ctx.save();
+              ctx.translate(midX, midY);
+              ctx.rotate(angle);
+              ctx.fillStyle = '#fde047';
+              ctx.beginPath();
+              ctx.moveTo(4, 0);
+              ctx.lineTo(-4, -4);
+              ctx.lineTo(-4, 4);
+              ctx.closePath();
+              ctx.fill();
+              ctx.restore();
+            }
+          }
+        });
+
+        // 4. Círculos numerados para TODOS los waypoints (inicio, giros y final)
+        pixelPoints.forEach((pt) => {
+          const isStart = (pt.n === 1);
+          const isEnd = (pt.n === pixelPoints.length);
+
           ctx.beginPath();
-          ctx.arc(startPt.x, startPt.y, 11, 0, Math.PI * 2);
-          ctx.fillStyle = '#4ade80';
+          ctx.arc(pt.x, pt.y, 11.5, 0, Math.PI * 2);
+          ctx.fillStyle = isStart ? '#22c55e' : (isEnd ? '#ec4899' : '#38bdf8');
           ctx.fill();
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 2.5;
           ctx.stroke();
 
-          ctx.fillStyle = '#064e3b';
-          ctx.font = '800 12px "Baloo 2", sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '800 12px "Baloo 2", Nunito, sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText((sIdx + 1).toString(), startPt.x, startPt.y);
+          ctx.fillText(pt.n.toString(), pt.x, pt.y + 0.5);
         });
       };
 
@@ -1681,31 +2157,43 @@
         };
       };
 
-      const updateProgress = () => {
+      // Actualizar solo el porcentaje y estrellas durante el movimiento (sin interrumpir el trazo)
+      const updateProgressPillOnly = () => {
         const covered = checkpoints.filter(c => c.covered).length;
         const total = checkpoints.length;
         const pct = Math.min(100, Math.round((covered / total) * 100));
 
         if (accuracyNum) accuracyNum.textContent = `${pct}%`;
         if (starsText) {
-          if (pct >= 80) starsText.textContent = '⭐⭐⭐ ¡Completado!';
+          if (pct >= 85) starsText.textContent = '⭐⭐⭐';
           else if (pct >= 55) starsText.textContent = '⭐⭐☆';
           else if (pct >= 25) starsText.textContent = '⭐☆☆';
           else starsText.textContent = '☆☆☆';
         }
+      };
 
-        if (pct >= 75 && !this.traceCompleted) {
+      // Evaluar completitud únicamente al soltar el dedo/ratón (pointerup)
+      const checkCompletionOnRelease = () => {
+        const covered = checkpoints.filter(c => c.covered).length;
+        const total = checkpoints.length;
+        const pct = Math.min(100, Math.round((covered / total) * 100));
+
+        const allStrokesVisited = pixelStrokes.every((_, sIdx) => {
+          const sCps = checkpoints.filter(c => c.strokeIdx === sIdx);
+          if (sCps.length === 0) return true;
+          return sCps.filter(c => c.covered).length >= Math.min(2, Math.max(1, sCps.length * 0.3));
+        });
+
+        if (((pct >= 80 && allStrokesVisited) || pct >= 85) && !this.traceCompleted) {
           this.traceCompleted = true;
           A.celebrate();
+          if (starsText) starsText.textContent = '⭐⭐⭐ ¡Completado!';
+          if (btnNext) btnNext.classList.remove('hidden');
           if (banner) {
-            banner.innerHTML = `
-              <div style="font-size: 36px; margin-bottom: 4px;">🎉 ⭐ 🌸</div>
-              <div>¡Increíble Amanda!</div>
-              <div style="font-size: 15px; margin-top: 4px; opacity: 0.95;">Trazaste la letra <strong>${char}</strong> con un <strong>${pct}%</strong> de precisión</div>
-            `;
+            if (bannerTitle) bannerTitle.textContent = '🎉 ¡Increíble Amanda! ⭐⭐⭐';
+            if (bannerSub) bannerSub.innerHTML = `Trazaste la letra <strong>${char}</strong> con un <strong>${pct}%</strong> de acierto`;
             banner.classList.remove('hidden');
           }
-          if (btnNext) btnNext.classList.remove('hidden');
           this.speak(`¡Excelente Amanda! Trazaste la letra ${char}`);
         }
       };
@@ -1751,7 +2239,7 @@
         }
 
         lastPos = p;
-        updateProgress();
+        updateProgressPillOnly();
       };
 
       const stop = () => {
@@ -1759,7 +2247,8 @@
           drawing = false;
           lastPos = null;
           A.sparkleChime();
-          updateProgress();
+          updateProgressPillOnly();
+          checkCompletionOnRelease();
         }
       };
 
@@ -1840,4 +2329,5 @@
 
   window.Cinnamo = window.Cinnamo || {};
   window.Cinnamo.writingGame = new WritingWorkshopGame();
+  window.Cinnamo.writing = window.Cinnamo.writingGame;
 })();
