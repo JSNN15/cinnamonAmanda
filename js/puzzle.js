@@ -685,6 +685,26 @@
         this.render();
       });
     }
+
+    toggleGhost() {
+      A.unlock();
+      A.bubblePop(1);
+      this.showGhostGuide = !this.showGhostGuide;
+      this.render();
+    }
+
+    toggleEye() {
+      this.toggleGhost();
+    }
+
+    nextCharacter() {
+      A.unlock();
+      A.bubblePop(1);
+      const nextIdx = (this.currentCharIdx + 1) % PUZZLE_CHARACTERS.length;
+      this.loadPuzzle(nextIdx, this.pieceCountMode);
+      this.render();
+      this.speak(PUZZLE_CHARACTERS[nextIdx].voiceIntro);
+    }
   }
 
   window.Cinnamo = window.Cinnamo || {};

@@ -115,6 +115,19 @@
       this.cards = deck;
 
       this.render();
+
+      if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
+        window.Cinnamo.controllerBridge.broadcastGameContext({
+          screen: 'memory',
+          cardsCount: this.difficulty || 8,
+          matchedPairs: this.matchedPairs,
+          totalPairs: this.difficulty / 2
+        });
+      }
+    }
+
+    flipCard(index) {
+      this.handleCardClick(index);
     }
 
     render() {

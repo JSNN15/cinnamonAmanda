@@ -102,10 +102,19 @@
       }
 
       const peerId = `cinna-host-${this.roomCode.toLowerCase()}`;
+      const peerConfig = {
+        debug: 0,
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' }
+          ]
+        }
+      };
+
       try {
-        this.peer = new Peer(peerId, {
-          debug: 0
-        });
+        this.peer = new Peer(peerId, peerConfig);
 
         this.peer.on('open', (id) => {
           console.log('🎮 Servidor de Mando iniciado con ID:', id);
@@ -125,12 +134,27 @@
           }
 
           conn.on('open', () => {
-            conn.send({ type: 'welcome', room: this.roomCode });
-            const ctx = this.lastContext || { screen: window.Cinnamo?.hub?.currentScreen || 'hub' };
-            try { conn.send({ type: 'context', ...ctx }); } catch (_) {}
+            try {
+              conn.send({ type: 'welcome', room: this.roomCode });
+              const ctx = this.lastContext || { screen: window.Cinnamo?.hub?.currentScreen || 'hub' };
+              conn.send({ type: 'context', ...ctx });
+            } catch (_) {}
           });
 
           conn.on('data', (data) => {
+            if (!data) return;
+            if (data.type === 'ping') {
+              try { conn.send({ type: 'pong' }); } catch (_) {}
+              return;
+            }
+            if (data.type === 'hello') {
+              try {
+                conn.send({ type: 'welcome', room: this.roomCode });
+                const ctx = this.lastContext || { screen: window.Cinnamo?.hub?.currentScreen || 'hub' };
+                conn.send({ type: 'context', ...ctx });
+              } catch (_) {}
+              return;
+            }
             this.handleRemoteData(data);
           });
 
@@ -155,7 +179,7 @@
       }
     }
 
-    /* ---------- 3. TRADUCCIÓN DE ENTRADA REMOTA HACIA LOS JUEGOS ---------- */
+    /* ---------- 3. TRADUCCIÓN DE ENTRADA REMOTA HACIA TODOS LOS JUEGOS ---------- */
     handleRemoteData(data) {
       if (!data) return;
 
@@ -178,6 +202,80 @@
         if (window.Cinnamo?.platformerGame?.nextHero) {
           window.Cinnamo.platformerGame.nextHero();
         }
+        return;
+      }
+
+      // Volteo de carta en Memorice desde el celular
+      if (data.type === 'flipCard') {
+        if (window.Cinnamo?.memoryGame?.flipCard) {
+          window.Cinnamo.memoryGame.flipCard(data.index);
+        }
+        return;
+      }
+
+      // Reinicio de Memorice
+      if (data.type === 'memoryNewGame') {
+        if (window.Cinnamo?.memoryGame?.startNewGame) {
+          window.Cinnamo.memoryGame.startNewGame(window.Cinnamo.memoryGame.difficulty || 8);
+        }
+        return;
+      }
+
+      // Acciones de Rompecabezas
+      if (data.type === 'puzzleHint') {
+        if (window.Cinnamo?.puzzleGame?.toggleGhost) {
+          window.Cinnamo.puzzleGame.toggleGhost();
+        } else {
+          const eyeBtn = document.getElementById('btnToggleGhost') || document.getElementById('btnToggleEye');
+          if (eyeBtn) eyeBtn.click();
+        }
+        return;
+      }
+      if (data.type === 'puzzleNext') {
+        if (window.Cinnamo?.puzzleGame?.nextCharacter) {
+          window.Cinnamo.puzzleGame.nextCharacter();
+        } else {
+          const nextBtn = document.getElementById('btnNextPuzzleModal') || document.getElementById('btnNextCharacter');
+          if (nextBtn) nextBtn.click();
+        }
+        return;
+      }
+
+      // Acciones de Taller de Dibujo
+      if (data.type === 'colorPick') {
+        const chip = document.querySelector(`.swatch-btn[data-color="${data.color}"]`) || 
+                     document.querySelector(`.palette-chip[data-color="${data.color}"]`);
+        if (chip) chip.click();
+        else if (window.Cinnamo?.coloringGame) window.Cinnamo.coloringGame.selectedColor = data.color;
+        return;
+      }
+      if (data.type === 'colorNextSheet') {
+        const active = document.querySelector('.sheet-tab-btn.active');
+        const next = active ? (active.nextElementSibling || document.querySelector('.sheet-tab-btn')) : null;
+        if (next) next.click();
+        return;
+      }
+      if (data.type === 'colorClear') {
+        const clr = document.getElementById('btnClearSheet') || 
+                    document.querySelector('.tool-btn[data-action="clear"]');
+        if (clr) clr.click();
+        return;
+      }
+
+      // Acciones de Palabras Mágicas
+      if (data.type === 'writingNext') {
+        const nxt = document.getElementById('btnNextTraceLetter') || 
+                    document.getElementById('btnNextWordModal') || 
+                    document.getElementById('btnNextSentenceModal') || 
+                    document.querySelector('.btn-w-next');
+        if (nxt) nxt.click();
+        return;
+      }
+      if (data.type === 'writingClear') {
+        const clr = document.getElementById('btnClearTrace') || 
+                    document.getElementById('btnClearFree') || 
+                    document.getElementById('btnClearCanvas');
+        if (clr) clr.click();
         return;
       }
 
