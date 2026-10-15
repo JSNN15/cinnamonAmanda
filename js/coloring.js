@@ -147,6 +147,16 @@
       `;
 
       this.bindEvents();
+
+      if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
+        window.Cinnamo.controllerBridge.broadcastGameContext({
+          screen: 'coloring',
+          sheetId: this.currentSheet.id,
+          sheetTitle: this.currentSheet.title,
+          selectedColor: this.selectedColor,
+          currentTool: this.currentTool
+        });
+      }
     }
 
     bindEvents() {

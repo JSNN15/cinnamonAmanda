@@ -253,6 +253,11 @@
           window.Cinnamo.puzzleGame.init(puzzleMount);
         }
       }
+
+      // Reconfirmar sincronización de contexto con el mando tras montar el juego
+      if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
+        window.Cinnamo.controllerBridge.broadcastGameContext({ screen: gameKey });
+      }
     }
   }
 

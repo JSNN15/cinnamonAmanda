@@ -307,6 +307,15 @@
 
       this.bindEvents();
       this.setupPuzzleDragAndDrop(cols, rows, slotW, slotH, char.imgSrc);
+
+      if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
+        window.Cinnamo.controllerBridge.broadcastGameContext({
+          screen: 'puzzle',
+          charName: char.name,
+          placedCount: Object.keys(this.placedPieces).length,
+          totalPieces
+        });
+      }
     }
 
     renderBoardSlots(cols, rows, slotW, slotH, imgSrc) {
@@ -704,6 +713,21 @@
       this.loadPuzzle(nextIdx, this.pieceCountMode);
       this.render();
       this.speak(PUZZLE_CHARACTERS[nextIdx].voiceIntro);
+    }
+
+    placeNextPiece() {
+      const nextPiece = this.trayPieces.find(p => !this.placedPieces[p.id]);
+      if (nextPiece) {
+        A.unlock();
+        this.placePieceSuccess(nextPiece.id);
+      }
+    }
+
+    resetPuzzle() {
+      A.unlock();
+      A.bubblePop(1);
+      this.loadPuzzle(this.currentCharIdx, this.pieceCountMode);
+      this.render();
     }
   }
 

@@ -965,6 +965,17 @@
       } else if (this.currentMode === 'free') {
         this.setupFreeCanvas();
       }
+
+      if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
+        const list = this.getFilteredWords();
+        const w = list[this.currentWordIdx] || WORDS[0];
+        window.Cinnamo.controllerBridge.broadcastGameContext({
+          screen: 'writing',
+          mode: this.currentMode,
+          char: this.getCurrentTraceChar ? this.getCurrentTraceChar() : 'A',
+          word: w.word
+        });
+      }
     }
 
     renderModeHeader() {
@@ -2410,6 +2421,41 @@
 
       canvas.addEventListener('pointerup', stop);
       canvas.addEventListener('pointercancel', stop);
+    }
+
+    nextLetter() {
+      const btnNext = this.container ? (this.container.querySelector('#btnNextTraceLetter') || this.container.querySelector('.btn-w-next')) : null;
+      if (btnNext && !btnNext.classList.contains('hidden')) {
+        btnNext.click();
+      } else {
+        const list = (typeof WORDS_TIERS !== 'undefined' && WORDS_TIERS[this.ageTier]) ? WORDS_TIERS[this.ageTier] : [];
+        if (list.length) {
+          const nextIdx = (this.currentWordIdx + 1) % list.length;
+          this.selectWord(nextIdx);
+        }
+      }
+    }
+
+    prevLetter() {
+      const list = (typeof WORDS_TIERS !== 'undefined' && WORDS_TIERS[this.ageTier]) ? WORDS_TIERS[this.ageTier] : [];
+      if (list.length) {
+        const prevIdx = (this.currentWordIdx - 1 + list.length) % list.length;
+        this.selectWord(prevIdx);
+      }
+    }
+
+    speakCurrent() {
+      const btnHear = this.container ? (this.container.querySelector('#btnHearWord') || this.container.querySelector('#btnHearSentence')) : null;
+      if (btnHear) {
+        btnHear.click();
+      } else if (this.customTraceChar) {
+        this.speak(`Letra ${this.customTraceChar}`);
+      }
+    }
+
+    clearTrace() {
+      const btnClr = this.container ? (this.container.querySelector('#btnClearTrace') || this.container.querySelector('#btnClearFree')) : null;
+      if (btnClr) btnClr.click();
     }
   }
 

@@ -350,16 +350,65 @@
 
     /* Paleta de colores para Dibujo */
     .color-chips-row {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 10px; width: 100%; max-width: 360px;
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 8px; width: 100%; max-width: 360px;
     }
     .color-chip-btn {
-      height: 52px; border-radius: 16px; border: 3.5px solid #ffffff;
-      box-shadow: 0 4px 0 rgba(0,0,0,0.2); cursor: pointer;
+      height: 48px; border-radius: 14px; border: 3px solid #ffffff;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.18); cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px; transition: transform 0.08s;
+      font-size: 18px; transition: transform 0.08s;
     }
-    .color-chip-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+    .color-chip-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.18); }
+
+    .color-tools-row {
+      display: flex; gap: 8px; justify-content: center; width: 100%; max-width: 360px; margin-top: 4px;
+    }
+    .btn-color-tool {
+      flex: 1; height: 42px; border-radius: 14px; border: 2.5px solid #ffffff;
+      background: #ffffff; color: #475569; font-size: 13px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      cursor: pointer; box-shadow: 0 3px 0 #cbd5e1; transition: transform 0.08s;
+    }
+    .btn-color-tool:active { transform: translateY(2px); box-shadow: 0 1px 0 #cbd5e1; }
+    .btn-color-tool.active {
+      background: #fdf2f8; border-color: #ec4899; color: #db2777; box-shadow: 0 3px 0 #be185d;
+    }
+    .panel-btn-row {
+      display: flex; gap: 8px; width: 100%;
+    }
+    .panel-btn-row .btn-panel-action {
+      flex: 1; height: 50px; font-size: 15px;
+    }
+
+    /* Modal de Código de Sala */
+    .room-modal-backdrop {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(6px); z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .room-modal-card {
+      background: #ffffff; border-radius: 28px; border: 4px solid #bae6fd;
+      padding: 24px 20px; width: 100%; max-width: 340px; text-align: center;
+      box-shadow: 0 16px 36px rgba(14, 165, 233, 0.25);
+    }
+    .room-modal-title { font-size: 20px; font-weight: 800; color: #0284c7; margin-bottom: 6px; }
+    .room-modal-desc { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 16px; }
+    .room-modal-input {
+      width: 100%; height: 56px; border-radius: 18px; border: 3px solid #38bdf8;
+      font-size: 28px; font-weight: 900; text-align: center; letter-spacing: 6px;
+      color: #0284c7; text-transform: uppercase; margin-bottom: 16px;
+      outline: none; font-family: inherit;
+    }
+    .room-modal-input:focus { border-color: #ec4899; }
+    .btn-room-modal-connect {
+      width: 100%; height: 52px; border-radius: 22px; border: 3px solid #ffffff;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      color: #ffffff; font-size: 17px; font-weight: 800; cursor: pointer;
+      box-shadow: 0 4px 0 #0369a1;
+    }
+    .btn-room-modal-connect:active { transform: translateY(2px); box-shadow: 0 2px 0 #0369a1; }
 
     /* Footer */
     .controller-footer {
@@ -456,34 +505,66 @@
 
       <!-- 5. MODO PUZZLE DE SANRIO -->
       <div id="layoutPuzzle" class="layout-panel-actions hidden">
-        <div class="panel-companion-header">🧩 Controles de Rompecabezas en Pantalla</div>
+        <div class="panel-companion-header">🧩 Rompecabezas Sanrio</div>
         <div class="panel-buttons-col">
-          <button class="btn-panel-action btn-panel-amber" id="btnRemotePuzzleHint">👁️ PISTA MÁGICA (Silueta)</button>
-          <button class="btn-panel-action btn-panel-primary" id="btnRemotePuzzleNext">🧩 Siguiente Rompecabezas</button>
+          <button class="btn-panel-action btn-panel-primary" id="btnRemotePuzzlePlace" style="height: 64px; font-size: 19px;">
+            ✨ ENCAJAR PIEZA ✨
+          </button>
+          <div class="panel-btn-row">
+            <button class="btn-panel-action btn-panel-amber" id="btnRemotePuzzleHint">👁️ Pista Silueta</button>
+            <button class="btn-panel-action btn-panel-secondary" id="btnRemotePuzzleNext">🧩 Siguiente</button>
+          </div>
+          <button class="btn-panel-action" id="btnRemotePuzzleReset" style="background: #94a3b8; box-shadow: 0 4px 0 #64748b; height: 42px; font-size: 14px;">
+            🔄 Reiniciar Piezas
+          </button>
         </div>
       </div>
 
       <!-- 6. MODO TALLER DE DIBUJO Y PINTURA -->
       <div id="layoutColoring" class="layout-panel-actions hidden">
-        <div class="panel-companion-header">🎨 Elige un color para pintar en la tele:</div>
+        <div class="panel-companion-header">🎨 Elige un color y herramienta para pintar:</div>
         <div class="color-chips-row" id="coloringChipsRow">
-          <!-- Chips de colores -->
+          <!-- Chips de 10 colores oficiales Sanrio -->
         </div>
-        <div class="panel-buttons-col" style="margin-top: 6px;">
-          <button class="btn-panel-action btn-panel-secondary" id="btnRemoteColorNext">🖼️ Siguiente Lámina</button>
-          <button class="btn-panel-action btn-panel-amber" id="btnRemoteColorClear" style="height: 48px; font-size: 15px;">✨ Limpiar Dibujo</button>
+        <div class="color-tools-row">
+          <button class="btn-color-tool active" data-tool="crayon">🖍️ Pincel</button>
+          <button class="btn-color-tool" data-tool="eraser">🧽 Borrador</button>
+          <button class="btn-color-tool" data-tool="stamp">⭐ Sellitos</button>
+          <button class="btn-color-tool" id="btnRemoteColorUndo">↩️ Deshacer</button>
+        </div>
+        <div class="panel-buttons-col" style="margin-top: 4px;">
+          <div class="panel-btn-row">
+            <button class="btn-panel-action btn-panel-secondary" id="btnRemoteColorNext">🖼️ Siguiente Lámina</button>
+            <button class="btn-panel-action btn-panel-amber" id="btnRemoteColorClear">📄 Hoja Nueva</button>
+          </div>
         </div>
       </div>
 
       <!-- 7. MODO PALABRAS MÁGICAS -->
       <div id="layoutWriting" class="layout-panel-actions hidden">
-        <div class="panel-companion-header">✏️ Taller de Caligrafía y Palabras</div>
+        <div class="panel-companion-header">✏️ Taller de Caligrafía y Lectura</div>
         <div class="panel-buttons-col">
-          <button class="btn-panel-action btn-panel-primary" id="btnRemoteWritingNext">🌸 Siguiente Letra / Palabra</button>
-          <button class="btn-panel-action btn-panel-amber" id="btnRemoteWritingClear">✨ Limpiar Pizarra</button>
+          <div class="panel-btn-row">
+            <button class="btn-panel-action btn-panel-secondary" id="btnRemoteWritingPrev">◀ Anterior</button>
+            <button class="btn-panel-action btn-panel-amber" id="btnRemoteWritingSpeak">🔊 Escuchar</button>
+            <button class="btn-panel-action btn-panel-primary" id="btnRemoteWritingNext">Siguiente ▶</button>
+          </div>
+          <button class="btn-panel-action" id="btnRemoteWritingClear" style="background: #f43f5e; box-shadow: 0 4px 0 #be123c; height: 46px; font-size: 15px;">
+            ✨ Limpiar Pizarra
+          </button>
         </div>
       </div>
     </main>
+
+    <!-- Modal para ingresar o cambiar Sala -->
+    <div id="roomCodeModal" class="room-modal-backdrop hidden">
+      <div class="room-modal-card">
+        <div class="room-modal-title">🌸 Conectar con la Tele</div>
+        <div class="room-modal-desc">Ingresa el código de 4 letras que aparece en tu pantalla o TV:</div>
+        <input type="text" id="roomCodeInput" class="room-modal-input" maxlength="4" placeholder="SALA" autofocus />
+        <button id="btnRoomModalConnect" class="btn-room-modal-connect">✨ ¡CONECTAR MANDO! ✨</button>
+      </div>
+    </div>
 
     <!-- Footer -->
     <footer class="controller-footer">
@@ -694,21 +775,61 @@
         connectPeer();
       });
 
-      // Permitir cambiar código de sala al tocar el botón de sala
+      // -------------------------------------------------------------
+      // GESTIÓN DEL CÓDIGO DE SALA (Modal Táctil)
+      // -------------------------------------------------------------
       const btnRoomBadge = document.getElementById('btnRoomBadge');
+      const roomModal = document.getElementById('roomCodeModal');
+      const roomInput = document.getElementById('roomCodeInput');
+      const btnRoomConnect = document.getElementById('btnRoomModalConnect');
+
+      function openRoomModal() {
+        if (!roomModal) return;
+        if (roomInput) roomInput.value = roomCode;
+        roomModal.classList.remove('hidden');
+        if (roomInput) setTimeout(() => roomInput.focus(), 150);
+      }
+
+      function closeRoomModal() {
+        if (!roomModal) return;
+        roomModal.classList.add('hidden');
+      }
+
       if (btnRoomBadge) {
         btnRoomBadge.addEventListener('click', () => {
-          const newCode = prompt('Ingresa el Código de Sala de 4 letras que aparece en tu pantalla:', roomCode);
-          if (newCode) {
-            const clean = newCode.toUpperCase().replace(/[^A-Z0-9]/g, '');
-            if (clean && clean !== roomCode) {
-              roomCode = clean;
-              localStorage.setItem('cinna_last_room', roomCode);
-              if (headerRoomText) headerRoomText.textContent = roomCode;
-              connectPeer();
-            }
+          playHapticBeep(520);
+          openRoomModal();
+        });
+      }
+
+      if (btnRoomConnect && roomInput) {
+        btnRoomConnect.addEventListener('click', () => {
+          const val = roomInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          if (val && val.length >= 2) {
+            playHapticBeep(640);
+            roomCode = val;
+            window.roomCode = val;
+            localStorage.setItem('cinna_last_room', val);
+            if (headerRoomText) headerRoomText.textContent = val;
+            closeRoomModal();
+            connectPeer();
           }
         });
+        roomInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') btnRoomConnect.click();
+        });
+      }
+
+      if (roomModal) {
+        roomModal.addEventListener('click', (e) => {
+          if (e.target === roomModal) closeRoomModal();
+        });
+      }
+
+      // Si la URL no contiene ?room ni #, y no había sala previa guardada, sugerir modal
+      const initialParams = new URLSearchParams(window.location.search);
+      if (!initialParams.get('room') && !window.location.hash && !localStorage.getItem('cinna_last_room')) {
+        setTimeout(openRoomModal, 400);
       }
 
       // -------------------------------------------------------------
@@ -729,16 +850,18 @@
       const memoryRemoteGrid = document.getElementById('memoryRemoteGrid');
       const coloringChipsRow = document.getElementById('coloringChipsRow');
 
-      // Colores pastel para el Taller de Dibujo
+      // Colores pastel OFICIALES para el Taller de Dibujo (idénticos a coloring.js)
       const COLOR_PALETTE = [
-        { name: 'Rosa', color: '#ff70a6', emoji: '🌸' },
-        { name: 'Celeste', color: '#38bdf8', emoji: '🪽' },
-        { name: 'Amarillo', color: '#facc15', emoji: '⭐' },
-        { name: 'Menta', color: '#4ade80', emoji: '🍀' },
-        { name: 'Lavanda', color: '#c084fc', emoji: '💜' },
-        { name: 'Naranja', color: '#fb923c', emoji: '🍊' },
-        { name: 'Café', color: '#b45309', emoji: '🍩' },
-        { name: 'Blanco', color: '#ffffff', emoji: '🤍' }
+        { name: 'Celeste', color: '#8ecae6', emoji: '🪽' },
+        { name: 'Rosa', color: '#ffb3d1', emoji: '🌸' },
+        { name: 'Amarillo', color: '#ffe680', emoji: '⭐' },
+        { name: 'Moka', color: '#a67c52', emoji: '☕' },
+        { name: 'Lila', color: '#d8b4fe', emoji: '💜' },
+        { name: 'Menta', color: '#a7f3d0', emoji: '🍀' },
+        { name: 'Caramelo', color: '#f59e0b', emoji: '🍮' },
+        { name: 'Blanco', color: '#ffffff', emoji: '🤍' },
+        { name: 'Fresa', color: '#fb7185', emoji: '🍓' },
+        { name: 'Chocolate', color: '#5c3d2e', emoji: '🍩' }
       ];
 
       function handleGameContext(ctx) {
@@ -937,6 +1060,13 @@
       }
 
       // Botones de Rompecabezas
+      const btnPuzzlePlace = document.getElementById('btnRemotePuzzlePlace');
+      if (btnPuzzlePlace) {
+        btnPuzzlePlace.addEventListener('click', () => {
+          playHapticBeep(680);
+          sendData({ type: 'puzzlePlaceNext' });
+        });
+      }
       const btnPuzzleHint = document.getElementById('btnRemotePuzzleHint');
       if (btnPuzzleHint) {
         btnPuzzleHint.addEventListener('click', () => {
@@ -951,8 +1081,30 @@
           sendData({ type: 'puzzleNext' });
         });
       }
+      const btnPuzzleReset = document.getElementById('btnRemotePuzzleReset');
+      if (btnPuzzleReset) {
+        btnPuzzleReset.addEventListener('click', () => {
+          playHapticBeep(450);
+          sendData({ type: 'puzzleReset' });
+        });
+      }
 
       // Botones de Dibujo
+      document.querySelectorAll('.btn-color-tool[data-tool]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(540);
+          document.querySelectorAll('.btn-color-tool[data-tool]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          sendData({ type: 'colorTool', tool: btn.dataset.tool });
+        });
+      });
+      const btnColorUndo = document.getElementById('btnRemoteColorUndo');
+      if (btnColorUndo) {
+        btnColorUndo.addEventListener('click', () => {
+          playHapticBeep(500);
+          sendData({ type: 'colorUndo' });
+        });
+      }
       const btnColorNext = document.getElementById('btnRemoteColorNext');
       if (btnColorNext) {
         btnColorNext.addEventListener('click', () => {
@@ -969,6 +1121,20 @@
       }
 
       // Botones de Escritura
+      const btnWritingPrev = document.getElementById('btnRemoteWritingPrev');
+      if (btnWritingPrev) {
+        btnWritingPrev.addEventListener('click', () => {
+          playHapticBeep(520);
+          sendData({ type: 'writingPrev' });
+        });
+      }
+      const btnWritingSpeak = document.getElementById('btnRemoteWritingSpeak');
+      if (btnWritingSpeak) {
+        btnWritingSpeak.addEventListener('click', () => {
+          playHapticBeep(620);
+          sendData({ type: 'writingSpeak' });
+        });
+      }
       const btnWritingNext = document.getElementById('btnRemoteWritingNext');
       if (btnWritingNext) {
         btnWritingNext.addEventListener('click', () => {

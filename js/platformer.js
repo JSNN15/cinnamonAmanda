@@ -514,6 +514,18 @@
       if (A) A.celebrate();
     }
 
+    treat() {
+      if (A) {
+        A.unlock();
+        A.sparkleChime();
+      }
+      this.burstParticles(this.p.x + this.p.w / 2, this.p.y + this.p.h / 2, 14, ['#ff9ebb', '#fde047', '#38bdf8', '#ffffff']);
+      if (this.p.grounded) {
+        this.p.vy = -280;
+        this.p.grounded = false;
+      }
+    }
+
     setupCanvas() {
       this.canvas = this.container.querySelector('#platformerCanvas');
       this.ctx = this.canvas.getContext('2d');

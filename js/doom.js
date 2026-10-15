@@ -375,7 +375,7 @@
     }
 
     shootTreat() {
-      if (this.recoil > 0.4) return;
+      if (!this.running || this.recoil > 0.4) return;
       A.whoosh(true);
       this.recoil = 1.0;
 
@@ -391,6 +391,25 @@
         treatName: this.selectedHero.treatName,
         life: 2.5
       });
+    }
+
+    throwTreat() {
+      this.shootTreat();
+    }
+
+    nextHero() {
+      const idx = PLAYABLE_CHARACTERS.findIndex(c => c.id === this.selectedHero.id);
+      const nextIdx = (idx + 1) % PLAYABLE_CHARACTERS.length;
+      this.selectedHero = PLAYABLE_CHARACTERS[nextIdx];
+      A.unlock();
+      A.celebrate();
+      if (this.inCharSelect) {
+        this.renderCharSelect();
+        return;
+      }
+      const heroTag = this.container ? this.container.querySelector('.cinna-top-hud span strong') : null;
+      if (heroTag) heroTag.textContent = this.selectedHero.name;
+      this.updateHUD();
     }
 
     startLoop() {
@@ -412,7 +431,15 @@
 
     stop() {
       this.running = false;
+      this.recoil = 0;
+      this.projectiles = [];
       if (this.animId) cancelAnimationFrame(this.animId);
+      if (this.keys) {
+        this.keys.forward = false;
+        this.keys.backward = false;
+        this.keys.left = false;
+        this.keys.right = false;
+      }
     }
 
     // Comprobación de colisión en mapa

@@ -26,7 +26,7 @@
     }
 
     getOrGenerateRoomCode() {
-      let code = sessionStorage.getItem('cinna_room_code');
+      let code = localStorage.getItem('cinna_room_code') || sessionStorage.getItem('cinna_room_code');
       if (!code) {
         // Generar código simpático de 4 letras fáciles
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -34,6 +34,7 @@
         for (let i = 0; i < 4; i++) {
           code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
+        localStorage.setItem('cinna_room_code', code);
         sessionStorage.setItem('cinna_room_code', code);
       }
       return code;
@@ -126,6 +127,7 @@
           this.connections.push(conn);
           this.connectedCount = this.connections.length;
           this.notifyStatus();
+          this.showToast('📱 ¡Mando celular conectado! 🌸');
 
           // Celebración sonora suave en PC
           if (A()) {
@@ -167,6 +169,7 @@
 
         this.peer.on('error', (err) => {
           if (err.type === 'unavailable-id') {
+            localStorage.removeItem('cinna_room_code');
             sessionStorage.removeItem('cinna_room_code');
             this.roomCode = this.getOrGenerateRoomCode();
             setTimeout(() => this.initPeerHost(), 1000);
@@ -197,10 +200,13 @@
         return;
       }
 
-      // Cambio rápido de personaje en Super Run
+      // Cambio rápido de personaje en Super Run o Repartidor 3D
       if (data.type === 'switchHero') {
-        if (window.Cinnamo?.platformerGame?.nextHero) {
+        const screen = window.Cinnamo?.hub?.currentScreen;
+        if (screen === 'platformer' && window.Cinnamo?.platformerGame?.nextHero) {
           window.Cinnamo.platformerGame.nextHero();
+        } else if (screen === 'doom' && window.Cinnamo?.doomGame?.nextHero) {
+          window.Cinnamo.doomGame.nextHero();
         }
         return;
       }
@@ -209,6 +215,8 @@
       if (data.type === 'flipCard') {
         if (window.Cinnamo?.memoryGame?.flipCard) {
           window.Cinnamo.memoryGame.flipCard(data.index);
+        } else if (window.Cinnamo?.memoryGame?.handleCardClick) {
+          window.Cinnamo.memoryGame.handleCardClick(data.index);
         }
         return;
       }
@@ -222,6 +230,18 @@
       }
 
       // Acciones de Rompecabezas
+      if (data.type === 'puzzlePlaceNext') {
+        if (window.Cinnamo?.puzzleGame?.placeNextPiece) {
+          window.Cinnamo.puzzleGame.placeNextPiece();
+        }
+        return;
+      }
+      if (data.type === 'puzzleReset') {
+        if (window.Cinnamo?.puzzleGame?.resetPuzzle) {
+          window.Cinnamo.puzzleGame.resetPuzzle();
+        }
+        return;
+      }
       if (data.type === 'puzzleHint') {
         if (window.Cinnamo?.puzzleGame?.toggleGhost) {
           window.Cinnamo.puzzleGame.toggleGhost();
@@ -249,6 +269,16 @@
         else if (window.Cinnamo?.coloringGame) window.Cinnamo.coloringGame.selectedColor = data.color;
         return;
       }
+      if (data.type === 'colorTool') {
+        const tBtn = document.querySelector(`.tool-btn[data-tool="${data.tool}"]`);
+        if (tBtn) tBtn.click();
+        return;
+      }
+      if (data.type === 'colorUndo') {
+        const undoBtn = document.getElementById('btnUndoArt');
+        if (undoBtn) undoBtn.click();
+        return;
+      }
       if (data.type === 'colorNextSheet') {
         const active = document.querySelector('.sheet-tab-btn.active');
         const next = active ? (active.nextElementSibling || document.querySelector('.sheet-tab-btn')) : null;
@@ -264,18 +294,38 @@
 
       // Acciones de Palabras Mágicas
       if (data.type === 'writingNext') {
-        const nxt = document.getElementById('btnNextTraceLetter') || 
-                    document.getElementById('btnNextWordModal') || 
-                    document.getElementById('btnNextSentenceModal') || 
-                    document.querySelector('.btn-w-next');
-        if (nxt) nxt.click();
+        if (window.Cinnamo?.writingGame?.nextLetter) {
+          window.Cinnamo.writingGame.nextLetter();
+        } else {
+          const nxt = document.getElementById('btnNextTraceLetter') || 
+                      document.getElementById('btnNextWordModal') || 
+                      document.getElementById('btnNextSentenceModal') || 
+                      document.querySelector('.btn-w-next');
+          if (nxt) nxt.click();
+        }
+        return;
+      }
+      if (data.type === 'writingPrev') {
+        if (window.Cinnamo?.writingGame?.prevLetter) {
+          window.Cinnamo.writingGame.prevLetter();
+        }
+        return;
+      }
+      if (data.type === 'writingSpeak') {
+        if (window.Cinnamo?.writingGame?.speakCurrent) {
+          window.Cinnamo.writingGame.speakCurrent();
+        }
         return;
       }
       if (data.type === 'writingClear') {
-        const clr = document.getElementById('btnClearTrace') || 
-                    document.getElementById('btnClearFree') || 
-                    document.getElementById('btnClearCanvas');
-        if (clr) clr.click();
+        if (window.Cinnamo?.writingGame?.clearTrace) {
+          window.Cinnamo.writingGame.clearTrace();
+        } else {
+          const clr = document.getElementById('btnClearTrace') || 
+                      document.getElementById('btnClearFree') || 
+                      document.getElementById('btnClearCanvas');
+          if (clr) clr.click();
+        }
         return;
       }
 
@@ -305,81 +355,115 @@
     }
 
     handleRemoteJoystick(x, y, angle, dist) {
+      const screen = window.Cinnamo?.hub?.currentScreen || 'platformer';
+
       // 1. Super Cinnamoroll Run (Diagonales fluidas: correr y saltar/planear)
-      const plat = window.Cinnamo?.platformerGame;
-      if (plat && plat.keys) {
-        plat.keys.left = x < -0.26;
-        plat.keys.right = x > 0.26;
-        const wantsJump = y < -0.32;
-        if (wantsJump && !plat.keys.jump) {
-          plat.keys.jump = true;
-          if (plat.jump) plat.jump();
-        } else if (!wantsJump && plat.keys.jump) {
-          plat.keys.jump = false;
-          if (plat.p && plat.p.vy < -180) {
-            plat.p.vy *= 0.65;
+      if (screen === 'platformer') {
+        const plat = window.Cinnamo?.platformerGame;
+        if (plat && plat.keys) {
+          plat.keys.left = x < -0.24;
+          plat.keys.right = x > 0.24;
+          const wantsJump = y < -0.65;
+          if (wantsJump && !plat.keys.jump) {
+            plat.keys.jump = true;
+            if (plat.jump) plat.jump();
+          } else if (!wantsJump && plat.keys.jump && !plat._jumpBtnHeld) {
+            plat.keys.jump = false;
+            if (plat.p && plat.p.vy < -180) {
+              plat.p.vy *= 0.65;
+            }
           }
         }
+        return;
       }
 
       // 2. Repartidor 3D (Caminar y rotar en simultáneo)
-      const doom = window.Cinnamo?.doomGame;
-      if (doom && doom.keys) {
-        doom.keys.forward = y < -0.26;
-        doom.keys.backward = y > 0.26;
-        doom.keys.left = x < -0.26;
-        doom.keys.right = x > 0.26;
+      if (screen === 'doom') {
+        const doom = window.Cinnamo?.doomGame;
+        if (doom && doom.keys) {
+          doom.keys.forward = y < -0.24;
+          doom.keys.backward = y > 0.24;
+          doom.keys.left = x < -0.24;
+          doom.keys.right = x > 0.24;
+        }
+        return;
       }
 
-      // 3. A Volar (Vuelo 360° suave)
-      const input = IN();
-      if (input) {
-        if (y < -0.26) input.feed({ action: 'up' });
-        else if (y > 0.26) input.feed({ action: 'down' });
-        else input.feed({ action: null });
+      // 3. A Volar (Vuelo 360° analógico suave sin saturar el audio)
+      if (screen === 'flight') {
+        const input = IN();
+        if (input && Math.abs(y) > 0.15) {
+          input.setTarget('gamepad', Math.max(0.06, Math.min(0.94, 0.5 + y * 0.45)), 180);
+        }
+        return;
       }
     }
 
     handleRemoteInput(btn, pressed) {
+      const screen = window.Cinnamo?.hub?.currentScreen || 'platformer';
+
       // 1. Despachar a Super Cinnamoroll Run (platformer.js)
-      const plat = window.Cinnamo?.platformerGame;
-      if (plat && plat.keys) {
-        if (btn === 'left') plat.keys.left = pressed;
-        if (btn === 'right') plat.keys.right = pressed;
-        if (btn === 'jump' || btn === 'up') {
-          plat.keys.jump = pressed;
-          if (pressed && plat.jump) {
-            plat.jump();
-          } else if (!pressed && plat.p && plat.p.vy < -180) {
-            plat.p.vy *= 0.65;
+      if (screen === 'platformer') {
+        const plat = window.Cinnamo?.platformerGame;
+        if (plat && plat.keys) {
+          if (btn === 'left') plat.keys.left = pressed;
+          if (btn === 'right') plat.keys.right = pressed;
+          if (btn === 'jump' || btn === 'up') {
+            plat._jumpBtnHeld = pressed;
+            plat.keys.jump = pressed;
+            if (pressed && plat.jump) {
+              plat.jump();
+            } else if (!pressed && plat.p && plat.p.vy < -180) {
+              plat.p.vy *= 0.65;
+            }
+          }
+          if (btn === 'treat' && pressed) {
+            if (plat.treat) plat.treat();
           }
         }
+        return;
       }
 
       // 2. Despachar a Repartidor 3D (doom.js)
-      const doom = window.Cinnamo?.doomGame;
-      if (doom && doom.keys) {
-        if (btn === 'left') doom.keys.left = pressed;
-        if (btn === 'right') doom.keys.right = pressed;
-        if (btn === 'up') doom.keys.forward = pressed;
-        if (btn === 'down') doom.keys.backward = pressed;
-        if (btn === 'treat' && pressed) {
-          if (doom.throwTreat) doom.throwTreat();
+      if (screen === 'doom') {
+        const doom = window.Cinnamo?.doomGame;
+        if (doom) {
+          if (doom.inCharSelect) {
+            if (pressed && (btn === 'jump' || btn === 'treat')) {
+              doom.start3DGame();
+              return;
+            }
+          }
+          if (doom.keys) {
+            if (btn === 'left') doom.keys.left = pressed;
+            if (btn === 'right') doom.keys.right = pressed;
+            if (btn === 'up') doom.keys.forward = pressed;
+            if (btn === 'down') doom.keys.backward = pressed;
+            if ((btn === 'treat' || btn === 'jump') && pressed) {
+              if (doom.shootTreat) doom.shootTreat();
+              else if (doom.throwTreat) doom.throwTreat();
+            }
+          }
         }
-        if (btn === 'jump' && pressed) {
-          if (doom.throwTreat) doom.throwTreat();
-        }
+        return;
       }
 
       // 3. Despachar a A Volar (game.js)
-      const input = IN();
-      if (input) {
-        if (btn === 'up') input.feed({ action: pressed ? 'up' : null });
-        if (btn === 'down') input.feed({ action: pressed ? 'down' : null });
-        if ((btn === 'jump' || btn === 'spin') && pressed) input.feed({ action: 'spin' });
+      if (screen === 'flight') {
+        const input = IN();
+        if (input) {
+          if (btn === 'up' && pressed) input.feed({ action: 'up' });
+          if (btn === 'down' && pressed) input.feed({ action: 'down' });
+          if ((btn === 'jump' || btn === 'spin') && pressed) input.feed({ action: 'spin' });
+          if (btn === 'treat' && pressed) input.feed({ action: 'hello' });
+          if (pressed && window.Cinnamo?.game?.mode !== 'play') {
+            input.feed({ action: 'start' });
+          }
+        }
+        return;
       }
 
-      // 4. Despachar evento global de teclado sintético para compatibilidad universal
+      // 4. Despachar evento global de teclado sintético para menús u otros componentes
       const keyMap = {
         left: 'ArrowLeft',
         right: 'ArrowRight',
