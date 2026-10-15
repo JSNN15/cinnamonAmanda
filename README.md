@@ -91,9 +91,20 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 
 ---
 
-### 5. 🏃 Super Cinnamoroll Run (Gira Mundial de Sanrio por 5 Ciudades · v19)
-Completamente renovado con arte vectorial artesanal Canvas 2D de alta calidad, niveles de larga duración (hasta 9.200 px), cero emojis desprolijos y HUD interactivo con barra de viaje:
+### 5. 🏃 Super Cinnamoroll Run (Gira Mundial de Sanrio por 5 Ciudades · v20)
+Completamente renovado con arte vectorial artesanal Canvas 2D de alta calidad, niveles de larga duración (hasta 9.200 px), controles ultra-responsivos sin bloqueos y suelo continuo:
 
+* **Física y Salto 100% Responsivo (v20):**
+  * **Método Unificado `jump()` & `tryJump()`:** Respuesta instantánea en todas las vías de entrada: teclado (`Espacio`, `↑`, `W`), botón táctil en pantalla (`#btnPlatJump`), toque directo en el canvas, o control remoto desde el celular (`controller.html` vía `controller-bridge.js`).
+  * **Potencia de Salto Calibrada (520-550 px/s):** Impulso ágil, amplio y seguro para niñas de 5 años.
+  * **Doble Salto y Aleteo Mágico con Orejitas (`canDoubleJump`):** Si Amanda salta y presiona de nuevo en el aire, Cinnamoroll realiza un segundo aleteo suave con nube de polvo esponjoso y gorjeo tierno (*cheer*), permitiendo corregir caídas con total libertad y diversión.
+  * **Planeo de Orejitas con Gravedad Reducida (165-210 px/s²):** Mantener presionado el salto permite flotar suavemente por el cielo recolectando dulces aéreos con estela de chispitas.
+  * **Coyote Time Extendido (0.20s) y Jump Buffer (0.22s):** Perdona saltos pulsados una fracción de segundo antes de tocar el suelo o tras abandonar el borde de una plataforma.
+* **Eliminación Total de Bloqueos ("Cero Quedarse Pegado" · v20):**
+  * **Captura de Puntero Táctil (`setPointerCapture`):** Elimina el error donde el deslizamiento milimétrico del pulgar en pantallas táctiles disparaba `pointerleave` y frenaba el personaje en seco. El movimiento y salto se mantienen firmes hasta que el dedo realmente se levanta.
+  * **Suelo Continuo en las 5 Ciudades (Cero Pozos Mortales):** Todas las ciudades cuentan con una calzada o pradera continua a nivel del suelo (`y: 410-440`), mientras que las plataformas flotantes (sakura, muelles, teleféricos, pagodas y nubes) funcionan como entretenidas rutas aéreas opcionales accesibles con trampolines.
+  * **Rescate Anti-Bucle de Caídas:** Si ocurre un rescate por caída, Cinnamoroll se asienta sobre la plataforma segura con velocidad horizontal y vertical anuladas (`vx: 0, vy: 0, grounded: true`), eliminando cualquier bucle infinito de caídas.
+  * **Limpieza de Teclas en Pérdida de Foco:** Listeners en `window.blur` y `visibilitychange` previenen que el personaje siga corriendo solo si se cambia de pestaña o aplicación.
 * **5 Ciudades Emblemáticas con Arte Vectorial Detallado y Parallax Profundo:**
   * 🇨🇱 **Concepción (Chile · Nivel 1 · 5.800 px · 16 ítems):** Campus de la Universidad de Concepción con el icónico **Campanil UdeC** (reloj con manecillas, campanas de bronce, arcos belfry y cúpula de cobre), **Arco de Medicina** neoclásico con columnata, **Río Biobío** con el Puente Llacolén y bosques de **cerezos en flor (sakura)** con pétalos rosas flotando en la brisa.
   * 🏖️ **La Serena (Chile · Nivel 2 · 6.600 px · 20 ítems):** Atardecer dorado en la **Avenida del Mar**, el histórico **Faro Monumental colonial** (muros almenados de piedra, franjas rojas carmesí, balcón con barandilla y un haz de luz giratorio volumétrico), olas rompientes del **Océano Pacífico** con espuma animada, palmeras costeras chilenas, gaviotas planeando y dunas de arena dorada.

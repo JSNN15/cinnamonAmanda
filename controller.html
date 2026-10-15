@@ -702,18 +702,19 @@
         const btn = el.dataset.btn;
         const start = (e) => {
           e.preventDefault();
+          try { el.setPointerCapture(e.pointerId); } catch (_) {}
           el.classList.add('pressed');
           sendButton(btn, true);
         };
         const end = (e) => {
           e.preventDefault();
+          try { el.releasePointerCapture(e.pointerId); } catch (_) {}
           el.classList.remove('pressed');
           sendButton(btn, false);
         };
         el.addEventListener('pointerdown', start);
         el.addEventListener('pointerup', end);
         el.addEventListener('pointercancel', end);
-        el.addEventListener('pointerleave', end);
       });
     })();
   </script>

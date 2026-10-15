@@ -209,8 +209,11 @@
         if (wantsJump && !plat.keys.jump) {
           plat.keys.jump = true;
           if (plat.jump) plat.jump();
-        } else if (!wantsJump) {
+        } else if (!wantsJump && plat.keys.jump) {
           plat.keys.jump = false;
+          if (plat.p && plat.p.vy < -180) {
+            plat.p.vy *= 0.65;
+          }
         }
       }
 
@@ -238,9 +241,13 @@
       if (plat && plat.keys) {
         if (btn === 'left') plat.keys.left = pressed;
         if (btn === 'right') plat.keys.right = pressed;
-        if (btn === 'jump') {
+        if (btn === 'jump' || btn === 'up') {
           plat.keys.jump = pressed;
-          if (pressed && plat.jump) plat.jump();
+          if (pressed && plat.jump) {
+            plat.jump();
+          } else if (!pressed && plat.p && plat.p.vy < -180) {
+            plat.p.vy *= 0.65;
+          }
         }
       }
 
@@ -416,6 +423,7 @@
   window.Cinnamo = window.Cinnamo || {};
   const bridge = new ControllerBridge();
   window.Cinnamo.controllerBridge = bridge;
+  window.Cinnamo.bridge = bridge;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => bridge.initUI());
   } else {

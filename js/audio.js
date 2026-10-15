@@ -267,6 +267,26 @@
       });
     }
 
+    // Salto elástico y tierno de Cinnamoroll
+    jump() {
+      if (!this.ctx || this.muted) return;
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(360, t);
+      osc.frequency.exponentialRampToValueAtTime(740, t + 0.16);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.24, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+
+      osc.connect(gain).connect(this.sfxGain);
+      osc.start(t);
+      osc.stop(t + 0.24);
+    }
+
     // Resorte suave y tierno para intentar de nuevo (CERO bocina fea de error)
     softBoing() {
       if (!this.ctx || this.muted) return;

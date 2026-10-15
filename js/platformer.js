@@ -23,8 +23,8 @@
       badge: '🐶 Canela',
       imgSrc: 'assets/cinnamoroll_fly.png',
       desc: '¡Vuela y planea suavemente por el cielo con sus orejitas mágicas!',
-      jumpPower: 460,
-      glideGravity: 180,
+      jumpPower: 520,
+      glideGravity: 165,
       trailColor: '#8ecae6',
       w: 72,
       h: 48
@@ -35,8 +35,8 @@
       badge: '🍼 Bebé',
       imgSrc: 'assets/milk_teddy.png',
       desc: '¡El más chiquitito! Da saltitos tiernos y flota con su osito de peluche.',
-      jumpPower: 475,
-      glideGravity: 210,
+      jumpPower: 535,
+      glideGravity: 185,
       trailColor: '#ffb3d1',
       w: 64,
       h: 56
@@ -47,8 +47,8 @@
       badge: '🍮 Purin',
       imgSrc: 'assets/pompompurin.png',
       desc: '¡El perrito con boina! Da rebotes súper elásticos como flan de caramelo.',
-      jumpPower: 490,
-      glideGravity: 230,
+      jumpPower: 550,
+      glideGravity: 210,
       trailColor: '#f59e0b',
       w: 68,
       h: 62
@@ -59,8 +59,8 @@
       badge: '🌸 Esponjosa',
       imgSrc: 'assets/chiffon.png',
       desc: '¡La perrita enérgica! Salta alto y ágil con sus orejitas de nube.',
-      jumpPower: 470,
-      glideGravity: 190,
+      jumpPower: 530,
+      glideGravity: 175,
       trailColor: '#ff80bf',
       w: 74,
       h: 50
@@ -71,8 +71,8 @@
       badge: '🎀 Elegante',
       imgSrc: 'assets/mocha_hq.png',
       desc: '¡La coqueta Mocha con flores rosas! Salta con agilidad y elegancia.',
-      jumpPower: 475,
-      glideGravity: 195,
+      jumpPower: 535,
+      glideGravity: 180,
       trailColor: '#c084fc',
       w: 72,
       h: 52
@@ -201,6 +201,7 @@
         w: 72,
         h: 48,
         grounded: false,
+        canDoubleJump: true,
         gliding: false,
         facing: 1,
         animTimer: 0,
@@ -539,6 +540,7 @@
       p.w = this.selectedHero.w;
       p.h = this.selectedHero.h;
       p.grounded = false;
+      p.canDoubleJump = true;
       p.coyoteTimer = 0;
       p.jumpBuffer = 0;
       p.squashX = 1.0;
@@ -583,23 +585,21 @@
       if (city.id === 'concepcion') {
         // NIVEL 1: CONCEPCIÓN (5800 px · Campus UdeC, Praderas, Campanil, Cerezos)
         this.platforms = [
-          // Zona 1: Pradera de Entrada
-          { x: -50, y: 440, w: 780, h: 100, type: 'ground' },
+          // Ruta de suelo continuo (Campus UdeC, Praderas, Campanil, Arco, Biobío)
+          { x: -50, y: 440, w: 1650, h: 110, type: 'ground' },
+          { x: 1560, y: 430, w: 1640, h: 120, type: 'ground' },
+          { x: 3160, y: 420, w: 1660, h: 130, type: 'ground' },
+          { x: 4780, y: 430, w: 1100, h: 120, type: 'ground' },
+          // Plataformas elevadas y ruta aérea de cerezos
           { x: 800, y: 380, w: 180, h: 26, type: 'sakura' },
           { x: 1040, y: 320, w: 190, h: 26, type: 'cloud' },
           { x: 1300, y: 260, w: 200, h: 26, type: 'sakura' },
-          // Zona 2: Plaza Central y Campanil
-          { x: 1560, y: 430, w: 750, h: 110, type: 'ground' },
           { x: 2370, y: 360, w: 180, h: 26, type: 'cloud', baseX: 2370, moveX: true, rangeX: 60, speedX: 1.2, phase: 0 },
           { x: 2620, y: 290, w: 190, h: 26, type: 'sakura' },
           { x: 2880, y: 230, w: 200, h: 26, type: 'cloud', baseX: 2880, moveX: true, rangeX: 70, speedX: 1.4, phase: Math.PI },
-          // Zona 3: Arco de Medicina y Jardines
-          { x: 3160, y: 420, w: 780, h: 120, type: 'ground' },
           { x: 4000, y: 350, w: 180, h: 26, type: 'sakura' },
           { x: 4240, y: 280, w: 190, h: 26, type: 'cloud' },
-          { x: 4500, y: 220, w: 210, h: 26, type: 'sakura', baseX: 4500, moveX: true, rangeX: 65, speedX: 1.3, phase: 0.5 },
-          // Zona 4: Mirador del Biobío y Meta
-          { x: 4780, y: 430, w: 1080, h: 110, type: 'ground' }
+          { x: 4500, y: 220, w: 210, h: 26, type: 'sakura', baseX: 4500, moveX: true, rangeX: 65, speedX: 1.3, phase: 0.5 }
         ];
 
         this.springs = [
@@ -621,25 +621,23 @@
       } else if (city.id === 'laserena') {
         // NIVEL 2: LA SERENA (6600 px · Avenida del Mar, Olas, Muelles, Faro Monumental)
         this.platforms = [
-          // Zona 1: Playa Dorada de Entrada
-          { x: -50, y: 440, w: 720, h: 100, type: 'ground' },
+          // Ruta de suelo continuo (Avenida del Mar, Playa Dorada, Faro Monumental)
+          { x: -50, y: 440, w: 1600, h: 110, type: 'ground' },
+          { x: 1510, y: 420, w: 1570, h: 130, type: 'ground' },
+          { x: 3040, y: 430, w: 1640, h: 120, type: 'ground' },
+          { x: 4640, y: 410, w: 1100, h: 140, type: 'ground' },
+          { x: 5700, y: 430, w: 1000, h: 120, type: 'ground' },
+          // Plataformas elevadas (Muelles de madera y nubes marinas)
           { x: 740, y: 370, w: 180, h: 26, type: 'pier', baseX: 740, moveX: true, rangeX: 65, speedX: 1.3, phase: 0 },
           { x: 1000, y: 310, w: 180, h: 26, type: 'cloud' },
           { x: 1250, y: 250, w: 190, h: 26, type: 'pier', baseX: 1250, moveX: true, rangeX: 75, speedX: 1.5, phase: Math.PI },
-          // Zona 2: Paseo Costero
-          { x: 1510, y: 420, w: 680, h: 120, type: 'ground' },
           { x: 2260, y: 350, w: 180, h: 26, type: 'pier' },
           { x: 2510, y: 280, w: 190, h: 26, type: 'cloud', baseX: 2510, moveX: true, rangeX: 80, speedX: 1.4, phase: 0.8 },
           { x: 2780, y: 220, w: 190, h: 26, type: 'pier' },
-          // Zona 3: Espigón y Olas Rompientes
-          { x: 3040, y: 430, w: 740, h: 110, type: 'ground' },
           { x: 3850, y: 360, w: 180, h: 26, type: 'cloud', baseX: 3850, moveX: true, rangeX: 70, speedX: 1.6, phase: 0.2 },
           { x: 4100, y: 290, w: 190, h: 26, type: 'pier' },
           { x: 4360, y: 230, w: 200, h: 26, type: 'cloud', baseX: 4360, moveX: true, rangeX: 85, speedX: 1.5, phase: Math.PI },
-          // Zona 4: Faro Monumental y Gran Muelle
-          { x: 4640, y: 410, w: 720, h: 130, type: 'ground' },
-          { x: 5430, y: 330, w: 200, h: 26, type: 'pier' },
-          { x: 5700, y: 430, w: 980, h: 110, type: 'ground' }
+          { x: 5430, y: 330, w: 200, h: 26, type: 'pier' }
         ];
 
         this.springs = [
@@ -663,27 +661,25 @@
       } else if (city.id === 'rio') {
         // NIVEL 3: RÍO DE JANEIRO (7400 px · Copacabana, Morros, Pan de Azúcar, Corcovado)
         this.platforms = [
-          // Zona 1: Calçadão de Copacabana
-          { x: -50, y: 440, w: 680, h: 100, type: 'ground' },
+          // Ruta de suelo continuo (Calçadão de Copacabana, Selva Atlántica, Pan de Azúcar, Corcovado)
+          { x: -50, y: 440, w: 1570, h: 110, type: 'ground' },
+          { x: 1480, y: 420, w: 1570, h: 130, type: 'ground' },
+          { x: 3010, y: 430, w: 1630, h: 120, type: 'ground' },
+          { x: 4600, y: 410, w: 1690, h: 140, type: 'ground' },
+          { x: 6250, y: 430, w: 1250, h: 120, type: 'ground' },
+          // Plataformas elevadas (Plataformas tropicales móviles y nubes)
           { x: 700, y: 350, w: 180, h: 26, type: 'tropical', baseY: 350, moveY: true, rangeY: 50, speedY: 1.5, phase: 0 },
           { x: 960, y: 280, w: 180, h: 26, type: 'cloud', baseX: 960, moveX: true, rangeX: 80, speedX: 1.6, phase: 0.8 },
           { x: 1220, y: 220, w: 190, h: 26, type: 'tropical', baseY: 220, moveY: true, rangeY: 45, speedY: 1.7, phase: Math.PI },
-          // Zona 2: Selva Atlántica y Favelas Coloridas
-          { x: 1480, y: 420, w: 660, h: 120, type: 'ground' },
           { x: 2210, y: 350, w: 180, h: 26, type: 'cloud', baseX: 2210, moveX: true, rangeX: 85, speedX: 1.6, phase: 0.2 },
           { x: 2470, y: 270, w: 190, h: 26, type: 'tropical', baseY: 270, moveY: true, rangeY: 55, speedY: 1.5, phase: 1.2 },
           { x: 2740, y: 210, w: 200, h: 26, type: 'cloud' },
-          // Zona 3: Mirador del Pan de Azúcar
-          { x: 3010, y: 430, w: 720, h: 110, type: 'ground' },
           { x: 3800, y: 340, w: 180, h: 26, type: 'tropical', baseY: 340, moveY: true, rangeY: 50, speedY: 1.8, phase: 0.5 },
           { x: 4060, y: 260, w: 190, h: 26, type: 'cloud', baseX: 4060, moveX: true, rangeX: 90, speedX: 1.6, phase: Math.PI },
           { x: 4330, y: 200, w: 200, h: 26, type: 'tropical', baseY: 200, moveY: true, rangeY: 45, speedY: 1.6, phase: 0 },
-          // Zona 4: Cumbre del Corcovado y Gran Fiesta Tropical
-          { x: 4600, y: 410, w: 760, h: 130, type: 'ground' },
           { x: 5430, y: 340, w: 190, h: 26, type: 'tropical', baseX: 5430, moveX: true, rangeX: 80, speedX: 1.7, phase: 1.0 },
           { x: 5700, y: 260, w: 200, h: 26, type: 'cloud' },
-          { x: 5980, y: 340, w: 190, h: 26, type: 'tropical', baseY: 340, moveY: true, rangeY: 50, speedY: 1.5, phase: 0.3 },
-          { x: 6250, y: 430, w: 1200, h: 110, type: 'ground' }
+          { x: 5980, y: 340, w: 190, h: 26, type: 'tropical', baseY: 340, moveY: true, rangeY: 50, speedY: 1.5, phase: 0.3 }
         ];
 
         this.springs = [
@@ -707,30 +703,27 @@
       } else if (city.id === 'santiago') {
         // NIVEL 4: SANTIAGO DE CHILE (8200 px · Andes Nevados, Costanera, Teleférico)
         this.platforms = [
-          // Zona 1: Parque Bicentenario
-          { x: -50, y: 440, w: 660, h: 100, type: 'ground' },
+          // Ruta de suelo continuo (Parque Bicentenario, Costanera, San Cristóbal, Cumbre Andina)
+          { x: -50, y: 440, w: 1600, h: 110, type: 'ground' },
+          { x: 1510, y: 410, w: 1610, h: 140, type: 'ground' },
+          { x: 3080, y: 420, w: 1640, h: 130, type: 'ground' },
+          { x: 4680, y: 410, w: 1700, h: 140, type: 'ground' },
+          { x: 6340, y: 410, w: 1080, h: 140, type: 'ground' },
+          { x: 7380, y: 430, w: 920, h: 120, type: 'ground' },
+          // Cabinas móviles del teleférico y nubes andinas
           { x: 680, y: 360, w: 180, h: 28, type: 'teleferico', baseX: 680, moveX: true, rangeX: 95, speedX: 1.4, phase: 0 },
           { x: 960, y: 290, w: 180, h: 28, type: 'teleferico', baseY: 290, moveY: true, rangeY: 55, speedY: 1.5, phase: 0.6 },
           { x: 1240, y: 220, w: 190, h: 28, type: 'teleferico', baseX: 1240, moveX: true, rangeX: 100, speedX: 1.4, phase: Math.PI },
-          // Zona 2: Gran Torre Costanera & Centro Financiero
-          { x: 1510, y: 410, w: 680, h: 130, type: 'ground' },
           { x: 2260, y: 340, w: 180, h: 28, type: 'teleferico', baseY: 340, moveY: true, rangeY: 60, speedY: 1.6, phase: 0.2 },
           { x: 2530, y: 260, w: 190, h: 28, type: 'teleferico', baseX: 2530, moveX: true, rangeX: 105, speedX: 1.5, phase: 1.4 },
           { x: 2810, y: 190, w: 190, h: 26, type: 'cloud' },
-          // Zona 3: Cerro San Cristóbal
-          { x: 3080, y: 420, w: 720, h: 120, type: 'ground' },
           { x: 3870, y: 340, w: 180, h: 28, type: 'teleferico', baseX: 3870, moveX: true, rangeX: 95, speedX: 1.7, phase: 2.2 },
           { x: 4140, y: 260, w: 190, h: 28, type: 'teleferico', baseY: 260, moveY: true, rangeY: 50, speedY: 1.5, phase: 0.5 },
           { x: 4410, y: 190, w: 200, h: 26, type: 'cloud' },
-          // Zona 4: Cumbre Andina y Mirador Cordillera
-          { x: 4680, y: 410, w: 740, h: 130, type: 'ground' },
           { x: 5490, y: 330, w: 190, h: 28, type: 'teleferico', baseX: 5490, moveX: true, rangeX: 110, speedX: 1.6, phase: 0.9 },
           { x: 5770, y: 250, w: 190, h: 28, type: 'teleferico', baseY: 250, moveY: true, rangeY: 55, speedY: 1.7, phase: 1.6 },
           { x: 6050, y: 190, w: 210, h: 26, type: 'cloud', baseX: 6050, moveX: true, rangeX: 90, speedX: 1.5, phase: 0.2 },
-          // Zona 5: Llegada a la Nieve y Gran Celebración
-          { x: 6340, y: 410, w: 680, h: 130, type: 'ground' },
-          { x: 7100, y: 320, w: 200, h: 28, type: 'teleferico' },
-          { x: 7380, y: 430, w: 900, h: 110, type: 'ground' }
+          { x: 7100, y: 320, w: 200, h: 28, type: 'teleferico' }
         ];
 
         this.springs = [
@@ -756,32 +749,29 @@
       } else if (city.id === 'china') {
         // NIVEL 5: CHINA MÁGICA (9200 px · Gran Muralla, Pagodas, Bambú, Dragón)
         this.platforms = [
-          // Zona 1: Puerta Imperial
-          { x: -50, y: 440, w: 640, h: 100, type: 'ground' },
+          // Ruta de suelo continuo (Puerta Imperial, Gran Muralla, Bosque de Bambú, Pagodas, Estanque Sagrado)
+          { x: -50, y: 440, w: 1590, h: 110, type: 'ground' },
+          { x: 1500, y: 410, w: 1650, h: 140, type: 'ground' },
+          { x: 3110, y: 420, w: 1690, h: 130, type: 'ground' },
+          { x: 4760, y: 410, w: 1740, h: 140, type: 'ground' },
+          { x: 6460, y: 410, w: 1720, h: 140, type: 'ground' },
+          { x: 8140, y: 430, w: 1160, h: 120, type: 'ground' },
+          // Pagodas celestiales elevadas y nubes de dragón
           { x: 660, y: 360, w: 180, h: 26, type: 'pagoda', baseX: 660, moveX: true, rangeX: 100, speedX: 1.5, phase: 0 },
           { x: 940, y: 290, w: 190, h: 26, type: 'pagoda', baseY: 290, moveY: true, rangeY: 60, speedY: 1.7, phase: 0.8 },
           { x: 1220, y: 220, w: 200, h: 26, type: 'pagoda', baseX: 1220, moveX: true, rangeX: 110, speedX: 1.6, phase: Math.PI },
-          // Zona 2: Bosque de Bambú y Puentes Arqueados
-          { x: 1500, y: 410, w: 680, h: 130, type: 'ground' },
           { x: 2250, y: 340, w: 190, h: 26, type: 'pagoda', baseY: 340, moveY: true, rangeY: 60, speedY: 1.7, phase: 0.3 },
           { x: 2530, y: 260, w: 200, h: 26, type: 'pagoda', baseX: 2530, moveX: true, rangeX: 115, speedX: 1.7, phase: 1.5 },
           { x: 2820, y: 190, w: 210, h: 26, type: 'cloud' },
-          // Zona 3: Muralla Serpenteante y Torres de Piedra
-          { x: 3110, y: 420, w: 720, h: 120, type: 'ground' },
           { x: 3910, y: 340, w: 190, h: 26, type: 'pagoda', baseX: 3910, moveX: true, rangeX: 105, speedX: 1.8, phase: 2.1 },
           { x: 4190, y: 260, w: 190, h: 26, type: 'pagoda', baseY: 260, moveY: true, rangeY: 55, speedY: 1.6, phase: 0.9 },
           { x: 4470, y: 190, w: 210, h: 26, type: 'cloud' },
-          // Zona 4: Pagodas Celestiales de las Alturas
-          { x: 4760, y: 410, w: 740, h: 130, type: 'ground' },
           { x: 5580, y: 330, w: 200, h: 26, type: 'pagoda', baseX: 5580, moveX: true, rangeX: 120, speedX: 1.7, phase: 1.1 },
           { x: 5870, y: 250, w: 200, h: 26, type: 'pagoda', baseY: 250, moveY: true, rangeY: 60, speedY: 1.8, phase: 0.5 },
           { x: 6160, y: 180, w: 220, h: 26, type: 'cloud', baseX: 6160, moveX: true, rangeX: 100, speedX: 1.6, phase: 2.0 },
-          // Zona 5: Estanque de Lotos Sagrados y Gran Fiesta Imperial
-          { x: 6460, y: 410, w: 720, h: 130, type: 'ground' },
           { x: 7260, y: 330, w: 200, h: 26, type: 'pagoda', baseX: 7260, moveX: true, rangeX: 110, speedX: 1.8, phase: 0.4 },
           { x: 7550, y: 250, w: 200, h: 26, type: 'pagoda', baseY: 250, moveY: true, rangeY: 55, speedY: 1.7, phase: 1.4 },
-          { x: 7840, y: 190, w: 220, h: 26, type: 'cloud' },
-          { x: 8140, y: 430, w: 1100, h: 110, type: 'ground' }
+          { x: 7840, y: 190, w: 220, h: 26, type: 'cloud' }
         ];
 
         this.springs = [
@@ -834,26 +824,85 @@
       }
     }
 
+    jump() {
+      if (A) A.unlock();
+      this.keys.jump = true;
+      this.p.jumpBuffer = 0.22;
+      this.tryJump();
+    }
+
+    tryJump() {
+      const p = this.p;
+      const hero = this.selectedHero;
+
+      // 1. Salto desde el suelo o durante coyote time (generoso)
+      if (p.grounded || p.coyoteTimer > 0) {
+        p.vy = -hero.jumpPower;
+        p.grounded = false;
+        p.coyoteTimer = 0;
+        p.jumpBuffer = 0;
+        p.canDoubleJump = true; // recargar aleteo para el aire
+        p.squashX = 0.72;
+        p.squashY = 1.38;
+        if (A) A.jump();
+        this.burstParticles(p.x + p.w / 2, p.y + p.h, 12, ['#ffffff', hero.trailColor, '#ffeaf4']);
+        return true;
+      }
+
+      // 2. Doble salto / Aleteo mágico con las orejitas en el aire
+      if (p.canDoubleJump && p.vy > -240) {
+        p.vy = -Math.round(hero.jumpPower * 0.94);
+        p.canDoubleJump = false;
+        p.jumpBuffer = 0;
+        p.squashX = 0.76;
+        p.squashY = 1.32;
+        if (A) {
+          A.softBoing();
+          A.kawaiiChirp('cheer');
+        }
+        // Nubes esponjosas en las orejitas al aletear
+        this.burstParticles(p.x + p.w / 2, p.y + p.h * 0.75, 16, ['#ffffff', '#aee0ff', hero.trailColor, '#ffd1dc']);
+        return true;
+      }
+
+      return false;
+    }
+
     bindInputs() {
+      // Teclado
       window.addEventListener('keydown', (e) => {
         if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = true;
         if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = true;
         if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
-          A.unlock();
-          this.keys.jump = true;
-          this.p.jumpBuffer = 0.15;
+          e.preventDefault();
+          this.jump();
         }
       });
+
+      const onReleaseJump = () => {
+        this.keys.jump = false;
+        if (this.p.vy < -180) {
+          this.p.vy *= 0.65;
+        }
+      };
 
       window.addEventListener('keyup', (e) => {
         if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = false;
         if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = false;
         if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
-          this.keys.jump = false;
-          if (this.p.vy < -160) {
-            this.p.vy *= 0.55;
-          }
+          onReleaseJump();
         }
+      });
+
+      // Limpiar teclas si se pierde el foco de la ventana o pestaña (evita que se quede corriendo solo)
+      const clearKeys = () => {
+        this.keys.left = false;
+        this.keys.right = false;
+        this.keys.jump = false;
+      };
+      window.addEventListener('blur', clearKeys);
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) clearKeys();
       });
 
       const btnL = this.container.querySelector('#btnPlatLeft');
@@ -864,38 +913,35 @@
         if (!el) return;
         el.addEventListener('pointerdown', (e) => {
           e.preventDefault();
-          A.unlock();
+          try { el.setPointerCapture(e.pointerId); } catch (_) {}
+          if (A) A.unlock();
           pressFn();
         });
-        el.addEventListener('pointerup', releaseFn);
-        el.addEventListener('pointercancel', releaseFn);
-        el.addEventListener('pointerleave', releaseFn);
+        const onRelease = (e) => {
+          try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+          releaseFn();
+        };
+        el.addEventListener('pointerup', onRelease);
+        el.addEventListener('pointercancel', onRelease);
+        // NOTA: Eliminamos pointerleave para que el deslizamiento mínimo del pulgar no cancele el movimiento
       };
 
       hookTouch(btnL, () => { this.keys.left = true; }, () => { this.keys.left = false; });
       hookTouch(btnR, () => { this.keys.right = true; }, () => { this.keys.right = false; });
       hookTouch(btnJ, () => {
-        this.keys.jump = true;
-        this.p.jumpBuffer = 0.15;
-      }, () => {
-        this.keys.jump = false;
-        if (this.p.vy < -160) this.p.vy *= 0.55;
-      });
+        this.jump();
+      }, onReleaseJump);
 
       if (this.canvas) {
         this.canvas.addEventListener('pointerdown', (e) => {
           const rect = this.canvas.getBoundingClientRect();
           const clickX = e.clientX - rect.left;
-          if (clickX > rect.width * 0.55) {
-            A.unlock();
-            this.keys.jump = true;
-            this.p.jumpBuffer = 0.15;
+          if (clickX > rect.width * 0.45) {
+            this.jump();
           }
         });
-        this.canvas.addEventListener('pointerup', () => {
-          this.keys.jump = false;
-          if (this.p.vy < -160) this.p.vy *= 0.55;
-        });
+        this.canvas.addEventListener('pointerup', onReleaseJump);
+        this.canvas.addEventListener('pointercancel', onReleaseJump);
       }
     }
 
@@ -967,25 +1013,17 @@
 
       // Coyote time & Jump buffer
       if (p.grounded) {
-        p.coyoteTimer = 0.12;
+        p.coyoteTimer = 0.20;
+        p.canDoubleJump = true;
       } else {
         p.coyoteTimer -= dt;
       }
 
       if (p.jumpBuffer > 0) {
         p.jumpBuffer -= dt;
-      }
-
-      // Ejecutar salto
-      if (p.jumpBuffer > 0 && p.coyoteTimer > 0) {
-        p.vy = -this.selectedHero.jumpPower;
-        p.grounded = false;
-        p.coyoteTimer = 0;
-        p.jumpBuffer = 0;
-        p.squashX = 0.72;
-        p.squashY = 1.35;
-        A.jump();
-        this.burstParticles(p.x + p.w / 2, p.y + p.h, 10, ['#ffffff', this.selectedHero.trailColor, '#ffeaf4']);
+        if (this.tryJump()) {
+          p.jumpBuffer = 0;
+        }
       }
 
       // Mecánica de planeo suave con las orejitas
@@ -1046,8 +1084,12 @@
             A.softBoing();
             this.burstParticles(p.x + p.w / 2, p.y + p.h, 6, ['#ffffff', hero.trailColor]);
           }
-          p.lastSafeX = p.x;
-          p.lastSafeY = plat.y - p.h - 10;
+          if (plat.type === 'ground' || plat.w >= 260) {
+            if (p.x >= plat.x + 40 && p.x + p.w <= plat.x + plat.w - 40) {
+              p.lastSafeX = p.x;
+              p.lastSafeY = plat.y - p.h;
+            }
+          }
         }
       }
       p.standingPlat = matchedPlat;
@@ -1086,12 +1128,14 @@
 
       // Rescate mágico si cae (Amanda nunca pierde: regresa suavemente a la última plataforma segura)
       if (p.y > 515) {
-        p.x = (p.lastSafeX !== undefined) ? p.lastSafeX : Math.max(80, p.x - 260);
-        p.y = (p.lastSafeY !== undefined) ? p.lastSafeY : 230;
-        p.vy = -260;
-        p.grounded = false;
-        A.whoosh(true);
-        this.burstParticles(p.x + p.w / 2, p.y + p.h / 2, 18, ['#aee0ff', '#ffffff', '#ffd1dc']);
+        p.x = (p.lastSafeX !== undefined) ? p.lastSafeX : 80;
+        p.y = (p.lastSafeY !== undefined) ? p.lastSafeY : 350;
+        p.vx = 0;
+        p.vy = 0;
+        p.grounded = true;
+        p.canDoubleJump = true;
+        if (A) A.whoosh(true);
+        this.burstParticles(p.x + p.w / 2, p.y + p.h / 2, 20, ['#aee0ff', '#ffffff', '#ffd1dc', '#fde047']);
       }
 
       // Meta al final del nivel
