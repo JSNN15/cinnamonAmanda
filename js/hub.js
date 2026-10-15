@@ -52,6 +52,9 @@
       this.btnTrack = document.getElementById('globalBtnTrack');
       this.trackIcon = document.getElementById('trackIcon');
       this.trackName = document.getElementById('trackName');
+      this.btnFullscreen = document.getElementById('globalBtnFullscreen');
+      this.fullscreenIcon = document.getElementById('fullscreenIcon');
+      this.fullscreenText = this.btnFullscreen ? this.btnFullscreen.querySelector('.btn-text') : null;
     }
 
     updateTrackUI() {
@@ -71,6 +74,44 @@
         this.stopActiveGames();
         this.showScreen('hub');
       });
+
+      // Botón universal de Pantalla Completa (Full Screen)
+      if (this.btnFullscreen) {
+        const updateFullscreenUI = () => {
+          const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+          if (this.fullscreenIcon) {
+            this.fullscreenIcon.textContent = isFs ? '🗗' : '📺';
+          }
+          if (this.fullscreenText) {
+            this.fullscreenText.textContent = isFs ? 'Salir' : 'Pantalla';
+          }
+          this.btnFullscreen.setAttribute('title', isFs ? 'Salir de Pantalla Completa' : 'Activar Pantalla Completa');
+          this.btnFullscreen.classList.toggle('active-fullscreen', isFs);
+        };
+
+        this.btnFullscreen.addEventListener('click', () => {
+          A.unlock();
+          A.bubblePop(2);
+          const docEl = document.documentElement;
+          const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+          if (!isFs) {
+            if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+            else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+            else if (docEl.mozRequestFullScreen) docEl.mozRequestFullScreen();
+            else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
+          } else {
+            if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+            else if (document.msExitFullscreen) document.msExitFullscreen();
+          }
+        });
+
+        document.addEventListener('fullscreenchange', updateFullscreenUI);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
+        document.addEventListener('mozfullscreenchange', updateFullscreenUI);
+        document.addEventListener('MSFullscreenChange', updateFullscreenUI);
+      }
 
       // Botón universal de música relajante de caja de música
       this.btnMusic.addEventListener('click', () => {

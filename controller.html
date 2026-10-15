@@ -64,6 +64,20 @@
       cursor: pointer;
     }
     .btn-nav-home:active { transform: scale(0.95); }
+    .btn-nav-fullscreen {
+      background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+      border: 2px solid #e879f9; border-radius: 14px;
+      padding: 4px 9px; font-size: 13px; font-weight: 800; color: #a21caf;
+      box-shadow: 0 2px 6px rgba(162, 28, 175, 0.2);
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: transform 0.1s;
+    }
+    .btn-nav-fullscreen:active { transform: scale(0.95); }
+    .btn-nav-fullscreen.active-fullscreen {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      border-color: #86efac; color: #15803d;
+      box-shadow: 0 2px 6px rgba(22, 101, 52, 0.2);
+    }
     .status-badge {
       font-size: 11px; font-weight: 800; border-radius: 14px;
       padding: 4px 10px; display: flex; align-items: center; gap: 4px;
@@ -74,6 +88,17 @@
     }
     .status-badge.connecting {
       background: #fef9c3; color: #854d0e; border: 2px solid #fde047;
+    }
+
+    @media (max-width: 520px) {
+      .controller-header { padding: 4px 8px; border-radius: 18px; }
+      .brand-title { font-size: 13px; }
+      .brand-title .brand-long-name { display: none; }
+      .header-actions { gap: 4px; }
+      .room-badge-btn { padding: 3px 6px; font-size: 11px; }
+      .btn-nav-home { padding: 3px 7px; font-size: 11px; }
+      .btn-nav-fullscreen { padding: 3px 8px; font-size: 13px; }
+      .status-badge { padding: 3px 7px; font-size: 10px; }
     }
     .status-badge.disconnected {
       background: #fee2e2; color: #b91c1c; border: 2px solid #fca5a5;
@@ -355,12 +380,13 @@
   <div class="controller-container">
     <!-- Header Universal -->
     <header class="controller-header">
-      <div class="brand-title">🌸 Mando Amanda</div>
+      <div class="brand-title">🌸 <span class="brand-long-name">Mando Amanda</span></div>
       <div class="header-actions">
         <button id="btnRoomBadge" class="room-badge-btn" title="Toca para cambiar código">
           Sala: <strong id="headerRoomText">----</strong> ✎
         </button>
         <button id="btnRemoteHome" class="btn-nav-home" aria-label="Ir al Menú">🏠 Menú</button>
+        <button id="btnRemoteFullscreen" class="btn-nav-fullscreen" title="Pantalla Completa" aria-label="Pantalla Completa">📺</button>
         <div id="connStatus" class="status-badge connecting" title="Toca para reconectar">🟡 Conectando...</div>
       </div>
     </header>
@@ -852,6 +878,39 @@
         playHapticBeep(450);
         sendData({ type: 'nav', screen: 'hub' });
       });
+
+      // Botón universal de Pantalla Completa en el celular
+      const btnFullscreen = document.getElementById('btnRemoteFullscreen');
+      if (btnFullscreen) {
+        const updateCtrlFsUI = () => {
+          const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+          btnFullscreen.textContent = isFs ? '🗗' : '📺';
+          btnFullscreen.classList.toggle('active-fullscreen', isFs);
+          btnFullscreen.setAttribute('title', isFs ? 'Salir de Pantalla Completa' : 'Activar Pantalla Completa');
+        };
+
+        btnFullscreen.addEventListener('click', () => {
+          playHapticBeep(520);
+          const docEl = document.documentElement;
+          const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+          if (!isFs) {
+            if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+            else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+            else if (docEl.mozRequestFullScreen) docEl.mozRequestFullScreen();
+            else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
+          } else {
+            if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+            else if (document.msExitFullscreen) document.msExitFullscreen();
+          }
+          // También solicitar a la TV / PC cambiar a pantalla completa
+          sendData({ type: 'toggleFullscreen' });
+        });
+
+        document.addEventListener('fullscreenchange', updateCtrlFsUI);
+        document.addEventListener('webkitfullscreenchange', updateCtrlFsUI);
+      }
 
       // Botón de cambiar héroe en Super Run
       document.getElementById('btnSwitchHeroAction').addEventListener('click', () => {

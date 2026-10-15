@@ -290,6 +290,13 @@
         return;
       }
 
+      // Pantalla Completa solicitada desde el celular
+      if (data.type === 'toggleFullscreen') {
+        const btnFs = document.getElementById('globalBtnFullscreen');
+        if (btnFs) btnFs.click();
+        return;
+      }
+
       // Botón estándar (d-pad o botones de acción)
       if (data.type === 'input' || data.btn !== undefined) {
         this.handleRemoteInput(data.btn, data.pressed);

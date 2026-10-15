@@ -2336,6 +2336,23 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
   }
 }
 
+/* Pantallas estrechas (<= 620px): botones compactos con emoticones */
+@media (max-width: 620px) {
+  .top-right-actions {
+    gap: 6px;
+  }
+  .top-nav-btn {
+    padding: 5px 9px;
+    font-size: 14px;
+    gap: 3px;
+  }
+  .fullscreen-btn .btn-text,
+  .gamepad-btn .btn-text,
+  .music-btn .btn-text {
+    display: none;
+  }
+}
+
 /* Teléfonos muy angostos (<= 420px) */
 @media (max-width: 420px) {
   .top-brand {
@@ -2432,6 +2449,23 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 .gamepad-btn:hover {
   background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 100%) !important;
   transform: translateY(-2px) scale(1.04);
+}
+
+.fullscreen-btn {
+  background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%) !important;
+  color: #a21caf !important;
+  border-color: #f0abfc !important;
+  box-shadow: 0 3px 0 #e879f9 !important;
+}
+.fullscreen-btn:hover {
+  background: linear-gradient(135deg, #fae8ff 0%, #f5d0fe 100%) !important;
+  transform: translateY(-2px) scale(1.04);
+}
+.fullscreen-btn.active-fullscreen {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important;
+  color: #15803d !important;
+  border-color: #86efac !important;
+  box-shadow: 0 3px 0 #4ade80 !important;
 }
 
 .cinna-modal-overlay {
