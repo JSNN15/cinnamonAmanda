@@ -227,6 +227,40 @@
       this.score = 0;
       this.totalCupcakes = 16;
       this.reachedGoal = false;
+
+      // Soporte Multijugador Cooperativo Local/Remoto hasta 3 Players (P1, P2, P3)
+      this.coPlayers = {
+        2: this.createCoPlayer(2, 'milk', '#0284c7', 'P2 🩵'),
+        3: this.createCoPlayer(3, 'purin', '#eab308', 'P3 💛')
+      };
+    }
+
+    createCoPlayer(slot, heroId, badgeColor, label) {
+      const hero = HEROES.find(h => h.id === heroId) || HEROES[0];
+      return {
+        slot,
+        active: false,
+        heroId: hero.id,
+        hero,
+        badgeColor,
+        label,
+        x: 60 - (slot - 1) * 28,
+        y: 320,
+        vx: 0,
+        vy: 0,
+        w: hero.w,
+        h: hero.h,
+        grounded: false,
+        canDoubleJump: true,
+        gliding: false,
+        facing: 1,
+        animTimer: 0,
+        squashX: 1.0,
+        squashY: 1.0,
+        coyoteTimer: 0,
+        jumpBuffer: 0,
+        keys: { left: false, right: false, jump: false }
+      };
     }
 
     ensureAssets() {
@@ -497,21 +531,145 @@
       this.selectedHero = hero;
       this.p.w = hero.w;
       this.p.h = hero.h;
-      const avatar = this.container.querySelector('.plat-hud-avatar');
-      if (avatar) avatar.src = hero.imgSrc;
-      const nameEl = this.container.querySelector('#platHeroPill span');
-      if (nameEl) nameEl.textContent = hero.name;
-      const progAvatar = this.container.querySelector('#platProgressAvatar');
-      if (progAvatar) progAvatar.src = hero.imgSrc;
+      if (this.container) {
+        const avatar = this.container.querySelector('.plat-hud-avatar');
+        if (avatar) avatar.src = hero.imgSrc;
+        const nameEl = this.container.querySelector('#platHeroPill span');
+        if (nameEl) nameEl.textContent = hero.name;
+        const progAvatar = this.container.querySelector('#platProgressAvatar');
+        if (progAvatar) progAvatar.src = hero.imgSrc;
+        this.container.querySelectorAll('.plat-hero-option').forEach(opt => {
+          opt.classList.toggle('active', opt.dataset.id === hero.id);
+        });
+      }
       this.burstParticles(this.p.x + this.p.w / 2, this.p.y + this.p.h / 2, 16, ['#ffffff', hero.trailColor, '#ffd1dc']);
     }
 
-    nextHero() {
+    selectHeroById(heroId, playerSlot = 1) {
+      if (A) A.unlock();
+      const found = HEROES.find(h => h.id === heroId) || HEROES[0];
+      if (playerSlot === 2 || playerSlot === 3) {
+        const cp = this.coPlayers[playerSlot];
+        if (cp) {
+          const wasActive = cp.active;
+          cp.active = true;
+          cp.heroId = found.id;
+          cp.hero = found;
+          cp.w = found.w;
+          cp.h = found.h;
+          if (!wasActive) {
+            cp.x = Math.max(20, this.p.x - 36 * (playerSlot - 1));
+            cp.y = this.p.y - 10;
+            cp.vx = 0;
+            cp.vy = -180;
+          }
+          this.burstParticles(cp.x + cp.w / 2, cp.y + cp.h / 2, 18, ['#ffffff', found.trailColor, cp.badgeColor]);
+        }
+      } else {
+        this.setHero(found);
+        const heroModal = this.container ? this.container.querySelector('#platCharModal') : null;
+        if (heroModal) heroModal.classList.add('hidden');
+      }
+      if (A) A.celebrate();
+    }
+
+    selectCityByIndex(cityIdx) {
+      if (A) { A.unlock(); A.celebrate(); }
+      const idx = Math.max(0, Math.min(CITIES.length - 1, parseInt(cityIdx, 10) || 0));
+      if (this.container) {
+        const cityModal = this.container.querySelector('#platCityModal');
+        if (cityModal) cityModal.classList.add('hidden');
+        const vic = this.container.querySelector('#platVictoryScreen');
+        if (vic) vic.classList.add('hidden');
+      }
+      this.buildCityLevel(idx);
+    }
+
+    nextHero(playerSlot = 1) {
+      if (playerSlot === 2 || playerSlot === 3) {
+        const cp = this.coPlayers[playerSlot];
+        const curId = cp?.heroId || 'milk';
+        const idx = HEROES.findIndex(h => h.id === curId);
+        const next = HEROES[(idx + 1) % HEROES.length];
+        this.selectHeroById(next.id, playerSlot);
+        return;
+      }
       const currentId = this.selectedHero?.id || 'cinna';
       const idx = HEROES.findIndex(h => h.id === currentId);
       const nextIdx = (idx + 1) % HEROES.length;
       this.setHero(HEROES[nextIdx]);
       if (A) A.celebrate();
+    }
+
+    coPlayerJump(slot) {
+      const cp = this.coPlayers[slot];
+      if (!cp) return;
+      if (!cp.active) {
+        cp.active = true;
+        cp.x = Math.max(20, this.p.x - 36 * (slot - 1));
+        cp.y = this.p.y - 10;
+      }
+      const hero = cp.hero || HEROES[0];
+      if (cp.grounded || cp.coyoteTimer > 0) {
+        cp.vy = -hero.jumpPower;
+        cp.grounded = false;
+        cp.coyoteTimer = 0;
+        cp.canDoubleJump = true;
+        cp.squashX = 0.74;
+        cp.squashY = 1.34;
+        if (A) A.jump();
+        this.burstParticles(cp.x + cp.w / 2, cp.y + cp.h, 10, ['#ffffff', hero.trailColor, cp.badgeColor]);
+      } else if (cp.canDoubleJump && cp.vy > -240) {
+        cp.vy = -Math.round(hero.jumpPower * 0.94);
+        cp.canDoubleJump = false;
+        cp.squashX = 0.78;
+        cp.squashY = 1.28;
+        if (A) A.softBoing();
+        this.burstParticles(cp.x + cp.w / 2, cp.y + cp.h * 0.75, 12, ['#ffffff', hero.trailColor, cp.badgeColor]);
+      }
+    }
+
+    setCoPlayerInput(slot, btn, pressed) {
+      const cp = this.coPlayers[slot];
+      if (!cp) return;
+      if (pressed && !cp.active) {
+        cp.active = true;
+        cp.x = Math.max(20, this.p.x - 36 * (slot - 1));
+        cp.y = this.p.y - 10;
+        this.burstParticles(cp.x + cp.w / 2, cp.y + cp.h / 2, 16, ['#ffffff', cp.badgeColor]);
+      }
+      if (btn === 'left') cp.keys.left = pressed;
+      if (btn === 'right') cp.keys.right = pressed;
+      if (btn === 'jump' || btn === 'up') {
+        cp.keys.jump = pressed;
+        if (pressed) {
+          this.coPlayerJump(slot);
+        } else if (cp.vy < -180) {
+          cp.vy *= 0.65;
+        }
+      }
+      if (btn === 'treat' && pressed) {
+        this.burstParticles(cp.x + cp.w / 2, cp.y + cp.h / 2, 14, ['#ff9ebb', '#fde047', cp.badgeColor]);
+      }
+    }
+
+    setCoPlayerJoystick(slot, x, y) {
+      const cp = this.coPlayers[slot];
+      if (!cp) return;
+      if ((Math.abs(x) > 0.25 || Math.abs(y) > 0.25) && !cp.active) {
+        cp.active = true;
+        cp.x = Math.max(20, this.p.x - 36 * (slot - 1));
+        cp.y = this.p.y - 10;
+      }
+      cp.keys.left = x < -0.24;
+      cp.keys.right = x > 0.24;
+      const wantsJump = y < -0.65;
+      if (wantsJump && !cp.keys.jump) {
+        cp.keys.jump = true;
+        this.coPlayerJump(slot);
+      } else if (!wantsJump && cp.keys.jump) {
+        cp.keys.jump = false;
+      }
     }
 
     treat() {
@@ -536,6 +694,7 @@
        ------------------------------------------------------------- */
     buildCityLevel(cityIdx) {
       this.currentCityIdx = cityIdx;
+      this.currentCityIndex = cityIdx;
       if (cityIdx > this.highestUnlockedCity) {
         this.highestUnlockedCity = cityIdx;
       }
@@ -563,6 +722,20 @@
       this.score = 0;
       this.reachedGoal = false;
       this.camX = 0;
+
+      if (this.coPlayers) {
+        for (const slot of [2, 3]) {
+          const cp = this.coPlayers[slot];
+          if (cp && cp.active) {
+            cp.x = 80 - (slot - 1) * 28;
+            cp.y = 340;
+            cp.vx = 0;
+            cp.vy = 0;
+            cp.grounded = false;
+            cp.canDoubleJump = true;
+          }
+        }
+      }
 
       // Nubes decorativas en el cielo lejano
       this.sceneryClouds = [];
@@ -838,6 +1011,14 @@
 
     jump() {
       if (A) A.unlock();
+      if (this.container) {
+        const vic = this.container.querySelector('#platVictoryScreen');
+        if (vic && !vic.classList.contains('hidden')) {
+          const btnNext = this.container.querySelector('#btnPlatNextCity');
+          if (btnNext) btnNext.click();
+          return;
+        }
+      }
       this.keys.jump = true;
       this.p.jumpBuffer = 0.22;
       this.tryJump();
@@ -1185,6 +1366,95 @@
         else if (ap.x < -30) ap.x = VW + 30;
       }
 
+      // Actualizar Jugadores Cooperativos (P2 y P3)
+      for (const slot of [2, 3]) {
+        const cp = this.coPlayers && this.coPlayers[slot];
+        if (!cp || !cp.active) continue;
+        const ch = cp.hero || HEROES[0];
+
+        if (cp.keys.left && !cp.keys.right) {
+          cp.vx = Math.max(-330, cp.vx - 1800 * dt);
+          cp.facing = -1;
+        } else if (cp.keys.right && !cp.keys.left) {
+          cp.vx = Math.min(330, cp.vx + 1800 * dt);
+          cp.facing = 1;
+        } else {
+          const fr = cp.grounded ? 1400 : 700;
+          if (cp.vx > 0) cp.vx = Math.max(0, cp.vx - fr * dt);
+          else if (cp.vx < 0) cp.vx = Math.min(0, cp.vx + fr * dt);
+        }
+
+        cp.x += cp.vx * dt;
+        cp.x = Math.max(0, Math.min(this.levelWidth - cp.w, cp.x));
+
+        if (cp.grounded) {
+          cp.coyoteTimer = 0.20;
+          cp.canDoubleJump = true;
+        } else {
+          cp.coyoteTimer -= dt;
+        }
+
+        cp.gliding = !cp.grounded && cp.vy > 30 && cp.keys.jump;
+        cp.vy += (cp.gliding ? ch.glideGravity : 740) * dt;
+        cp.y += cp.vy * dt;
+
+        cp.squashX += (1.0 - cp.squashX) * Math.min(1, dt * 10);
+        cp.squashY += (1.0 - cp.squashY) * Math.min(1, dt * 10);
+        cp.animTimer += dt * (cp.grounded && Math.abs(cp.vx) > 10 ? 12 : 5);
+
+        cp.grounded = false;
+        for (const plat of this.platforms) {
+          if (
+            cp.x + cp.w * 0.7 > plat.x &&
+            cp.x + cp.w * 0.3 < plat.x + plat.w &&
+            cp.y + cp.h >= plat.y &&
+            cp.y + cp.h <= plat.y + 28 &&
+            cp.vy >= 0
+          ) {
+            cp.y = plat.y - cp.h;
+            cp.vy = 0;
+            cp.grounded = true;
+            if (plat.vx) cp.x += plat.vx * dt;
+            if (plat.vy) cp.y += plat.vy * dt;
+          }
+        }
+
+        for (const sp of this.springs) {
+          if (
+            cp.x + cp.w * 0.7 > sp.x &&
+            cp.x + cp.w * 0.3 < sp.x + sp.w &&
+            cp.y + cp.h >= sp.y &&
+            cp.y + cp.h <= sp.y + 24 &&
+            cp.vy >= 0
+          ) {
+            cp.vy = sp.power || -720;
+            cp.grounded = false;
+            sp.timer = 0.35;
+            if (A) A.softBoing();
+          }
+        }
+
+        for (const cup of this.cupcakes) {
+          if (!cup.got && Math.hypot((cp.x + cp.w / 2) - cup.x, (cp.y + cp.h / 2) - cup.y) < 46) {
+            cup.got = true;
+            this.score++;
+            if (A) A.collect(this.score);
+            this.burstParticles(cup.x, cup.y, 14, ['#ff6b9d', '#ffe066', cp.badgeColor]);
+            this.updateHUD();
+          }
+        }
+
+        // Burbuja de rescate cooperativo si cae o se aleja demasiado de la cámara
+        if (cp.y > 515 || Math.abs(cp.x - p.x) > 560) {
+          cp.x = Math.max(20, p.x - 36 * (slot - 1));
+          cp.y = p.y - 16;
+          cp.vx = 0;
+          cp.vy = 0;
+          cp.grounded = true;
+          this.burstParticles(cp.x + cp.w / 2, cp.y + cp.h / 2, 14, ['#ffffff', cp.badgeColor, '#fde047']);
+        }
+      }
+
       // Actualizar progreso continuo en el HUD
       this.updateProgressTrack();
     }
@@ -1311,7 +1581,37 @@
       // Gran Arco Triunfal y Picnic de Meta con los Amigos de Sanrio
       this.drawGoalPicnic(ctx, city);
 
-      // 5. PERSONAJE JUGADOR
+      // 5A. JUGADORES COOPERATIVOS ADICIONALES (P2 y P3)
+      const anyCoActive = (this.coPlayers?.[2]?.active || this.coPlayers?.[3]?.active);
+      for (const slot of [2, 3]) {
+        const cp = this.coPlayers && this.coPlayers[slot];
+        if (!cp || !cp.active) continue;
+        ctx.save();
+        const cWalk = cp.grounded && Math.abs(cp.vx) > 10 ? Math.sin(cp.animTimer) * 4 : 0;
+        const cTilt = cp.gliding ? Math.sin(cp.animTimer * 1.6) * 0.12 : 0;
+        ctx.translate(cp.x + cp.w / 2, cp.y + cp.h / 2 + cWalk);
+        ctx.scale(cp.facing * cp.squashX, cp.squashY);
+        ctx.rotate(cTilt);
+        const cImg = this.heroImages[cp.heroId];
+        if (cImg && cImg.complete) {
+          ctx.drawImage(cImg, -cp.w / 2, -cp.h / 2, cp.w, cp.h);
+        }
+        ctx.restore();
+
+        // Etiqueta flotante P2 / P3
+        ctx.save();
+        ctx.fillStyle = cp.badgeColor;
+        ctx.beginPath();
+        ctx.roundRect(cp.x + cp.w / 2 - 22, cp.y - 22, 44, 18, 9);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 11px "Baloo 2", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(cp.label, cp.x + cp.w / 2, cp.y - 9);
+        ctx.restore();
+      }
+
+      // 5B. PERSONAJE JUGADOR PRINCIPAL (P1)
       ctx.save();
       const hero = this.selectedHero;
       const p = this.p;
@@ -1330,6 +1630,19 @@
         ctx.drawImage(charImg, -p.w / 2, -p.h / 2, p.w, p.h);
       }
       ctx.restore();
+
+      if (anyCoActive) {
+        ctx.save();
+        ctx.fillStyle = '#ec4899';
+        ctx.beginPath();
+        ctx.roundRect(p.x + p.w / 2 - 22, p.y - 22, 44, 18, 9);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 11px "Baloo 2", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('P1 🌸', p.x + p.w / 2, p.y - 9);
+        ctx.restore();
+      }
 
       // 6. PARTÍCULAS DEL JUGADOR
       for (const pt of this.particles) {

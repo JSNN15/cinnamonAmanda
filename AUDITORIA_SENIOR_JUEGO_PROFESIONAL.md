@@ -142,13 +142,39 @@ El mando móvil cambia su interfaz automáticamente según la pantalla activa en
 
 ---
 
-## 8. Verificación Automatizada E2E (`tools/test_all_games_controller.py`)
+## 8. Evolución `v26`: Modo Consola TV "Zero-Keyboard / Zero-Mouse", Sesiones Paralelas y Multijugador de hasta 3 Players (`P1 🌸`, `P2 🩵`, `P3 💛`)
 
-La versión `v24` fue validada mediante pruebas automatizadas de extremo a extremo en Chromium Headless emulando simultáneamente la **Pantalla Principal (Host)** y el **Teléfono Móvil (Controller)** conectados por canal de datos en tiempo real:
-- ✅ Emparejamiento automático y sincronización bidireccional en los **8 juegos + Hub**.
-- ✅ Sincronización exacta de opciones numéricas en **Pastelería Matemática** (`mathAnswer`).
-- ✅ Volteo de cartas y detección de parejas en **Memorice** (`memoryFlip`).
-- ✅ Dibujo remoto continuo y cambio de color en **Estudio de Arte** (`colorDraw` / `colorSelect`).
-- ✅ Avance real de letras/palabras y trazado caligráfico en **Escuela de Escritura** (`writingNext` / `writingPrev` / `writingKey`).
-- ✅ Encaje de piezas y cambio de personaje en **Rompecabezas Mágico** (`puzzlePlaceNext` / `puzzleNextChar`).
-- ✅ Movimiento fluido, salto y lanzamiento de pastelitos en **Vuelo Mágico**, **Super Run** y **Castillo Dulce 3D**.
+### 8.1 Diagnóstico Senior de la Experiencia PC + TV
+Al conectar un PC a la televisión del living y jugar desde el sofá con el celular como mando, se detectaron **3 cuellos de botella de arquitectura**:
+1. **Dependencia residual del Mouse/Teclado del PC:** En `v25`, entrar a *Repartidor 3D (`doom.js`)* abría la pantalla de selección de personaje sin forma de elegir directamente a *Cinna, Milk, Purin, Chiffon o Mocha* desde el celular; en *Super Run (`platformer.js`)* no había selector directo de las 5 ciudades; en *Dibujo (`coloring.js`)* faltaba un *Touchpad* en el celular para trazar en el lienzo de la TV; y en * Matemáticas / Memorice / Puzzles / Escritura* los selectores de edad, modo, cantidad de cartas/piezas y teclado `A–Z` solo eran clicables en la TV.
+2. **Colisión de Sesiones Paralelas (`localStorage` compartido):** `getOrGenerateRoomCode()` leía primero `localStorage.getItem('cinna_room_code')`. Si se abrían dos sesiones o pestañas en paralelo, ambas intentaban registrar el mismo ID `cinna-host-xxxx` en PeerJS.
+3. **Límite de 1 Jugador en Pantalla:** Cuando varios niños o familiares querían jugar juntos con sus celulares, todos movían al mismo personaje sin identidad propia.
+
+### 8.2 Arquitectura Implementada en `v26`
+1. **Control Total "Zero-Keyboard / Zero-Mouse" en los 8 Juegos (`controller.html` + `js/controller-bridge.js`):**
+   - **Barra Superior Universal de Personajes Sanrio:** Permite tocar en cualquier momento `🐶 Cinna`, `🍼 Milk`, `🍮 Purin`, `🌸 Chiffon` o `🎀 Mocha` en el celular para cambiar de personaje instantáneamente en *Super Run*, *Repartidor 3D* (donde además inicia automáticamente el mundo 3D desde la pantalla de selección) y *Rompecabezas*.
+   - **Selector Directo de las 5 Ciudades en *Super Run* (`selectCity`):** Píldoras táctiles en el celular para viajar sin mouse a `🇨🇱 Conce`, `🏖️ Serena`, `🇧🇷 Río`, `🏔️ Stgo` o `🏮 China`.
+   - **Touchpad Táctil en Vivo (`remoteColorPad` y `remoteWritingPad`):** Superficie táctil interactiva en el celular que proyecta el cursor y dibuja/borra/estampa/traza en tiempo real sobre el `<canvas>` de la TV (`coloring.js` y `writing.js`), más selector de las 5 láminas, 3 grosores de pincel y guardado remoto (`📸 Guardar`).
+   - **Teclado Completo `A–Z + Ñ` y Botón `✨ Paso Mágico` en *Palabras Mágicas* (`writing.js`):** Permite cambiar entre los 4 modos (`🍪 Palabras`, `📖 Frases`, `✍️ Trazar`, `🖍️ Pizarra`), elegir nivel de edad (`5-6`, `6-7`, `7-8`), teclear cualquier letra o usar `✨ Poner Letra / Trazo` desde el sofá.
+   - **Selectores Remotos de Nivel y Dificultad:** En *Pastelería Matemática* (`🍼 5-6`, `🎒 6-7`, `🚀 7-8`, `➕`, `➖`, `✖️`, `🎲` + botón `👆 Contar Dulce`), *Memorice* (`8`, `12`, `16` cartas) y *Puzzles* (`6`, `9`, `12`, `16` piezas).
+   - **Cierre Universal de Modales de Victoria:** Presionar `Saltar` o `Dulce` en el mando cierra automáticamente cualquier modal de fin de nivel/partida en los 8 juegos.
+2. **Aislamiento de Sesiones Paralelas (`sessionStorage`):**
+   - Cada sesión de TV/PC genera y mantiene su propio código de sala aislado en `sessionStorage` (con soporte de override por URL `?room=XXXX` y regeneración automática ante `unavailable-id`), permitiendo múltiples sesiones simultáneas sin colisión.
+3. **Multijugador Simultáneo de hasta 3 Players (`P1 🌸`, `P2 🩵`, `P3 💛`):**
+   - **Asignación Automática y Manual de Slots (`1`, `2`, `3`):** Hasta 3 celulares (o 3 mandos físicos Bluetooth vía Gamepad API) se conectan en paralelo a la misma sala. Cada celular muestra su selector `P1 🌸 | P2 🩵 | P3 💛` y puede elegir su propio personaje Sanrio.
+   - **Co-Op Real en Pantalla en *Super Cinnamoroll Run* (`js/platformer.js`):** Los jugadores `P1 🌸`, `P2 🩵` y `P3 💛` corren, saltan, hacen doble salto, planean, rebotan en resortes y recolectan cupcakes juntos en el mismo escenario, con etiquetas flotantes de jugador y **rescate automático en burbuja mágica (Tether)** si `P2` o `P3` se quedan atrás de la cámara.
+
+---
+
+## 9. Verificación Automatizada E2E (`tools/test_all_games_controller.py`)
+
+La versión `v26` fue validada mediante pruebas automatizadas de extremo a extremo en Chromium Headless emulando simultáneamente la **Pantalla Principal (Host TV)** y los **Mandos Móviles (P1, P2, P3)** conectados por WebRTC en tiempo real:
+- ✅ Emparejamiento automático WebRTC y aislamiento de sesiones paralelas en los **8 juegos + Hub**.
+- ✅ **3 Jugadores simultáneos (`P1 🌸`, `P2 🩵`, `P3 💛`)** activos con físicas independientes, selección directa de héroe y cambio directo de ciudad en **Super Cinnamoroll Run**.
+- ✅ Selección directa de personaje (`Purin`) e inicio automático sin mouse ni teclado en **Repartidor 3D (`doom.js`)**.
+- ✅ Cambio de nivel de edad (`6-7`), modo (`sub`), conteo táctil remoto de dulces (`countHelp`) y respuesta en **Pastelería Matemática**.
+- ✅ Cambio de dificultad (`12 cartas`) y volteo remoto en **Memorice**.
+- ✅ Cambio de personaje (`Chiffon`), dificultad (`9 piezas`), silueta guía y encaje en **Rompecabezas Mágico**.
+- ✅ Selección de lámina (`Milk`), grosor (`40px`) y trazo continuo desde el **Touchpad Remoto** en **Estudio de Arte**.
+- ✅ Colocación de letras con `✨ Paso Mágico`, cambio a modo `Trazar`, selección con teclado `A–Z` y trazo por Touchpad en **Escuela de Escritura**.
+

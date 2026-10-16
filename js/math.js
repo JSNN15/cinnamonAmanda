@@ -241,11 +241,33 @@
           options: options,
           treatEmoji: this.treatType.emoji,
           score: this.score,
-          totalGoal: this.totalGoal
+          totalGoal: this.totalGoal,
+          ageTier: this.ageTier,
+          mode: this.mode
         });
       }
 
       this.bindEvents();
+    }
+
+    countNextTreat() {
+      if (!this.container) return;
+      A.unlock();
+      const allActive = Array.from(this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)'));
+      for (const btn of allActive) {
+        const idx = btn.dataset.idx;
+        if (idx && !this.countedItems.has(idx)) {
+          btn.click();
+          return;
+        }
+      }
+      // Si ya se contaron todos, reiniciar conteo para volver a empezar
+      this.countedItems.clear();
+      allActive.forEach(btn => {
+        const badge = btn.querySelector('.treat-count');
+        if (badge) badge.classList.add('hidden');
+      });
+      if (allActive[0]) allActive[0].click();
     }
 
     renderTrayElements() {

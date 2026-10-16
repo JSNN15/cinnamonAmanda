@@ -2503,6 +2503,132 @@
       const btnClr = this.container ? (this.container.querySelector('#btnClearTrace') || this.container.querySelector('#btnClearFree')) : null;
       if (btnClr) btnClr.click();
     }
+
+    setModeRemote(mode) {
+      const mapped = mode === 'words' ? 'montessori' : mode;
+      if (!['montessori', 'sentences', 'trace', 'free'].includes(mapped)) return;
+      A.unlock();
+      A.bubblePop(1);
+      this.currentMode = mapped;
+      this.mode = mapped;
+      this.render();
+    }
+
+    setTierRemote(tier) {
+      if (!['5-6', '6-7', '7-8'].includes(tier)) return;
+      A.unlock();
+      A.bubblePop(1);
+      this.ageTier = tier;
+      this.currentWordIdx = 0;
+      this.currentSentenceIdx = 0;
+      this.loadWord(0);
+      this.loadSentence(0);
+      this.render();
+    }
+
+    pressLetterKey(char) {
+      if (!char) return;
+      A.unlock();
+      const upper = char.toUpperCase();
+      const mode = this.currentMode || 'montessori';
+      if (mode === 'trace') {
+        if (ALPHABET.includes(upper)) {
+          this.customTraceChar = upper;
+          this.traceProgress = 0;
+          this.traceDone = false;
+          this.render();
+          this.speak(`Letra ${upper}`);
+        }
+        return;
+      }
+      if (mode === 'montessori') {
+        const idx = this.availableCookies.findIndex(c => !c.used && lettersMatch(c.letter, upper));
+        if (idx !== -1) {
+          this.handleCookieTap(idx);
+        } else {
+          A.softBoing();
+        }
+        return;
+      }
+      if (mode === 'sentences') {
+        this.autoStepRemote();
+      }
+    }
+
+    autoStepRemote() {
+      A.unlock();
+      if (this.container) {
+        const modalBtn = this.container.querySelector('#btnNextWordModal') || this.container.querySelector('#btnNextSentenceModal');
+        if (modalBtn) {
+          modalBtn.click();
+          return;
+        }
+      }
+      const mode = this.currentMode || 'montessori';
+      if (mode === 'montessori') {
+        const list = this.getFilteredWords();
+        const w = list[this.currentWordIdx] || WORDS[0];
+        const emptySlotIdx = this.placedLetters.findIndex(l => l === null);
+        if (emptySlotIdx !== -1) {
+          const targetChar = w.letters[emptySlotIdx];
+          const cIdx = this.availableCookies.findIndex(c => !c.used && lettersMatch(c.letter, targetChar));
+          if (cIdx !== -1) {
+            this.placeLetterSuccess(cIdx, emptySlotIdx);
+          }
+        }
+      } else if (mode === 'sentences') {
+        const s = SENTENCES[this.currentSentenceIdx];
+        const emptySlotIdx = this.placedSentenceWords.findIndex(w => w === null);
+        if (emptySlotIdx !== -1 && s) {
+          const targetWord = s.words[emptySlotIdx];
+          const pIdx = this.availableSentencePills.findIndex(p => !p.used && p.word === targetWord);
+          if (pIdx !== -1) {
+            this.placeSentenceWordSuccess(pIdx, emptySlotIdx);
+          }
+        }
+      } else if (mode === 'trace') {
+        const canvas = this.container ? this.container.querySelector('#traceCanvas') : null;
+        if (!canvas || !canvas.onpointerdown) return;
+        const char = this.getCurrentTraceChar();
+        const conf = LETTER_STROKES[char] || LETTER_STROKES['A'];
+        const rect = canvas.getBoundingClientRect();
+        const boxSize = Math.min(canvas.width, canvas.height) * 0.78;
+        const originX = (canvas.width - boxSize) / 2;
+        const originY = (canvas.height - boxSize) / 2;
+        const toClient = (nx, ny) => ({
+          clientX: rect.left + ((originX + nx * boxSize) / canvas.width) * rect.width,
+          clientY: rect.top + ((originY + ny * boxSize) / canvas.height) * rect.height
+        });
+        conf.strokes.forEach(stroke => {
+          if (!stroke.length) return;
+          const p0 = toClient(stroke[0][0], stroke[0][1]);
+          canvas.onpointerdown({ preventDefault() {}, clientX: p0.clientX, clientY: p0.clientY });
+          for (let i = 1; i < stroke.length; i++) {
+            const pA = stroke[i - 1];
+            const pB = stroke[i];
+            for (let s = 1; s <= 12; s++) {
+              const t = s / 12;
+              const pt = toClient(pA[0] + (pB[0] - pA[0]) * t, pA[1] + (pB[1] - pA[1]) * t);
+              canvas.onpointermove({ preventDefault() {}, clientX: pt.clientX, clientY: pt.clientY });
+            }
+          }
+          canvas.onpointerup({ preventDefault() {} });
+        });
+      }
+    }
+
+    remotePad(action, normX, normY) {
+      if (!this.container) return;
+      const canvas = this.container.querySelector('#traceCanvas') || this.container.querySelector('#freeChalkCanvas');
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const clientX = rect.left + normX * rect.width;
+      const clientY = rect.top + normY * rect.height;
+      const fakeEv = { preventDefault() {}, clientX, clientY, pointerId: 77 };
+      if (action === 'down' && canvas.onpointerdown) canvas.onpointerdown(fakeEv);
+      else if (action === 'move' && canvas.onpointermove) canvas.onpointermove(fakeEv);
+      else if (action === 'up' && canvas.onpointerup) canvas.onpointerup(fakeEv);
+    }
   }
 
   window.Cinnamo = window.Cinnamo || {};

@@ -743,6 +743,29 @@
       this.loadPuzzle(this.currentCharIdx, this.pieceCountMode);
       this.render();
     }
+
+    selectCharacterById(charId) {
+      A.unlock();
+      A.bubblePop(2);
+      const map = { cinna: 0, milk: 1, chiffon: 2, purin: 3, mocha: 4 };
+      const idx = map[charId] !== undefined ? map[charId] : 0;
+      if (this.container) {
+        const modal = this.container.querySelector('.w-victory-modal-overlay');
+        if (modal) modal.remove();
+      }
+      this.loadPuzzle(idx, this.pieceCountMode);
+      this.render();
+      if (PUZZLE_CHARACTERS[idx]) this.speak(PUZZLE_CHARACTERS[idx].voiceIntro);
+    }
+
+    setDifficultyPieces(pieces) {
+      const p = parseInt(pieces, 10);
+      if (![6, 9, 12, 16].includes(p)) return;
+      A.unlock();
+      A.bubblePop(2);
+      this.loadPuzzle(this.currentCharIdx, p);
+      this.render();
+    }
   }
 
   window.Cinnamo = window.Cinnamo || {};

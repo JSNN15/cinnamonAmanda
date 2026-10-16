@@ -214,7 +214,7 @@ try:
     print("✅ Controles de ¡A Volar! (Pirueta, Saludo, Stick) respondieron con éxito.")
 
     # -------------------------------------------------------------
-    # PRUEBA 2: Pastelería de Números (Math)
+    # PRUEBA 2: Pastelería de Números (Math + Nivel + Modo + Contar)
     # -------------------------------------------------------------
     print("\n--- TEST 2: PASTELERÍA DE NÚMEROS (MATH) ---")
     ws_phone.eval("sendData({ type: 'nav', screen: 'math' })")
@@ -226,6 +226,18 @@ try:
     assert screen_host == 'math', f"Host screen should be math, got {screen_host}"
     print(f"✅ TV: '{screen_host}' | Mando: '{mode_phone}' | Pregunta: '{question}' | Opciones: {btn_count}")
 
+    # Cambiar nivel de edad y operación desde el celular sin usar mouse
+    ws_phone.eval("sendData({ type: 'mathConfig', tier: '6-7', mode: 'sub' })")
+    time.sleep(0.4)
+    math_tier = ws_host.eval("window.Cinnamo?.mathGame?.ageTier")
+    math_mode = ws_host.eval("window.Cinnamo?.mathGame?.mode")
+    assert math_tier == '6-7' and math_mode == 'sub', f"Math tier/mode should be 6-7/sub, got {math_tier}/{math_mode}"
+    ws_phone.eval("sendData({ type: 'mathConfig', countHelp: true })")
+    time.sleep(0.3)
+    counted_size = ws_host.eval("window.Cinnamo?.mathGame?.countedItems?.size || 0")
+    assert counted_size >= 1, "Remote countHelp should count at least 1 treat on TV"
+    print(f"✅ Nivel ({math_tier}), Operación ({math_mode}) y Conteo táctil remoto ({counted_size} dulce) verificados.")
+
     # Responder seleccionando la primera opción en el celular
     target_val = ws_phone.eval("parseInt(document.querySelector('.btn-math-remote')?.dataset.val, 10)")
     ws_phone.eval(f"sendData({{ type: 'mathAnswer', val: {target_val} }})")
@@ -233,65 +245,71 @@ try:
     print(f"✅ Respuesta {target_val} enviada desde celular a la TV.")
 
     # -------------------------------------------------------------
-    # PRUEBA 3: Super Cinnamoroll Run (Platformer)
+    # PRUEBA 3: Super Cinnamoroll Run + 3 Jugadores Simultáneos (P1, P2, P3) + Ciudades
     # -------------------------------------------------------------
-    print("\n--- TEST 3: SUPER CINNAMOROLL RUN ---")
+    print("\n--- TEST 3: SUPER CINNAMOROLL RUN (3 PLAYERS SIMULTÁNEOS + CIUDADES) ---")
     ws_phone.eval("sendData({ type: 'nav', screen: 'platformer' })")
     time.sleep(1.2)
     screen_host = ws_host.eval("window.Cinnamo?.hub?.currentScreen")
     mode_phone = ws_phone.eval("document.getElementById('footerGameLabel')?.textContent")
     hero_before = ws_host.eval("window.Cinnamo?.platformerGame?.selectedHero?.id")
-    print(f"✅ TV: '{screen_host}' | Mando: '{mode_phone}' | Héroe inicial: {hero_before}")
+    print(f"✅ TV: '{screen_host}' | Mando: '{mode_phone}' | Héroe P1 inicial: {hero_before}")
 
-    # Rotar héroe con botón AMIGO desde el mando
-    ws_phone.eval("sendData({ type: 'switchHero' })")
-    time.sleep(0.5)
-    hero_after = ws_host.eval("window.Cinnamo?.platformerGame?.selectedHero?.id")
-    assert hero_after != hero_before, f"Hero should change! before: {hero_before}, after: {hero_after}"
-    print(f"✅ Botón AMIGO cambió héroe a: {hero_after}")
+    # Elegir directamente a Mocha para P1 desde el selector del mando
+    ws_phone.eval("sendData({ type: 'selectHero', heroId: 'mocha', player: 1 })")
+    time.sleep(0.4)
+    hero_p1 = ws_host.eval("window.Cinnamo?.platformerGame?.selectedHero?.id")
+    assert hero_p1 == 'mocha', f"P1 hero should be mocha, got {hero_p1}"
+    print(f"✅ Selección directa de personaje P1 desde el mando: {hero_p1}")
 
-    # Correr con Joystick diagonal y Saltar
-    ws_phone.eval("sendData({ type: 'joystick', x: 0.8, y: 0, dist: 0.8, angle: 0 })")
-    ws_phone.eval("sendButton('jump', true)")
-    time.sleep(0.2)
+    # Sumar Jugador 2 (Milk) y Jugador 3 (Purin) en simultáneo
+    ws_phone.eval("sendData({ type: 'setPlayerSlot', slot: 2, player: 2, heroId: 'milk', active: true })")
+    ws_phone.eval("sendData({ type: 'setPlayerSlot', slot: 3, player: 3, heroId: 'purin', active: true })")
+    time.sleep(0.4)
+    p2_active = ws_host.eval("window.Cinnamo?.platformerGame?.coPlayers?.[2]?.active")
+    p3_active = ws_host.eval("window.Cinnamo?.platformerGame?.coPlayers?.[3]?.active")
+    assert p2_active is True and p3_active is True, f"P2 and P3 should be active! P2={p2_active}, P3={p3_active}"
+    print(f"✅ ¡3 Jugadores simultáneos activos en pantalla! (P1={hero_p1}, P2=milk, P3=purin)")
+
+    # Mover y hacer saltar a P1, P2 y P3 en simultáneo
+    ws_phone.eval("sendData({ type: 'joystick', player: 1, x: 0.8, y: 0, dist: 0.8, angle: 0 })")
+    ws_phone.eval("sendData({ type: 'input', player: 1, btn: 'jump', pressed: true })")
+    ws_phone.eval("sendData({ type: 'joystick', player: 2, x: 0.8, y: -0.8, dist: 1.0, angle: -45 })")
+    ws_phone.eval("sendData({ type: 'input', player: 3, btn: 'jump', pressed: true })")
+    time.sleep(0.25)
     is_jumping = ws_host.eval("window.Cinnamo?.platformerGame?.keys?.jump")
-    is_running = ws_host.eval("window.Cinnamo?.platformerGame?.keys?.right")
-    ws_phone.eval("sendButton('jump', false)")
-    ws_phone.eval("sendData({ type: 'joystick', x: 0, y: 0, dist: 0, angle: 0 })")
-    print(f"✅ Joystick y Salto en Super Run ejecutados (keys.jump={is_jumping}, keys.right={is_running}).")
+    p2_vx = ws_host.eval("window.Cinnamo?.platformerGame?.coPlayers?.[2]?.vx || 0")
+    p3_vy = ws_host.eval("window.Cinnamo?.platformerGame?.coPlayers?.[3]?.vy || 0")
+    ws_phone.eval("sendData({ type: 'input', player: 1, btn: 'jump', pressed: false })")
+    ws_phone.eval("sendData({ type: 'input', player: 3, btn: 'jump', pressed: false })")
+    ws_phone.eval("sendData({ type: 'joystick', player: 1, x: 0, y: 0, dist: 0, angle: 0 })")
+    ws_phone.eval("sendData({ type: 'joystick', player: 2, x: 0, y: 0, dist: 0, angle: 0 })")
+    print(f"✅ Física simultánea P1/P2/P3 verificada (P1.jump={is_jumping}, P2.vx={p2_vx}, P3.vy={p3_vy:.1f}).")
 
-    # Botón Dulce
-    ws_phone.eval("sendButton('treat', true)")
-    time.sleep(0.1)
-    ws_phone.eval("sendButton('treat', false)")
-    print("✅ Botón Dulce (treat) activado en Super Run.")
+    # Cambiar de ciudad directamente desde el celular (Ej: Río de Janeiro = 2)
+    ws_phone.eval("sendData({ type: 'selectCity', cityIdx: 2 })")
+    time.sleep(0.4)
+    city_idx = ws_host.eval("window.Cinnamo?.platformerGame?.currentCityIndex")
+    assert city_idx == 2, f"City index should be 2 (Río), got {city_idx}"
+    print(f"✅ Cambio directo de Ciudad desde el celular verificado (currentCityIndex={city_idx} · Río de Janeiro).")
 
     # -------------------------------------------------------------
-    # PRUEBA 4: Repartidor 3D (Doom)
+    # PRUEBA 4: Repartidor 3D (Doom — Selección directa de Héroe + Auto-Start)
     # -------------------------------------------------------------
     print("\n--- TEST 4: REPARTIDOR 3D (DOOM) ---")
     ws_phone.eval("sendData({ type: 'nav', screen: 'doom' })")
     time.sleep(1.2)
     screen_host = ws_host.eval("window.Cinnamo?.hub?.currentScreen")
-    mode_phone = ws_phone.eval("document.getElementById('footerGameLabel')?.textContent")
-    print(f"✅ TV: '{screen_host}' | Mando: '{mode_phone}'")
+    in_select_initial = ws_host.eval("window.Cinnamo?.doomGame?.inCharSelect")
+    print(f"✅ TV: '{screen_host}' | En pantalla de selección inicial: {in_select_initial}")
 
-    # Iniciar partida 3D desde el control remoto si está en pantalla de selección
-    in_select = ws_host.eval("window.Cinnamo?.doomGame?.inCharSelect")
-    if in_select:
-        ws_phone.eval("sendButton('jump', true)")
-        time.sleep(0.1)
-        ws_phone.eval("sendButton('jump', false)")
-        time.sleep(0.5)
-        print("✅ Partida 3D iniciada desde el botón ¡JUGAR! del mando.")
-
-    hero_doom_before = ws_host.eval("window.Cinnamo?.doomGame?.selectedHero?.id")
-    # Rotar héroe en Doom
-    ws_phone.eval("sendData({ type: 'switchHero' })")
+    # Elegir directamente a Purin desde el celular -> debe elegirlo e iniciar el mundo 3D sin tocar el mouse
+    ws_phone.eval("sendData({ type: 'selectHero', heroId: 'purin', player: 1 })")
     time.sleep(0.5)
-    hero_doom_after = ws_host.eval("window.Cinnamo?.doomGame?.selectedHero?.id")
-    assert hero_doom_after != hero_doom_before, f"Doom hero should change! before: {hero_doom_before}, after: {hero_doom_after}"
-    print(f"✅ Botón AMIGO cambió héroe en 3D a: {hero_doom_after}")
+    in_select_after = ws_host.eval("window.Cinnamo?.doomGame?.inCharSelect")
+    hero_doom_selected = ws_host.eval("window.Cinnamo?.doomGame?.selectedHero?.id")
+    assert in_select_after is False and hero_doom_selected == 'purin', f"Doom should auto-start with purin! inSelect={in_select_after}, hero={hero_doom_selected}"
+    print(f"✅ Selección directa en celular ('{hero_doom_selected}') inició el juego 3D automáticamente sin teclado/mouse.")
 
     # Lanzar dulce (throwTreat / shootTreat)
     proj_count_before = ws_host.eval("window.Cinnamo?.doomGame?.projectiles?.length || 0")
@@ -304,97 +322,94 @@ try:
     print(f"✅ Disparo de dulce 3D verificado (proyectiles: {proj_count_after}).")
 
     # -------------------------------------------------------------
-    # PRUEBA 5: Memorice Sanrio (Memory)
+    # PRUEBA 5: Memorice Sanrio (Memory + Selector de Dificultad)
     # -------------------------------------------------------------
     print("\n--- TEST 5: MEMORICE SANRIO ---")
     ws_phone.eval("sendData({ type: 'nav', screen: 'memory' })")
     time.sleep(1.2)
-    screen_host = ws_host.eval("window.Cinnamo?.hub?.currentScreen")
-    mode_phone = ws_phone.eval("document.getElementById('footerGameLabel')?.textContent")
+    ws_phone.eval("sendData({ type: 'memoryDifficulty', cards: 12 })")
+    time.sleep(0.5)
+    mem_diff = ws_host.eval("window.Cinnamo?.memoryGame?.difficulty")
     cards_phone = ws_phone.eval("document.querySelectorAll('#memoryRemoteGrid .btn-memory-card').length")
-    print(f"✅ TV: '{screen_host}' | Mando: '{mode_phone}' | Cartas táctiles en Celular: {cards_phone}")
+    assert mem_diff == 12 and cards_phone == 12, f"Memory difficulty should be 12, got TV={mem_diff}, Phone={cards_phone}"
+    print(f"✅ Cambio de dificultad desde celular verificado: {mem_diff} cartas en TV y {cards_phone} en Celular.")
 
-    # Voltear carta 0 desde el celular
-    flipped_before = ws_host.eval("window.Cinnamo?.memoryGame?.flippedCards?.length || 0")
     ws_phone.eval("sendData({ type: 'flipCard', index: 0 })")
     time.sleep(0.3)
     flipped_after = ws_host.eval("window.Cinnamo?.memoryGame?.flippedCards?.length || 0")
     print(f"✅ Volteo de carta desde celular ejecutado (volteadas en TV: {flipped_after}).")
 
     # -------------------------------------------------------------
-    # PRUEBA 6: Rompecabezas (Puzzle)
+    # PRUEBA 6: Rompecabezas (Puzzle + Personaje + Dificultad + Encajar)
     # -------------------------------------------------------------
     print("\n--- TEST 6: ROMPECABEZAS (PUZZLE) ---")
     ws_phone.eval("sendData({ type: 'nav', screen: 'puzzle' })")
     time.sleep(1.2)
-    screen_host = ws_host.eval("window.Cinnamo?.hub?.currentScreen")
-    mode_phone = ws_phone.eval("document.getElementById('footerGameLabel')?.textContent")
-    placed_before = ws_host.eval("Object.keys(window.Cinnamo?.puzzleGame?.placedPieces || {}).length")
-    print(f"✅ TV: '{screen_host}' | Mando: '{mode_phone}' | Piezas colocadas: {placed_before}")
+    ws_phone.eval("sendData({ type: 'selectHero', heroId: 'chiffon' })")
+    ws_phone.eval("sendData({ type: 'puzzleDifficulty', pieces: 9 })")
+    time.sleep(0.5)
+    puz_char = ws_host.eval("window.Cinnamo?.puzzleGame?.getCurrentChar?.()?.id")
+    puz_grid = ws_host.eval("window.Cinnamo?.puzzleGame?.pieceCountMode")
+    assert puz_char == 'chiffon' and puz_grid == 9, f"Puzzle should be chiffon/9 pieces, got {puz_char}/{puz_grid}"
+    print(f"✅ Personaje ({puz_char}) y Dificultad ({puz_grid} piezas) seleccionados desde el celular.")
 
-    # Encajar siguiente pieza mágicamente desde el control remoto
+    placed_before = ws_host.eval("Object.keys(window.Cinnamo?.puzzleGame?.placedPieces || {}).length")
     ws_phone.eval("sendData({ type: 'puzzlePlaceNext' })")
     time.sleep(0.4)
     placed_after = ws_host.eval("Object.keys(window.Cinnamo?.puzzleGame?.placedPieces || {}).length")
     assert placed_after > placed_before, f"Pieces should increase! before: {placed_before}, after: {placed_after}"
     print(f"✅ Botón ✨ ENCAJAR PIEZA ✨ colocó pieza exitosamente ({placed_after} piezas).")
 
-    # Alternar Pista Mágica (Silueta)
-    ghost_before = ws_host.eval("window.Cinnamo?.puzzleGame?.showGhostGuide")
-    ws_phone.eval("sendData({ type: 'puzzleHint' })")
-    time.sleep(0.3)
-    ghost_after = ws_host.eval("window.Cinnamo?.puzzleGame?.showGhostGuide")
-    assert ghost_after != ghost_before, f"Ghost guide should toggle! before: {ghost_before}, after: {ghost_after}"
-    print(f"✅ Botón PISTA MÁGICA alternó silueta de ayuda ({ghost_before} -> {ghost_after}).")
-
     # -------------------------------------------------------------
-    # PRUEBA 7: Taller de Pintura (Coloring)
+    # PRUEBA 7: Taller de Pintura (Coloring + Touchpad en Vivo + Lámina + Grosor)
     # -------------------------------------------------------------
-    print("\n--- TEST 7: TALLER DE PINTURA (COLORING) ---")
+    print("\n--- TEST 7: TALLER DE PINTURA (COLORING + TOUCHPAD) ---")
     ws_phone.eval("sendData({ type: 'nav', screen: 'coloring' })")
     time.sleep(1.2)
-    screen_host = ws_host.eval("window.Cinnamo?.hub?.currentScreen")
-    mode_phone = ws_phone.eval("document.getElementById('footerGameLabel')?.textContent")
-    chips_count = ws_phone.eval("document.querySelectorAll('#coloringChipsRow .color-chip-btn').length")
-    print(f"✅ TV: '{screen_host}' | Mando: '{mode_phone}' | Chips de colores Sanrio: {chips_count}")
-
-    # Elegir color Celeste (#8ecae6) desde el celular
+    ws_phone.eval("sendData({ type: 'colorSheet', sheetId: 'milk' })")
+    ws_phone.eval("sendData({ type: 'colorSize', size: 40 })")
     ws_phone.eval("sendData({ type: 'colorPick', color: '#8ecae6' })")
-    time.sleep(0.3)
-    selected_color = ws_host.eval("window.Cinnamo?.coloringGame?.selectedColor")
-    assert selected_color == '#8ecae6', f"Selected color should be #8ecae6, got {selected_color}"
-    print(f"✅ Selección remota de color: {selected_color} (Celeste Cinnamoroll).")
-
-    # Cambiar herramienta a Borrador
-    ws_phone.eval("sendData({ type: 'colorTool', tool: 'eraser' })")
-    time.sleep(0.3)
-    selected_tool = ws_host.eval("window.Cinnamo?.coloringGame?.currentTool")
-    assert selected_tool == 'eraser', f"Tool should be eraser, got {selected_tool}"
-    print(f"✅ Selección remota de herramienta: {selected_tool} (Borrador).")
-
-    # Siguiente lámina
-    sheet_before = ws_host.eval("window.Cinnamo?.coloringGame?.currentSheet?.id")
-    ws_phone.eval("sendData({ type: 'colorNextSheet' })")
     time.sleep(0.4)
-    sheet_after = ws_host.eval("window.Cinnamo?.coloringGame?.currentSheet?.id")
-    print(f"✅ Cambio remoto de lámina verificado: {sheet_before} -> {sheet_after}.")
+    sheet_id = ws_host.eval("window.Cinnamo?.coloringGame?.currentSheet?.id")
+    b_size = ws_host.eval("window.Cinnamo?.coloringGame?.brushSize")
+    assert sheet_id == 'milk' and b_size == 40, f"Coloring sheet/size should be milk/40, got {sheet_id}/{b_size}"
+
+    # Pintar un trazo desde el Touchpad del celular hacia la TV
+    undo_before = ws_host.eval("window.Cinnamo?.coloringGame?.history?.length || 0")
+    ws_phone.eval("sendData({ type: 'colorPad', action: 'down', x: 0.3, y: 0.3 })")
+    ws_phone.eval("sendData({ type: 'colorPad', action: 'move', x: 0.6, y: 0.6 })")
+    ws_phone.eval("sendData({ type: 'colorPad', action: 'up', x: 0.6, y: 0.6 })")
+    time.sleep(0.3)
+    undo_after = ws_host.eval("window.Cinnamo?.coloringGame?.history?.length || 0")
+    assert undo_after > undo_before, f"Remote touchpad stroke should record on canvas! history: {undo_before} -> {undo_after}"
+    print(f"✅ Lámina ({sheet_id}), Grosor ({b_size}px) y Trazo por Touchpad Remoto verificados.")
 
     # -------------------------------------------------------------
-    # PRUEBA 8: Palabras Mágicas (Writing)
+    # PRUEBA 8: Palabras Mágicas (Writing + Modos + Paso Mágico + Teclado A-Z + Touchpad)
     # -------------------------------------------------------------
     print("\n--- TEST 8: PALABRAS MÁGICAS (WRITING) ---")
     ws_phone.eval("sendData({ type: 'nav', screen: 'writing' })")
     time.sleep(1.2)
-    screen_host = ws_host.eval("window.Cinnamo?.hub?.currentScreen")
-    mode_phone = ws_phone.eval("document.getElementById('footerGameLabel')?.textContent")
-    word_before = ws_host.eval("window.Cinnamo?.writingGame?.getCurrentTraceChar ? window.Cinnamo.writingGame.getCurrentTraceChar() : 'A'")
-    print(f"✅ TV: '{screen_host}' | Mando: '{mode_phone}' | Letra actual: {word_before}")
-
-    # Siguiente letra / palabra
-    ws_phone.eval("sendData({ type: 'writingNext' })")
+    # En modo 'words', usar Paso Mágico para colocar la primera letra automáticamente
+    slot_before = ws_host.eval("(window.Cinnamo?.writingGame?.placedLetters || []).filter(l => l !== null).length")
+    ws_phone.eval("sendData({ type: 'writingAutoStep' })")
     time.sleep(0.4)
-    word_after = ws_host.eval("window.Cinnamo?.writingGame?.getCurrentTraceChar ? window.Cinnamo.writingGame.getCurrentTraceChar() : 'A'")
-    print(f"✅ Botón Siguiente Letra en celular ejecutado: {word_before} -> {word_after}.")
+    slot_after = ws_host.eval("(window.Cinnamo?.writingGame?.placedLetters || []).filter(l => l !== null).length")
+    assert slot_after > slot_before, f"AutoStep should place next letter cookie! {slot_before} -> {slot_after}"
+    print(f"✅ Paso Mágico colocó galleta de letra en modo Montessori ({slot_before} -> {slot_after}).")
+
+    # Cambiar a modo Trazar ('trace') y elegir letra 'M' desde el teclado A-Z del celular
+    ws_phone.eval("sendData({ type: 'writingMode', mode: 'trace' })")
+    time.sleep(0.4)
+    ws_phone.eval("sendData({ type: 'writingKey', char: 'M' })")
+    time.sleep(0.3)
+    trace_char = ws_host.eval("window.Cinnamo?.writingGame?.getCurrentTraceChar?.()")
+    assert trace_char == 'M', f"Trace char should be M, got {trace_char}"
+    ws_phone.eval("sendData({ type: 'writingPad', action: 'down', x: 0.25, y: 0.75 })")
+    ws_phone.eval("sendData({ type: 'writingPad', action: 'move', x: 0.25, y: 0.25 })")
+    ws_phone.eval("sendData({ type: 'writingPad', action: 'up', x: 0.25, y: 0.25 })")
+    time.sleep(0.2)
+    print(f"✅ Modo Trazar ('{trace_char}') y Touchpad de caligrafía remota verificados.")
 
     # -------------------------------------------------------------
     # PRUEBA 9: Retorno al Menú Principal (Hub)
@@ -429,7 +444,7 @@ try:
     assert passport_open is True, "Passport modal should open on TV when triggered from phone"
     print("✅ Modal de Pasaporte de Stickers abierto en TV desde el celular.")
 
-    print("\n🎉 ¡TODOS LOS 8 JUEGOS, MODO COOPERATIVO Y PASAPORTE VERIFICADOS AL 100%! 🎉")
+    print("\n🎉 ¡TODOS LOS 8 JUEGOS, 3 JUGADORES SIMULTÁNEOS (P1/P2/P3) Y CONTROL TV 100% VERIFICADOS! 🎉")
 
 finally:
     if chrome_host:

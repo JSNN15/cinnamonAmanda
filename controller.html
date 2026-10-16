@@ -459,6 +459,171 @@
     .btn-coop-cheer { background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%); color: #831843; }
     .btn-coop-passport { background: linear-gradient(135deg, #e9d5ff 0%, #c084fc 100%); color: #4c1d95; }
 
+    /* Barra Superior Multijugador (P1 / P2 / P3) y Selector Directo de Personajes */
+    .multiplayer-top-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 4px 8px;
+      margin-top: 4px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 2px solid #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 3px 10px rgba(56, 189, 248, 0.16);
+      z-index: 9;
+    }
+    .player-slot-group, .hero-quick-group {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-player-slot {
+      border: 2px solid #cbd5e1;
+      background: #f8fafc;
+      color: #475569;
+      border-radius: 11px;
+      padding: 2px 8px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.08s, background 0.15s;
+    }
+    .btn-player-slot.active[data-slot="1"] {
+      background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%);
+      border-color: #db2777;
+      color: #ffffff;
+    }
+    .btn-player-slot.active[data-slot="2"] {
+      background: linear-gradient(135deg, #bae6fd 0%, #0284c7 100%);
+      border-color: #0369a1;
+      color: #ffffff;
+    }
+    .btn-player-slot.active[data-slot="3"] {
+      background: linear-gradient(135deg, #fef08a 0%, #eab308 100%);
+      border-color: #a16207;
+      color: #422006;
+    }
+    .btn-hero-pick {
+      border: 2px solid #e2e8f0;
+      background: #ffffff;
+      border-radius: 11px;
+      padding: 2px 7px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      color: #475569;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      box-shadow: 0 2px 0 #cbd5e1;
+    }
+    .btn-hero-pick.active {
+      background: #fdf2f8;
+      border-color: #ec4899;
+      color: #be185d;
+      box-shadow: 0 2px 0 #db2777;
+    }
+    .btn-hero-pick:active, .btn-player-slot:active {
+      transform: scale(0.93);
+    }
+
+    /* Píldoras compactas para Ciudades, Modos, Niveles y Piezas */
+    .remote-mini-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      width: 100%;
+      max-width: 440px;
+    }
+    .btn-mini-pill {
+      border: 2px solid #ffffff;
+      background: rgba(255, 255, 255, 0.92);
+      color: #334155;
+      border-radius: 12px;
+      padding: 3px 9px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 0 rgba(148, 163, 184, 0.6);
+      transition: transform 0.08s;
+    }
+    .btn-mini-pill.active {
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+      color: #ffffff;
+      box-shadow: 0 2px 0 #0369a1;
+    }
+    .btn-mini-pill:active {
+      transform: translateY(1px) scale(0.95);
+    }
+
+    /* Touchpad Remoto para Pintar y Trazar en la TV */
+    .remote-touchpad-surface {
+      width: 100%;
+      max-width: 380px;
+      height: 112px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 3px dashed #38bdf8;
+      border-radius: 18px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      touch-action: none;
+      box-shadow: inset 0 2px 8px rgba(56, 189, 248, 0.15);
+      cursor: crosshair;
+    }
+    .remote-touchpad-hint {
+      font-size: 12px;
+      font-weight: 800;
+      color: #64748b;
+      pointer-events: none;
+      text-align: center;
+      padding: 0 10px;
+    }
+    .remote-touchpad-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ec4899;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(236, 72, 153, 0.5);
+      position: absolute;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+
+    /* Teclado compacto A-Z para Palabras Mágicas */
+    .remote-az-grid {
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 3px;
+      width: 100%;
+      max-width: 410px;
+    }
+    .btn-az-key {
+      height: 28px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      background: #ffffff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 900;
+      color: #0284c7;
+      cursor: pointer;
+      box-shadow: 0 2px 0 #94a3b8;
+    }
+    .btn-az-key:active {
+      transform: translateY(1px);
+      background: #e0f2fe;
+    }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -472,39 +637,77 @@
           Sala: <strong id="headerRoomText">----</strong> ✎
         </button>
         <button id="btnRemoteHome" class="btn-nav-home" aria-label="Ir al Menú">🏠 Menú</button>
+        <button id="btnRemoteMusic" class="btn-nav-fullscreen" title="Música Sí/No" aria-label="Música">🎵</button>
         <button id="btnRemoteFullscreen" class="btn-nav-fullscreen" title="Pantalla Completa" aria-label="Pantalla Completa">📺</button>
         <div id="connStatus" class="status-badge connecting" title="Toca para reconectar">🟡 Conectando...</div>
       </div>
     </header>
 
+    <!-- Barra Universal de Jugador (Hasta 3 Players Simultáneos) y Personaje Sanrio -->
+    <div class="multiplayer-top-strip" id="playerHeroTopBar">
+      <div class="player-slot-group" title="Elige qué jugador eres (1 a 3 Jugadores)">
+        <button class="btn-player-slot active" data-slot="1">P1 🌸</button>
+        <button class="btn-player-slot" data-slot="2">P2 🩵</button>
+        <button class="btn-player-slot" data-slot="3">P3 💛</button>
+      </div>
+      <div class="hero-quick-group" id="globalHeroPickerGroup" title="Elige tu personaje en la Tele">
+        <button class="btn-hero-pick active" data-hero="cinna">🐶<span>Cinna</span></button>
+        <button class="btn-hero-pick" data-hero="milk">🍼<span>Milk</span></button>
+        <button class="btn-hero-pick" data-hero="purin">🍮<span>Purin</span></button>
+        <button class="btn-hero-pick" data-hero="chiffon">🌸<span>Chiffon</span></button>
+        <button class="btn-hero-pick" data-hero="mocha">🎀<span>Mocha</span></button>
+      </div>
+    </div>
+
     <!-- Escenario Dinámico Según el Juego Activo en TV/PC -->
     <main class="gamepad-dynamic-stage" id="gamepadStage">
-      <!-- 1. MODO ACCIÓN / RUN / FLIGHT / DOOM (Palanca Analógica Diagonales) -->
-      <div id="layoutAction" class="layout-action">
-        <div class="joystick-zone" id="joystickZone">
-          <div class="joystick-base" id="joystickBase">
-            <div class="joystick-guide-ring"></div>
-            <div class="joystick-arrows-hint"><span>◀</span><span>▶</span></div>
-            <div class="joystick-arrows-hint vertical"><span>▲</span><span>▼</span></div>
-            <div class="joystick-knob" id="joystickKnob">🌸</div>
-          </div>
+      <!-- 1. MODO ACCIÓN / RUN / FLIGHT / DOOM (Palanca Analógica Diagonales + Ciudades) -->
+      <div id="layoutAction" class="layout-action" style="flex-direction: column; justify-content: space-between; padding: 4px 8px;">
+        <!-- Selector directo de Ciudad (visible en Super Run) -->
+        <div class="remote-mini-pills" id="actionCityStrip">
+          <button class="btn-mini-pill active" data-city="0">🇨🇱 Conce</button>
+          <button class="btn-mini-pill" data-city="1">🏖️ Serena</button>
+          <button class="btn-mini-pill" data-city="2">🇧🇷 Río</button>
+          <button class="btn-mini-pill" data-city="3">🏔️ Stgo</button>
+          <button class="btn-mini-pill" data-city="4">🏮 China</button>
         </div>
 
-        <div class="action-buttons-cluster">
-          <button class="btn-action-hero btn-jump-action" id="btnJumpAction" data-btn="jump" aria-label="Saltar">
-            <span>🪽</span> <span id="labelJump">¡SALTAR!</span>
-          </button>
-          <button class="btn-action-hero btn-treat-action" id="btnTreatAction" data-btn="treat" aria-label="Dulce">
-            <span>🧁</span> <span id="labelTreat">DULCE</span>
-          </button>
-          <button class="btn-action-hero btn-switch-hero-action" id="btnSwitchHeroAction" aria-label="Cambiar Amigo">
-            <span>🔄</span> <span>AMIGO</span>
-          </button>
+        <div style="width: 100%; flex: 1; display: flex; justify-content: space-between; align-items: center;">
+          <div class="joystick-zone" id="joystickZone">
+            <div class="joystick-base" id="joystickBase">
+              <div class="joystick-guide-ring"></div>
+              <div class="joystick-arrows-hint"><span>◀</span><span>▶</span></div>
+              <div class="joystick-arrows-hint vertical"><span>▲</span><span>▼</span></div>
+              <div class="joystick-knob" id="joystickKnob">🌸</div>
+            </div>
+          </div>
+
+          <div class="action-buttons-cluster">
+            <button class="btn-action-hero btn-jump-action" id="btnJumpAction" data-btn="jump" aria-label="Saltar">
+              <span>🪽</span> <span id="labelJump">¡SALTAR!</span>
+            </button>
+            <button class="btn-action-hero btn-treat-action" id="btnTreatAction" data-btn="treat" aria-label="Dulce">
+              <span>🧁</span> <span id="labelTreat">DULCE</span>
+            </button>
+            <button class="btn-action-hero btn-switch-hero-action" id="btnSwitchHeroAction" aria-label="Cambiar Amigo">
+              <span>🔄</span> <span>AMIGO</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- 2. MODO PASTELERÍA DE NÚMEROS (Keypad Inteligente) -->
+      <!-- 2. MODO PASTELERÍA DE NÚMEROS (Keypad Inteligente + Edad + Operación + Contar) -->
       <div id="layoutMath" class="layout-math hidden">
+        <div class="remote-mini-pills" id="mathConfigStrip">
+          <button class="btn-mini-pill active" data-math-tier="5-6">🍼 5-6</button>
+          <button class="btn-mini-pill" data-math-tier="6-7">🎒 6-7</button>
+          <button class="btn-mini-pill" data-math-tier="7-8">🚀 7-8</button>
+          <button class="btn-mini-pill active" data-math-mode="add">➕</button>
+          <button class="btn-mini-pill" data-math-mode="sub">➖</button>
+          <button class="btn-mini-pill" data-math-mode="mult">✖️</button>
+          <button class="btn-mini-pill" data-math-mode="mix">🎲</button>
+          <button class="btn-mini-pill" id="btnRemoteMathCount" style="background: #fdf2f8; color: #db2777; border-color: #f472b6;">👆 Contar Dulce</button>
+        </div>
         <div class="math-companion-header">
           <div class="math-companion-q" id="mathRemoteQuestion">¿Cuánto es...? 🧁</div>
           <div class="math-companion-hint">👆 Toca el número correcto en tu celular:</div>
@@ -529,66 +732,100 @@
         </div>
       </div>
 
-      <!-- 4. MODO MEMORICE DE SANRIO (Cartas Táctiles en Celular) -->
+      <!-- 4. MODO MEMORICE DE SANRIO (Cartas Táctiles + Selector de Dificultad) -->
       <div id="layoutMemory" class="layout-memory hidden">
-        <div class="memory-companion-header">
-          🃏 Toca una carta en tu celular para voltearla en la tele:
+        <div class="remote-mini-pills" id="memoryDiffStrip">
+          <button class="btn-mini-pill active" data-mem-cards="8">🌸 8 Cartas</button>
+          <button class="btn-mini-pill" data-mem-cards="12">🌟 12 Cartas</button>
+          <button class="btn-mini-pill" data-mem-cards="16">👑 16 Cartas</button>
+          <button class="btn-mini-pill" id="btnMemoryRestart" style="background: #e0f2fe; color: #0369a1;">🔄 Reiniciar</button>
         </div>
-        <div class="memory-remote-grid" id="memoryRemoteGrid">
-          <!-- Generado dinámicamente -->
+        <div class="memory-Remote-wrap" style="width: 100%; display: flex; justify-content: center;">
+          <div class="memory-remote-grid" id="memoryRemoteGrid">
+            <!-- Generado dinámicamente -->
+          </div>
         </div>
-        <button class="btn-memory-restart" id="btnMemoryRestart">🔄 Nueva Partida</button>
       </div>
 
-      <!-- 5. MODO PUZZLE DE SANRIO -->
-      <div id="layoutPuzzle" class="layout-panel-actions hidden">
-        <div class="panel-companion-header">🧩 Rompecabezas Sanrio</div>
-        <div class="panel-buttons-col">
-          <button class="btn-panel-action btn-panel-primary" id="btnRemotePuzzlePlace" style="height: 64px; font-size: 19px;">
+      <!-- 5. MODO PUZZLE DE SANRIO (Personaje + Cantidad de Piezas + Encajar) -->
+      <div id="layoutPuzzle" class="layout-panel-actions hidden" style="gap: 8px;">
+        <div class="remote-mini-pills" id="puzzleDiffStrip">
+          <button class="btn-mini-pill active" data-puz-pieces="6">🧩 6 Piezas</button>
+          <button class="btn-mini-pill" data-puz-pieces="9">🧩 9 Piezas</button>
+          <button class="btn-mini-pills btn-mini-pill" data-puz-pieces="12">🧩 12 Piezas</button>
+          <button class="btn-mini-pill" data-puz-pieces="16">👑 16 Piezas</button>
+        </div>
+        <div class="panel-buttons-col" style="gap: 8px;">
+          <button class="btn-panel-action btn-panel-primary" id="btnRemotePuzzlePlace" style="height: 56px; font-size: 18px;">
             ✨ ENCAJAR PIEZA ✨
           </button>
           <div class="panel-btn-row">
             <button class="btn-panel-action btn-panel-amber" id="btnRemotePuzzleHint">👁️ Pista Silueta</button>
             <button class="btn-panel-action btn-panel-secondary" id="btnRemotePuzzleNext">🧩 Siguiente</button>
+            <button class="btn-panel-action" id="btnRemotePuzzleReset" style="background: #94a3b8; box-shadow: 0 4px 0 #64748b;">🔄 Reiniciar</button>
           </div>
-          <button class="btn-panel-action" id="btnRemotePuzzleReset" style="background: #94a3b8; box-shadow: 0 4px 0 #64748b; height: 42px; font-size: 14px;">
-            🔄 Reiniciar Piezas
-          </button>
         </div>
       </div>
 
-      <!-- 6. MODO TALLER DE DIBUJO Y PINTURA -->
-      <div id="layoutColoring" class="layout-panel-actions hidden">
-        <div class="panel-companion-header">🎨 Elige un color y herramienta para pintar:</div>
-        <div class="color-chips-row" id="coloringChipsRow">
+      <!-- 6. MODO TALLER DE DIBUJO Y PINTURA (Touchpad en Vivo + Láminas + Grosor + Sellos) -->
+      <div id="layoutColoring" class="layout-panel-actions hidden" style="gap: 5px;">
+        <div class="remote-mini-pills" id="coloringSheetStrip">
+          <button class="btn-mini-pill active" data-sheet="cinna">🐶 Cinna</button>
+          <button class="btn-mini-pill" data-sheet="milk">🍼 Milk</button>
+          <button class="btn-mini-pill" data-sheet="purin">🍮 Purin</button>
+          <button class="btn-mini-pill" data-sheet="chiffon">🌸 Chiffon</button>
+          <button class="btn-mini-pill" data-sheet="mocha">🎀 Mocha</button>
+          <button class="btn-mini-pill" data-bsize="8">• Fino</button>
+          <button class="btn-mini-pill active" data-bsize="20">● Medio</button>
+          <button class="btn-mini-pill" data-bsize="40">⬤ Grueso</button>
+        </div>
+
+        <!-- Touchpad táctil para pintar en la TV desde el sofá -->
+        <div class="remote-touchpad-surface" id="remoteColorPad">
+          <div class="remote-touchpad-hint">🎨 Desliza tu dedo aquí para pintar o poner sellitos en la Tele ✨</div>
+          <div class="remote-touchpad-dot" id="remoteColorDot"></div>
+        </div>
+
+        <div class="color-chips-row" id="coloringChipsRow" style="grid-template-columns: repeat(10, 1fr); gap: 4px; max-width: 420px;">
           <!-- Chips de 10 colores oficiales Sanrio -->
         </div>
-        <div class="color-tools-row">
+        <div class="color-tools-row" style="max-width: 420px; gap: 4px; margin-top: 0;">
           <button class="btn-color-tool active" data-tool="crayon">🖍️ Pincel</button>
-          <button class="btn-color-tool" data-tool="eraser">🧽 Borrador</button>
-          <button class="btn-color-tool" data-tool="stamp">⭐ Sellitos</button>
-          <button class="btn-color-tool" id="btnRemoteColorUndo">↩️ Deshacer</button>
-        </div>
-        <div class="panel-buttons-col" style="margin-top: 4px;">
-          <div class="panel-btn-row">
-            <button class="btn-panel-action btn-panel-secondary" id="btnRemoteColorNext">🖼️ Siguiente Lámina</button>
-            <button class="btn-panel-action btn-panel-amber" id="btnRemoteColorClear">📄 Hoja Nueva</button>
-          </div>
+          <button class="btn-color-tool" data-tool="eraser">🧽 Borrar</button>
+          <button class="btn-color-tool" data-tool="stamp">⭐ Sello</button>
+          <button class="btn-color-tool" id="btnRemoteColorUndo">↩️ Atrás</button>
+          <button class="btn-color-tool" id="btnRemoteColorClear">📄 Limpiar</button>
+          <button class="btn-color-tool" id="btnRemoteColorSave">📸 Guardar</button>
         </div>
       </div>
 
-      <!-- 7. MODO PALABRAS MÁGICAS -->
-      <div id="layoutWriting" class="layout-panel-actions hidden">
-        <div class="panel-companion-header">✏️ Taller de Caligrafía y Lectura</div>
-        <div class="panel-buttons-col">
-          <div class="panel-btn-row">
-            <button class="btn-panel-action btn-panel-secondary" id="btnRemoteWritingPrev">◀ Anterior</button>
-            <button class="btn-panel-action btn-panel-amber" id="btnRemoteWritingSpeak">🔊 Escuchar</button>
-            <button class="btn-panel-action btn-panel-primary" id="btnRemoteWritingNext">Siguiente ▶</button>
-          </div>
-          <button class="btn-panel-action" id="btnRemoteWritingClear" style="background: #f43f5e; box-shadow: 0 4px 0 #be123c; height: 46px; font-size: 15px;">
-            ✨ Limpiar Pizarra
-          </button>
+      <!-- 7. MODO PALABRAS MÁGICAS (Modos + Paso Mágico + Teclado A-Z + Touchpad de Trazo) -->
+      <div id="layoutWriting" class="layout-panel-actions hidden" style="gap: 5px;">
+        <div class="remote-mini-pills" id="writingModeStrip">
+          <button class="btn-mini-pill active" data-wmode="words">🍪 Palabras</button>
+          <button class="btn-mini-pill" data-wmode="sentences">📖 Frases</button>
+          <button class="btn-mini-pill" data-wmode="trace">✍️ Trazar</button>
+          <button class="btn-mini-pill" data-wmode="free">🖍️ Pizarra</button>
+          <button class="btn-mini-pill active" data-wtier="5-6">5-6</button>
+          <button class="btn-mini-pill" data-wtier="6-7">6-7</button>
+          <button class="btn-mini-pill" data-wtier="7-8">7-8</button>
+        </div>
+
+        <div class="panel-btn-row" style="max-width: 410px; gap: 6px;">
+          <button class="btn-panel-action btn-panel-secondary" id="btnRemoteWritingPrev" style="height: 38px; font-size: 13px;">◀ Ant.</button>
+          <button class="btn-panel-action btn-panel-primary" id="btnRemoteWritingAutoStep" style="height: 38px; font-size: 13px; flex: 1.8;">✨ Poner Letra / Trazo</button>
+          <button class="btn-panel-action btn-panel-amber" id="btnRemoteWritingSpeak" style="height: 38px; font-size: 13px;">🔊 Voz</button>
+          <button class="btn-panel-action btn-panel-secondary" id="btnRemoteWritingNext" style="height: 38px; font-size: 13px;">Sig. ▶</button>
+          <button class="btn-panel-action" id="btnRemoteWritingClear" style="background: #f43f5e; height: 38px; font-size: 13px; flex: 0.7;">🧽</button>
+        </div>
+
+        <!-- Teclado A-Z + Ñ para armar palabras o elegir letra -->
+        <div class="remote-az-grid" id="remoteAzGrid"></div>
+
+        <!-- Touchpad para trazar letras o dibujar con tiza en la TV -->
+        <div class="remote-touchpad-surface" id="remoteWritingPad" style="height: 62px;">
+          <div class="remote-touchpad-hint">✍️ Desliza aquí para trazar la letra o dibujar en la Pizarra de la TV</div>
+          <div class="remote-touchpad-dot" id="remoteWritingDot"></div>
         </div>
       </div>
     </main>
@@ -613,7 +850,7 @@
 
     <!-- Footer -->
     <footer class="controller-footer">
-      <span>✨ Conectado a Cinnamoroll Land</span>
+      <span id="footerPlayerLabel">✨ Jugador 1 (P1 🌸)</span>
       <span class="footer-game-label" id="footerGameLabel">🏃 Super Run</span>
     </footer>
   </div>
@@ -621,18 +858,23 @@
   <script src="js/peerjs.min.js"></script>
   <script>
     (function () {
-      // 1. Obtener y gestionar Código de Sala
+      // 1. Obtener y gestionar Código de Sala y Slot de Jugador (1, 2 o 3)
+      const urlParams = new URLSearchParams(window.location.search);
+      let playerSlot = Math.max(1, Math.min(3, parseInt(urlParams.get('player') || sessionStorage.getItem('cinna_player_slot') || '1', 10)));
+      let selectedHeroId = sessionStorage.getItem('cinna_player_hero') || (playerSlot === 2 ? 'milk' : (playerSlot === 3 ? 'purin' : 'cinna'));
+      window.playerSlot = playerSlot;
+
       function getRoomCode() {
-        const urlParams = new URLSearchParams(window.location.search);
         let code = urlParams.get('room');
         if (!code && window.location.hash) {
           code = window.location.hash.replace('#', '').trim();
         }
         if (!code) {
-          code = localStorage.getItem('cinna_last_room') || 'AMND';
+          code = sessionStorage.getItem('cinna_ctrl_room') || localStorage.getItem('cinna_last_room') || 'AMND';
         }
         code = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
         if (!code) code = 'AMND';
+        sessionStorage.setItem('cinna_ctrl_room', code);
         localStorage.setItem('cinna_last_room', code);
         return code;
       }
@@ -644,6 +886,7 @@
 
       const statusEl = document.getElementById('connStatus');
       const footerLabel = document.getElementById('footerGameLabel');
+      const footerPlayerLabel = document.getElementById('footerPlayerLabel');
 
       let peer = null;
       let peerConn = null;
@@ -653,6 +896,18 @@
       let heartbeatTimer = null;
       let lastPongTime = Date.now();
       let reconnectTimeout = null;
+
+      function updatePlayerSlotUI(slot) {
+        playerSlot = Math.max(1, Math.min(3, parseInt(slot, 10) || 1));
+        window.playerSlot = playerSlot;
+        sessionStorage.setItem('cinna_player_slot', String(playerSlot));
+        document.querySelectorAll('.btn-player-slot').forEach(btn => {
+          btn.classList.toggle('active', parseInt(btn.dataset.slot, 10) === playerSlot);
+        });
+        const names = { 1: '✨ Jugador 1 (P1 🌸)', 2: '✨ Jugador 2 (P2 🩵)', 3: '✨ Jugador 3 (P3 💛)' };
+        if (footerPlayerLabel) footerPlayerLabel.textContent = names[playerSlot];
+      }
+      updatePlayerSlotUI(playerSlot);
 
       // Feedback háptico y sonoro
       function playHapticBeep(freq = 580) {
@@ -681,19 +936,20 @@
         statusEl.textContent = msg;
       }
 
-      // Enviar datos hacia la PC / TV
+      // Enviar datos hacia la PC / TV (incluyendo siempre el slot de jugador P1/P2/P3)
       function sendData(payload) {
+        const enriched = { player: playerSlot, ...payload };
         if (peerConn && peerConn.open) {
-          try { peerConn.send(payload); } catch (_) {}
+          try { peerConn.send(enriched); } catch (_) {}
         }
         if (broadcastChannel) {
-          try { broadcastChannel.postMessage(payload); } catch (_) {}
+          try { broadcastChannel.postMessage(enriched); } catch (_) {}
         }
       }
 
       function sendButton(btn, pressed) {
         if (pressed) playHapticBeep();
-        sendData({ type: 'input', btn, pressed });
+        sendData({ type: 'input', btn, pressed, player: playerSlot });
       }
 
       // Heartbeat Keepalive para que WebRTC no se duerma en móviles
@@ -702,7 +958,7 @@
         lastPongTime = Date.now();
         heartbeatTimer = setInterval(() => {
           if (peerConn && peerConn.open) {
-            try { peerConn.send({ type: 'ping' }); } catch (_) {}
+            try { peerConn.send({ type: 'ping', player: playerSlot }); } catch (_) {}
             if (Date.now() - lastPongTime > 9000) {
               console.warn('⚠️ Sin respuesta de TV en 9s. Reconectando...');
               scheduleReconnect(500);
@@ -721,20 +977,26 @@
       // -------------------------------------------------------------
       // GESTOR DE CONEXIÓN (BroadcastChannel + PeerJS WebRTC con STUN)
       // -------------------------------------------------------------
-      try {
-        if ('BroadcastChannel' in window) {
-          broadcastChannel = new BroadcastChannel(`cinna_pad_${roomCode}`);
-          broadcastChannel.postMessage({ type: 'hello', room: roomCode });
-          broadcastChannel.onmessage = (ev) => {
-            if (!ev.data) return;
-            if (ev.data.type === 'welcome') {
-              updateStatus('connected', '🟢 ¡En Vivo! ✨');
-            } else if (ev.data.type === 'context') {
-              handleGameContext(ev.data);
-            }
-          };
-        }
-      } catch (_) {}
+      function initLocalBroadcast() {
+        try {
+          if (broadcastChannel) {
+            try { broadcastChannel.close(); } catch (_) {}
+          }
+          if ('BroadcastChannel' in window) {
+            broadcastChannel = new BroadcastChannel(`cinna_pad_${roomCode}`);
+            broadcastChannel.postMessage({ type: 'hello', room: roomCode, player: playerSlot });
+            broadcastChannel.onmessage = (ev) => {
+              if (!ev.data) return;
+              if (ev.data.type === 'welcome') {
+                updateStatus('connected', '🟢 ¡En Vivo! ✨');
+              } else if (ev.data.type === 'context') {
+                handleGameContext(ev.data);
+              }
+            };
+          }
+        } catch (_) {}
+      }
+      initLocalBroadcast();
 
       function connectPeer() {
         if (typeof Peer === 'undefined') {
@@ -742,7 +1004,6 @@
           return;
         }
 
-        // Limpiar peer anterior si existía para evitar conexiones zombie
         if (peer && !peer.destroyed) {
           try { peer.destroy(); } catch (_) {}
         }
@@ -770,7 +1031,7 @@
             conn.on('open', () => {
               peerConn = conn;
               updateStatus('connected', '🟢 ¡En Vivo en TV! ✨');
-              conn.send({ type: 'hello', room: roomCode });
+              conn.send({ type: 'hello', room: roomCode, player: playerSlot });
               startHeartbeat();
             });
 
@@ -782,6 +1043,9 @@
               }
               if (data.type === 'welcome') {
                 updateStatus('connected', '🟢 ¡En Vivo en TV! ✨');
+                if (data.assignedSlot && !urlParams.get('player') && !sessionStorage.getItem('cinna_player_slot_manual')) {
+                  updatePlayerSlotUI(data.assignedSlot);
+                }
                 return;
               }
               if (data.type === 'context') {
@@ -814,10 +1078,41 @@
 
       connectPeer();
 
-      // Permitir reconectar manualmente al tocar el badge
       statusEl.addEventListener('click', () => {
         playHapticBeep(600);
         connectPeer();
+      });
+
+      // -------------------------------------------------------------
+      // SELECTOR DE JUGADOR (P1 / P2 / P3) Y PERSONAJE SANRIO DIRECTO
+      // -------------------------------------------------------------
+      document.querySelectorAll('.btn-player-slot').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(680);
+          const slot = parseInt(btn.dataset.slot, 10);
+          sessionStorage.setItem('cinna_player_slot_manual', '1');
+          updatePlayerSlotUI(slot);
+          sendData({ type: 'setPlayerSlot', slot, player: slot, heroId: selectedHeroId, active: true });
+        });
+      });
+
+      document.querySelectorAll('.btn-hero-pick').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(660);
+          selectedHeroId = btn.dataset.hero;
+          sessionStorage.setItem('cinna_player_hero', selectedHeroId);
+          document.querySelectorAll('.btn-hero-pick').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'selectHero', heroId: selectedHeroId, player: playerSlot });
+        });
+      });
+
+      // Selector de Ciudad en Super Run
+      document.querySelectorAll('#actionCityStrip [data-city]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(600);
+          document.querySelectorAll('#actionCityStrip [data-city]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'selectCity', cityIdx: parseInt(btn.dataset.city, 10) });
+        });
       });
 
       // -------------------------------------------------------------
@@ -854,9 +1149,11 @@
             playHapticBeep(640);
             roomCode = val;
             window.roomCode = val;
+            sessionStorage.setItem('cinna_ctrl_room', val);
             localStorage.setItem('cinna_last_room', val);
             if (headerRoomText) headerRoomText.textContent = val;
             closeRoomModal();
+            initLocalBroadcast();
             connectPeer();
           }
         });
@@ -871,7 +1168,6 @@
         });
       }
 
-      // Si la URL no contiene ?room ni #, y no había sala previa guardada, sugerir modal
       const initialParams = new URLSearchParams(window.location.search);
       if (!initialParams.get('room') && !window.location.hash && !localStorage.getItem('cinna_last_room')) {
         setTimeout(openRoomModal, 400);
@@ -887,6 +1183,7 @@
       const layoutPuzzle = document.getElementById('layoutPuzzle');
       const layoutColoring = document.getElementById('layoutColoring');
       const layoutWriting = document.getElementById('layoutWriting');
+      const actionCityStrip = document.getElementById('actionCityStrip');
 
       const labelJump = document.getElementById('labelJump');
       const labelTreat = document.getElementById('labelTreat');
@@ -895,7 +1192,6 @@
       const memoryRemoteGrid = document.getElementById('memoryRemoteGrid');
       const coloringChipsRow = document.getElementById('coloringChipsRow');
 
-      // Colores pastel OFICIALES para el Taller de Dibujo (idénticos a coloring.js)
       const COLOR_PALETTE = [
         { name: 'Celeste', color: '#8ecae6', emoji: '🪽' },
         { name: 'Rosa', color: '#ffb3d1', emoji: '🌸' },
@@ -909,13 +1205,46 @@
         { name: 'Chocolate', color: '#5c3d2e', emoji: '🍩' }
       ];
 
+      function renderColorChips() {
+        if (!coloringChipsRow || coloringChipsRow.children.length > 0) return;
+        coloringChipsRow.innerHTML = COLOR_PALETTE.map(cp => `
+          <button class="color-chip-btn" data-color="${cp.color}" style="background-color: ${cp.color}; height: 36px; font-size: 14px;">
+            <span>${cp.emoji}</span>
+          </button>
+        `).join('');
+
+        coloringChipsRow.querySelectorAll('.color-chip-btn').forEach(btn => {
+          btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            playHapticBeep(620);
+            sendData({ type: 'colorPick', color: btn.dataset.color });
+          });
+        });
+      }
+      renderColorChips();
+
+      // Inicializar teclado A-Z + Ñ para Escritura
+      const remoteAzGrid = document.getElementById('remoteAzGrid');
+      if (remoteAzGrid) {
+        const letters = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
+        remoteAzGrid.innerHTML = letters.map(ch => `
+          <button class="btn-az-key" data-char="${ch}">${ch}</button>
+        `).join('');
+        remoteAzGrid.querySelectorAll('.btn-az-key').forEach(btn => {
+          btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            playHapticBeep(650);
+            sendData({ type: 'writingKey', char: btn.dataset.char });
+          });
+        });
+      }
+
       function handleGameContext(ctx) {
         if (!ctx) return;
         window.currentContext = ctx;
         const screen = ctx.screen || 'platformer';
         currentScreenMode = screen;
 
-        // Ocultar todos los layouts
         [layoutAction, layoutMath, layoutHub, layoutMemory, layoutPuzzle, layoutColoring, layoutWriting].forEach(el => {
           if (el) el.classList.add('hidden');
         });
@@ -963,9 +1292,9 @@
           footerLabel.textContent = '🃏 Memorice';
           const count = ctx.cardsCount || 8;
           memoryRemoteGrid.innerHTML = Array.from({ length: count }).map((_, idx) => `
-            <button class="btn-memory-card" data-idx="${idx}">
+            <button class="btn-memory-card" data-idx="${idx}" style="height: ${count > 12 ? '46px' : '56px'};">
               <span>🌸</span>
-              <span style="font-size: 13px;">${idx + 1}</span>
+              <span style="font-size: 12px;">${idx + 1}</span>
             </button>
           `).join('');
 
@@ -993,25 +1322,7 @@
         } else if (screen === 'coloring') {
           layoutColoring.classList.remove('hidden');
           footerLabel.textContent = '🎨 Taller de Pintura';
-          coloringChipsRow.innerHTML = COLOR_PALETTE.map(cp => `
-            <button class="color-chip-btn" data-color="${cp.color}" style="background-color: ${cp.color};">
-              <span>${cp.emoji}</span>
-            </button>
-          `).join('');
-
-          coloringChipsRow.querySelectorAll('.color-chip-btn').forEach(btn => {
-            btn.addEventListener('pointerdown', (e) => {
-              e.preventDefault();
-              try { btn.setPointerCapture(e.pointerId); } catch (_) {}
-              playHapticBeep(620);
-              sendData({ type: 'colorPick', color: btn.dataset.color });
-            });
-            const onEnd = (e) => {
-              try { btn.releasePointerCapture(e.pointerId); } catch (_) {}
-            };
-            btn.addEventListener('pointerup', onEnd);
-            btn.addEventListener('pointercancel', onEnd);
-          });
+          renderColorChips();
 
         // 6. MODO PALABRAS MÁGICAS
         } else if (screen === 'writing') {
@@ -1021,6 +1332,9 @@
         // 7. MODO ACCIÓN: SUPER RUN / A VOLAR / REPARTIDOR 3D
         } else {
           layoutAction.classList.remove('hidden');
+          if (actionCityStrip) {
+            actionCityStrip.classList.toggle('hidden', screen !== 'platformer');
+          }
           if (screen === 'flight') {
             footerLabel.textContent = '🛫 ¡A Volar!';
             labelJump.textContent = 'PIRUETA';
@@ -1047,14 +1361,22 @@
         sendData({ type: 'nav', screen: 'hub' });
       });
 
-      // Botón universal de Pantalla Completa en el celular
+      // Botón universal de Música en la TV
+      const btnRemoteMusic = document.getElementById('btnRemoteMusic');
+      if (btnRemoteMusic) {
+        btnRemoteMusic.addEventListener('click', () => {
+          playHapticBeep(560);
+          sendData({ type: 'toggleMusic' });
+        });
+      }
+
+      // Botón universal de Pantalla Completa en el celular y TV
       const btnFullscreen = document.getElementById('btnRemoteFullscreen');
       if (btnFullscreen) {
         const updateCtrlFsUI = () => {
           const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
           btnFullscreen.textContent = isFs ? '🗗' : '📺';
           btnFullscreen.classList.toggle('active-fullscreen', isFs);
-          btnFullscreen.setAttribute('title', isFs ? 'Salir de Pantalla Completa' : 'Activar Pantalla Completa');
         };
 
         btnFullscreen.addEventListener('click', () => {
@@ -1064,15 +1386,10 @@
           if (!isFs) {
             if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
             else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
-            else if (docEl.mozRequestFullScreen) docEl.mozRequestFullScreen();
-            else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
           } else {
             if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
             else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
-            else if (document.msExitFullscreen) document.msExitFullscreen();
           }
-          // También solicitar a la TV / PC cambiar a pantalla completa
           sendData({ type: 'toggleFullscreen' });
         });
 
@@ -1080,22 +1397,51 @@
         document.addEventListener('webkitfullscreenchange', updateCtrlFsUI);
       }
 
-      // Botón de cambiar héroe en Super Run
+      // Botón de cambiar héroe en Super Run / Doom
       document.getElementById('btnSwitchHeroAction').addEventListener('click', () => {
         playHapticBeep(650);
-        sendData({ type: 'switchHero' });
+        sendData({ type: 'switchHero', player: playerSlot });
       });
 
       // Navegación remota desde el Hub
       document.querySelectorAll('.btn-hub-remote').forEach(btn => {
         btn.addEventListener('click', () => {
           playHapticBeep(520);
-          const screen = btn.dataset.screen;
-          sendData({ type: 'nav', screen });
+          sendData({ type: 'nav', screen: btn.dataset.screen });
         });
       });
 
-      // Botón reiniciar Memorice
+      // Configuración remota de Matemáticas (Nivel, Operación y Contar Dulce)
+      document.querySelectorAll('[data-math-tier]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(560);
+          document.querySelectorAll('[data-math-tier]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'mathConfig', tier: btn.dataset.mathTier });
+        });
+      });
+      document.querySelectorAll('[data-math-mode]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(560);
+          document.querySelectorAll('[data-math-mode]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'mathConfig', mode: btn.dataset.mathMode });
+        });
+      });
+      const btnRemoteMathCount = document.getElementById('btnRemoteMathCount');
+      if (btnRemoteMathCount) {
+        btnRemoteMathCount.addEventListener('click', () => {
+          playHapticBeep(660);
+          sendData({ type: 'mathConfig', countHelp: true });
+        });
+      }
+
+      // Configuración y Reinicio de Memorice
+      document.querySelectorAll('[data-mem-cards]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(580);
+          document.querySelectorAll('[data-mem-cards]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'memoryDifficulty', cards: parseInt(btn.dataset.memCards, 10) });
+        });
+      });
       const btnMemoryRestart = document.getElementById('btnMemoryRestart');
       if (btnMemoryRestart) {
         btnMemoryRestart.addEventListener('click', () => {
@@ -1104,7 +1450,14 @@
         });
       }
 
-      // Botones de Rompecabezas
+      // Botones y Dificultad de Rompecabezas
+      document.querySelectorAll('[data-puz-pieces]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(580);
+          document.querySelectorAll('[data-puz-pieces]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'puzzleDifficulty', pieces: parseInt(btn.dataset.puzPieces, 10) });
+        });
+      });
       const btnPuzzlePlace = document.getElementById('btnRemotePuzzlePlace');
       if (btnPuzzlePlace) {
         btnPuzzlePlace.addEventListener('click', () => {
@@ -1134,7 +1487,21 @@
         });
       }
 
-      // Botones de Dibujo
+      // Controles completos de Dibujo (Láminas, Grosor, Herramientas y Touchpad)
+      document.querySelectorAll('#coloringSheetStrip [data-sheet]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(560);
+          document.querySelectorAll('#coloringSheetStrip [data-sheet]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'colorSheet', sheetId: btn.dataset.sheet });
+        });
+      });
+      document.querySelectorAll('#coloringSheetStrip [data-bsize]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(540);
+          document.querySelectorAll('#coloringSheetStrip [data-bsize]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'colorSize', size: parseInt(btn.dataset.bsize, 10) });
+        });
+      });
       document.querySelectorAll('.btn-color-tool[data-tool]').forEach(btn => {
         btn.addEventListener('click', () => {
           playHapticBeep(540);
@@ -1150,13 +1517,6 @@
           sendData({ type: 'colorUndo' });
         });
       }
-      const btnColorNext = document.getElementById('btnRemoteColorNext');
-      if (btnColorNext) {
-        btnColorNext.addEventListener('click', () => {
-          playHapticBeep(560);
-          sendData({ type: 'colorNextSheet' });
-        });
-      }
       const btnColorClear = document.getElementById('btnRemoteColorClear');
       if (btnColorClear) {
         btnColorClear.addEventListener('click', () => {
@@ -1164,8 +1524,80 @@
           sendData({ type: 'colorClear' });
         });
       }
+      const btnColorSave = document.getElementById('btnRemoteColorSave');
+      if (btnColorSave) {
+        btnColorSave.addEventListener('click', () => {
+          playHapticBeep(680);
+          sendData({ type: 'colorSave' });
+        });
+      }
 
-      // Botones de Escritura
+      // Helper para vincular Touchpads Remotos (Pintura y Caligrafía)
+      function bindRemoteTouchpad(padId, dotId, msgType) {
+        const pad = document.getElementById(padId);
+        const dot = document.getElementById(dotId);
+        if (!pad) return;
+        let activeId = null;
+
+        const sendCoord = (action, e) => {
+          const rect = pad.getBoundingClientRect();
+          if (!rect.width || !rect.height) return;
+          const x = +Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)).toFixed(3);
+          const y = +Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height)).toFixed(3);
+          if (dot) {
+            dot.style.display = action === 'up' ? 'none' : 'block';
+            dot.style.left = `${x * 100}%`;
+            dot.style.top = `${y * 100}%`;
+          }
+          sendData({ type: msgType, action, x, y });
+        };
+
+        pad.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          try { pad.setPointerCapture(e.pointerId); } catch (_) {}
+          activeId = e.pointerId;
+          playHapticBeep(550);
+          sendCoord('down', e);
+        });
+        pad.addEventListener('pointermove', (e) => {
+          if (e.pointerId !== activeId) return;
+          e.preventDefault();
+          sendCoord('move', e);
+        });
+        const onUp = (e) => {
+          if (e.pointerId !== activeId) return;
+          try { pad.releasePointerCapture(e.pointerId); } catch (_) {}
+          activeId = null;
+          sendCoord('up', e);
+        };
+        pad.addEventListener('pointerup', onUp);
+        pad.addEventListener('pointercancel', onUp);
+      }
+      bindRemoteTouchpad('remoteColorPad', 'remoteColorDot', 'colorPad');
+      bindRemoteTouchpad('remoteWritingPad', 'remoteWritingDot', 'writingPad');
+
+      // Botones y Modos de Escritura
+      document.querySelectorAll('#writingModeStrip [data-wmode]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(560);
+          document.querySelectorAll('#writingModeStrip [data-wmode]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'writingMode', mode: btn.dataset.wmode });
+        });
+      });
+      document.querySelectorAll('#writingModeStrip [data-wtier]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(560);
+          document.querySelectorAll('#writingModeStrip [data-wtier]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'writingTier', tier: btn.dataset.wtier });
+        });
+      });
+      const btnWritingAutoStep = document.getElementById('btnRemoteWritingAutoStep');
+      if (btnWritingAutoStep) {
+        btnWritingAutoStep.addEventListener('click', () => {
+          playHapticBeep(680);
+          sendData({ type: 'writingAutoStep' });
+        });
+      }
       const btnWritingPrev = document.getElementById('btnRemoteWritingPrev');
       if (btnWritingPrev) {
         btnWritingPrev.addEventListener('click', () => {
@@ -1242,16 +1674,15 @@
         const normY = +(knobY / maxRadius).toFixed(2);
         const normDist = +(clampedDist / maxRadius).toFixed(2);
 
-        // Envío continuo analógico para física fluida
         sendData({
           type: 'joystick',
+          player: playerSlot,
           x: normX,
           y: normY,
           dist: normDist,
           angle: +(angle * (180 / Math.PI)).toFixed(1)
         });
 
-        // Detección diagonal precisa
         const isLeft = normX < -0.28;
         const isRight = normX > 0.28;
         const isUp = normY < -0.28;
@@ -1265,7 +1696,7 @@
         joystickKnob.classList.remove('active');
         joystickKnob.style.transform = 'translate(0px, 0px)';
         updateDirectionFlags(false, false, false, false);
-        sendData({ type: 'joystick', x: 0, y: 0, dist: 0, angle: 0 });
+        sendData({ type: 'joystick', player: playerSlot, x: 0, y: 0, dist: 0, angle: 0 });
       }
 
       joystickZone.addEventListener('pointerdown', (e) => {

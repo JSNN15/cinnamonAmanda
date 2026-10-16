@@ -394,6 +394,18 @@
     }
 
     shootTreat() {
+      if (this.inCharSelect) {
+        this.start3DGame();
+        return;
+      }
+      if (this.container) {
+        const vic = this.container.querySelector('#doomVictoryOverlay');
+        if (vic && !vic.classList.contains('hidden')) {
+          const btnReplay = this.container.querySelector('#btnDoomReplay');
+          if (btnReplay) btnReplay.click();
+          return;
+        }
+      }
       if (!this.running || this.recoil > 0.4) return;
       A.whoosh(true);
       this.recoil = 1.0;
@@ -416,19 +428,38 @@
       this.shootTreat();
     }
 
-    nextHero() {
-      const idx = PLAYABLE_CHARACTERS.findIndex(c => c.id === this.selectedHero.id);
-      const nextIdx = (idx + 1) % PLAYABLE_CHARACTERS.length;
-      this.selectedHero = PLAYABLE_CHARACTERS[nextIdx];
+    selectHeroById(heroId) {
+      const found = PLAYABLE_CHARACTERS.find(c => c.id === heroId) || PLAYABLE_CHARACTERS[0];
+      this.selectedHero = found;
       A.unlock();
       A.celebrate();
       if (this.inCharSelect) {
+        this.start3DGame();
+        return;
+      }
+      if (this.container) {
+        const heroPill = this.container.querySelector('.doom-hero-pill');
+        if (heroPill) {
+          heroPill.innerHTML = `<span>Jugando como: <strong>${found.name}</strong> ${found.treatEmoji}</span>`;
+        }
+        const launchIco = this.container.querySelector('#btnDoomLaunch .launch-ico');
+        if (launchIco) launchIco.textContent = found.treatEmoji;
+      }
+      this.updateHUD();
+    }
+
+    nextHero() {
+      const idx = PLAYABLE_CHARACTERS.findIndex(c => c.id === this.selectedHero.id);
+      const nextIdx = (idx + 1) % PLAYABLE_CHARACTERS.length;
+      const next = PLAYABLE_CHARACTERS[nextIdx];
+      if (this.inCharSelect) {
+        this.selectedHero = next;
+        A.unlock();
+        A.celebrate();
         this.renderCharSelect();
         return;
       }
-      const heroTag = this.container ? this.container.querySelector('.cinna-top-hud span strong') : null;
-      if (heroTag) heroTag.textContent = this.selectedHero.name;
-      this.updateHUD();
+      this.selectHeroById(next.id);
     }
 
     startLoop() {

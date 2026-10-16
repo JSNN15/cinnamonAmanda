@@ -150,10 +150,20 @@ Diseñado con progresión curricular de **5 a 8 años** y **4 modos pedagógicos
 
 ---
 
-## ⚡ Rendimiento, PWA y Cero Build Step (`v25`)
+## 📺 Modo Consola TV "Zero-Keyboard / Zero-Mouse" y Multijugador hasta 3 Players (`v26`)
+* **Control Total 100% desde el Celular (`controller.html` + `js/controller-bridge.js`):** Al conectar un PC a la TV, nunca necesitarás tocar el mouse ni el teclado:
+  * **Selector Directo de los 5 Personajes Sanrio:** Elige a *Cinnamoroll, Milk, Pompompurin, Chiffon o Mocha* directamente desde la barra superior del celular en cualquier momento (en *Repartidor 3D*, tocar el personaje lo selecciona e inicia el mundo 3D automáticamente).
+  * **Selector Directo de Ciudades, Niveles y Modos:** Viaja entre las 5 ciudades de *Super Run*, cambia edades (`5-6`, `6-7`, `7-8`), operaciones matemáticas (`➕`, `➖`, `✖️`, `🎲`), cantidad de cartas en *Memorice* (`8`, `12`, `16`), piezas en *Puzzles* (`6`, `9`, `12`, `16`) y modos en *Palabras Mágicas* (`🍪 Palabras`, `📖 Frases`, `✍️ Trazar`, `🖍️ Pizarra`).
+  * **Touchpad Táctil en Vivo y Teclado `A–Z + Ñ`:** Dibuja, pinta, estampa sellitos y traza letras en la TV deslizando el dedo sobre el Touchpad del celular.
+* **Hasta 3 Jugadores Simultáneos (`P1 🌸`, `P2 🩵`, `P3 💛`):** Conecta hasta 3 celulares escaneando el QR (o hasta 3 mandos Bluetooth). En *Super Cinnamoroll Run*, los 3 jugadores corren, saltan y recolectan cupcakes juntos en pantalla con rescate automático en burbuja mágica.
+* **Sesiones Paralelas Aisladas (`sessionStorage`):** Permite abrir múltiples sesiones independientes en paralelo sin colisión de códigos de sala.
+
+---
+
+## ⚡ Rendimiento, PWA y Cero Build Step (`v26`)
 * **Vanilla JavaScript (ES6+):** Cero dependencias de compilación, carga instantánea.
-* **Service Worker Silencioso (`sw.js` · `cinnamoroll-land-v25`):** Estrategia *Network-First* sin recargas forzadas (`controllerchange` eliminado), garantizando que una actualización en segundo plano jamás devuelva a la jugadora al menú de inicio mientras juega.
-* **Suite de Pruebas E2E Multi-Dispositivo (`tools/test_all_games_controller.py`):** Verifica en Chromium tanto la pantalla de TV como el celular conectado en los 8 juegos, el Modo Cooperativo y el Pasaporte de Stickers.
+* **Service Worker Silencioso (`sw.js` · `cinnamoroll-land-v26`):** Estrategia *Network-First* sin recargas forzadas (`controllerchange` eliminado), garantizando que una actualización en segundo plano jamás devuelva a la jugadora al menú de inicio mientras juega.
+* **Suite de Pruebas E2E Multi-Dispositivo (`tools/test_all_games_controller.py`):** Verifica en Chromium tanto la pantalla de TV como los celulares conectados (`P1`, `P2`, `P3`) en los 8 juegos, el Modo Cooperativo y el Pasaporte de Stickers.
 
 ---
 

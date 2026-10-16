@@ -18,25 +18,41 @@
       this.connectedCount = 0;
       this.statusListeners = [];
       this.physicalGamepadActive = false;
-      this.lastGamepadState = {};
-      
+      this.lastGamepadState = { 1: {}, 2: {}, 3: {} };
+      this.players = {
+        1: { slot: 1, active: true, heroId: 'cinna', conn: null },
+        2: { slot: 2, active: false, heroId: 'milk', conn: null },
+        3: { slot: 3, active: false, heroId: 'purin', conn: null }
+      };
+
       this.initBroadcast();
       this.initPeerHost();
       this.initPhysicalGamepadLoop();
     }
 
-    getOrGenerateRoomCode() {
-      let code = localStorage.getItem('cinna_room_code') || sessionStorage.getItem('cinna_room_code');
+    getOrGenerateRoomCode(forceNew = false) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlRoom = urlParams.get('room');
+      if (!forceNew && urlRoom) {
+        const clean = urlRoom.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+        if (clean.length >= 2) {
+          sessionStorage.setItem('cinna_room_code', clean);
+          localStorage.setItem('cinna_last_room', clean);
+          return clean;
+        }
+      }
+
+      // Aislar sesiones paralelas usando sessionStorage por pestaña/dispositivo
+      let code = !forceNew ? sessionStorage.getItem('cinna_room_code') : null;
       if (!code) {
-        // Generar código simpático de 4 letras fáciles
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         code = '';
         for (let i = 0; i < 4; i++) {
           code += chars.charAt(Math.floor(Math.random() * chars.length));
         }
-        localStorage.setItem('cinna_room_code', code);
         sessionStorage.setItem('cinna_room_code', code);
       }
+      localStorage.setItem('cinna_last_room', code);
       return code;
     }
 
@@ -46,19 +62,48 @@
       return `${base}controller.html?room=${this.roomCode}`;
     }
 
+    getActivePlayersSummary() {
+      return {
+        1: { active: true, heroId: this.players[1].heroId },
+        2: { active: !!this.players[2].active, heroId: this.players[2].heroId },
+        3: { active: !!this.players[3].active, heroId: this.players[3].heroId }
+      };
+    }
+
+    assignSlotForConnection(conn) {
+      for (const s of [1, 2, 3]) {
+        if (!this.players[s].conn || !this.players[s].conn.open) {
+          this.players[s].conn = conn;
+          this.players[s].active = true;
+          conn._playerSlot = s;
+          if ((s === 2 || s === 3) && window.Cinnamo?.platformerGame?.selectHeroById) {
+            window.Cinnamo.platformerGame.selectHeroById(this.players[s].heroId, s);
+          }
+          return s;
+        }
+      }
+      conn._playerSlot = 1;
+      return 1;
+    }
+
     onStatus(fn) {
       this.statusListeners.push(fn);
-      fn({ count: this.connectedCount, room: this.roomCode, gamepad: this.physicalGamepadActive });
+      fn({ count: this.connectedCount, room: this.roomCode, gamepad: this.physicalGamepadActive, players: this.getActivePlayersSummary() });
     }
 
     notifyStatus() {
-      const state = { count: this.connectedCount, room: this.roomCode, gamepad: this.physicalGamepadActive };
+      const state = {
+        count: this.connectedCount,
+        room: this.roomCode,
+        gamepad: this.physicalGamepadActive,
+        players: this.getActivePlayersSummary()
+      };
       this.statusListeners.forEach(fn => { try { fn(state); } catch (_) {} });
     }
 
     broadcastGameContext(ctx) {
-      this.lastContext = ctx;
-      const payload = { type: 'context', ...ctx };
+      this.lastContext = { ...ctx, players: this.getActivePlayersSummary() };
+      const payload = { type: 'context', ...this.lastContext };
       this.connections.forEach(conn => {
         if (conn && conn.open) {
           try { conn.send(payload); } catch (_) {}
@@ -72,21 +117,32 @@
     /* ---------- 1. BROADCAST CHANNEL (Fallback para misma máquina/pestañas) ---------- */
     initBroadcast() {
       try {
+        if (this.broadcastChannel) {
+          try { this.broadcastChannel.close(); } catch (_) {}
+        }
         if ('BroadcastChannel' in window) {
           this.broadcastChannel = new BroadcastChannel(`cinna_pad_${this.roomCode}`);
           this.broadcastChannel.onmessage = (ev) => {
             if (!ev.data) return;
             if (ev.data.type === 'hello') {
+              const reqSlot = parseInt(ev.data.player, 10);
+              const slot = (reqSlot >= 1 && reqSlot <= 3) ? reqSlot : 1;
+              this.players[slot].active = true;
               this.connectedCount = Math.max(1, this.connectedCount);
               this.notifyStatus();
-              this.broadcastChannel.postMessage({ type: 'welcome', room: this.roomCode });
+              this.broadcastChannel.postMessage({
+                type: 'welcome',
+                room: this.roomCode,
+                assignedSlot: slot,
+                players: this.getActivePlayersSummary()
+              });
               if (this.lastContext) {
                 this.broadcastGameContext(this.lastContext);
               } else if (window.Cinnamo?.hub?.currentScreen) {
                 this.broadcastGameContext({ screen: window.Cinnamo.hub.currentScreen });
               }
             } else {
-              this.handleRemoteData(ev.data);
+              this.handleRemoteData(ev.data, null);
             }
           };
         }
@@ -100,6 +156,10 @@
       if (typeof Peer === 'undefined') {
         console.warn('PeerJS no disponible, usando BroadcastChannel como fallback.');
         return;
+      }
+
+      if (this.peer && !this.peer.destroyed) {
+        try { this.peer.destroy(); } catch (_) {}
       }
 
       const peerId = `cinna-host-${this.roomCode.toLowerCase()}`;
@@ -123,13 +183,14 @@
         });
 
         this.peer.on('connection', (conn) => {
-          console.log('📱 ¡Celular conectado al mando!');
+          const assignedSlot = this.assignSlotForConnection(conn);
+          console.log(`📱 ¡Celular conectado al mando como Jugador ${assignedSlot}!`);
           this.connections.push(conn);
           this.connectedCount = this.connections.length;
           this.notifyStatus();
-          this.showToast('📱 ¡Mando celular conectado! 🌸');
+          const slotBadges = { 1: 'P1 🌸', 2: 'P2 🩵', 3: 'P3 💛' };
+          this.showToast(`📱 ¡Mando ${slotBadges[assignedSlot]} conectado! ✨`);
 
-          // Celebración sonora suave en PC
           if (A()) {
             A().unlock();
             A().celebrate();
@@ -137,9 +198,14 @@
 
           conn.on('open', () => {
             try {
-              conn.send({ type: 'welcome', room: this.roomCode });
+              conn.send({
+                type: 'welcome',
+                room: this.roomCode,
+                assignedSlot,
+                players: this.getActivePlayersSummary()
+              });
               const ctx = this.lastContext || { screen: window.Cinnamo?.hub?.currentScreen || 'hub' };
-              conn.send({ type: 'context', ...ctx });
+              conn.send({ type: 'context', ...ctx, players: this.getActivePlayersSummary() });
             } catch (_) {}
           });
 
@@ -150,18 +216,32 @@
               return;
             }
             if (data.type === 'hello') {
+              if (data.player >= 1 && data.player <= 3) {
+                conn._playerSlot = parseInt(data.player, 10);
+                this.players[conn._playerSlot].active = true;
+              }
               try {
-                conn.send({ type: 'welcome', room: this.roomCode });
+                conn.send({
+                  type: 'welcome',
+                  room: this.roomCode,
+                  assignedSlot: conn._playerSlot || assignedSlot,
+                  players: this.getActivePlayersSummary()
+                });
                 const ctx = this.lastContext || { screen: window.Cinnamo?.hub?.currentScreen || 'hub' };
-                conn.send({ type: 'context', ...ctx });
+                conn.send({ type: 'context', ...ctx, players: this.getActivePlayersSummary() });
               } catch (_) {}
               return;
             }
-            this.handleRemoteData(data);
+            this.handleRemoteData(data, conn);
           });
 
           conn.on('close', () => {
             this.connections = this.connections.filter(c => c !== conn);
+            for (const s of [1, 2, 3]) {
+              if (this.players[s].conn === conn) {
+                this.players[s].conn = null;
+              }
+            }
             this.connectedCount = this.connections.length;
             this.notifyStatus();
           });
@@ -169,10 +249,11 @@
 
         this.peer.on('error', (err) => {
           if (err.type === 'unavailable-id') {
-            localStorage.removeItem('cinna_room_code');
-            sessionStorage.removeItem('cinna_room_code');
-            this.roomCode = this.getOrGenerateRoomCode();
-            setTimeout(() => this.initPeerHost(), 1000);
+            this.roomCode = this.getOrGenerateRoomCode(true);
+            this.initBroadcast();
+            const roomDisplay = document.getElementById('gamepadRoomDisplay');
+            if (roomDisplay) roomDisplay.textContent = this.roomCode;
+            setTimeout(() => this.initPeerHost(), 800);
           } else {
             console.warn('Peer error:', err);
           }
@@ -183,35 +264,100 @@
     }
 
     /* ---------- 3. TRADUCCIÓN DE ENTRADA REMOTA HACIA TODOS LOS JUEGOS ---------- */
-    handleRemoteData(data) {
+    handleRemoteData(data, conn = null) {
       if (!data) return;
+      const playerSlot = Math.max(1, Math.min(3, parseInt(data.player || conn?._playerSlot || 1, 10)));
 
-      // Movimiento con Palanca Táctil Analógica (diagonales fluidas)
-      if (data.type === 'joystick') {
-        this.handleRemoteJoystick(data.x, data.y, data.angle, data.dist);
-        return;
-      }
-
-      // Respuesta de Matemática desde el Celular
-      if (data.type === 'mathAnswer') {
-        if (window.Cinnamo?.mathGame?.submitAnswer) {
-          window.Cinnamo.mathGame.submitAnswer(data.val);
+      // Selección / activación de Jugador (P1, P2, P3) para multijugador hasta 3 players
+      if (data.type === 'setPlayerSlot') {
+        const slot = Math.max(1, Math.min(3, parseInt(data.slot || playerSlot, 10)));
+        if (conn) conn._playerSlot = slot;
+        this.players[slot].active = data.active !== false;
+        if (data.heroId) this.players[slot].heroId = data.heroId;
+        if (slot === 2 || slot === 3) {
+          const plat = window.Cinnamo?.platformerGame;
+          if (plat) {
+            if (this.players[slot].active && plat.selectHeroById) {
+              plat.selectHeroById(this.players[slot].heroId, slot);
+            } else if (!this.players[slot].active && plat.coPlayers?.[slot]) {
+              plat.coPlayers[slot].active = false;
+            }
+          }
         }
+        const badge = slot === 1 ? 'P1 🌸' : (slot === 2 ? 'P2 🩵' : 'P3 💛');
+        this.showToast(`🎮 ¡${badge} listo en la partida!`);
+        this.notifyStatus();
         return;
       }
 
-      // Cambio rápido de personaje en Super Run o Repartidor 3D
+      // Movimiento con Palanca Táctil Analógica (diagonales fluidas por jugador P1/P2/P3)
+      if (data.type === 'joystick') {
+        this.handleRemoteJoystick(data.x, data.y, data.angle, data.dist, playerSlot);
+        return;
+      }
+
+      // Selección directa de Personaje desde el Celular (Sin tocar el PC)
+      if (data.type === 'selectHero') {
+        const heroId = data.heroId || 'cinna';
+        this.players[playerSlot].heroId = heroId;
+        this.players[playerSlot].active = true;
+        const screen = window.Cinnamo?.hub?.currentScreen;
+        if (screen === 'doom' && window.Cinnamo?.doomGame?.selectHeroById) {
+          window.Cinnamo.doomGame.selectHeroById(heroId);
+        } else if (screen === 'puzzle' && window.Cinnamo?.puzzleGame?.selectCharacterById) {
+          window.Cinnamo.puzzleGame.selectCharacterById(heroId);
+        } else if (window.Cinnamo?.platformerGame?.selectHeroById) {
+          window.Cinnamo.platformerGame.selectHeroById(heroId, playerSlot);
+        }
+        this.notifyStatus();
+        return;
+      }
+
+      // Cambio cíclico rápido de personaje en Super Run o Repartidor 3D
       if (data.type === 'switchHero') {
         const screen = window.Cinnamo?.hub?.currentScreen;
-        if (screen === 'platformer' && window.Cinnamo?.platformerGame?.nextHero) {
-          window.Cinnamo.platformerGame.nextHero();
+        if (screen === 'platformer' && window.Cinnamo?.platformerGame) {
+          if (playerSlot === 2 || playerSlot === 3) {
+            const heroOrder = ['cinna', 'milk', 'purin', 'chiffon', 'mocha'];
+            const curr = this.players[playerSlot].heroId || 'milk';
+            const nextId = heroOrder[(heroOrder.indexOf(curr) + 1) % heroOrder.length];
+            this.players[playerSlot].heroId = nextId;
+            window.Cinnamo.platformerGame.selectHeroById(nextId, playerSlot);
+          } else if (window.Cinnamo.platformerGame.nextHero) {
+            window.Cinnamo.platformerGame.nextHero();
+          }
         } else if (screen === 'doom' && window.Cinnamo?.doomGame?.nextHero) {
           window.Cinnamo.doomGame.nextHero();
         }
         return;
       }
 
-      // Volteo de carta en Memorice desde el celular
+      // Selección directa de Ciudad en Super Cinnamoroll Run
+      if (data.type === 'selectCity') {
+        if (window.Cinnamo?.platformerGame?.selectCityByIndex) {
+          window.Cinnamo.platformerGame.selectCityByIndex(parseInt(data.cityIdx, 10));
+        }
+        return;
+      }
+
+      // Respuesta y Configuración de Matemática desde el Celular
+      if (data.type === 'mathAnswer') {
+        if (window.Cinnamo?.mathGame?.submitAnswer) {
+          window.Cinnamo.mathGame.submitAnswer(data.val);
+        }
+        return;
+      }
+      if (data.type === 'mathConfig') {
+        const mg = window.Cinnamo?.mathGame;
+        if (mg) {
+          if (data.tier && mg.setTier) mg.setTier(data.tier);
+          if (data.mode && mg.setMode) mg.setMode(data.mode);
+          if (data.countHelp && mg.countNextTreat) mg.countNextTreat();
+        }
+        return;
+      }
+
+      // Volteo de carta y dificultad en Memorice desde el celular
       if (data.type === 'flipCard') {
         if (window.Cinnamo?.memoryGame?.flipCard) {
           window.Cinnamo.memoryGame.flipCard(data.index);
@@ -220,19 +366,30 @@
         }
         return;
       }
-
-      // Reinicio de Memorice
-      if (data.type === 'memoryNewGame') {
+      if (data.type === 'memoryNewGame' || data.type === 'memoryDifficulty') {
         if (window.Cinnamo?.memoryGame?.startNewGame) {
-          window.Cinnamo.memoryGame.startNewGame(window.Cinnamo.memoryGame.difficulty || 8);
+          const cards = parseInt(data.cards, 10) || window.Cinnamo.memoryGame.difficulty || 8;
+          window.Cinnamo.memoryGame.startNewGame(cards);
         }
         return;
       }
 
-      // Acciones de Rompecabezas
+      // Acciones completas de Rompecabezas
       if (data.type === 'puzzlePlaceNext') {
         if (window.Cinnamo?.puzzleGame?.placeNextPiece) {
           window.Cinnamo.puzzleGame.placeNextPiece();
+        }
+        return;
+      }
+      if (data.type === 'puzzleSelectChar') {
+        if (window.Cinnamo?.puzzleGame?.selectCharacterById) {
+          window.Cinnamo.puzzleGame.selectCharacterById(data.charId);
+        }
+        return;
+      }
+      if (data.type === 'puzzleDifficulty') {
+        if (window.Cinnamo?.puzzleGame?.setDifficultyPieces) {
+          window.Cinnamo.puzzleGame.setDifficultyPieces(data.pieces);
         }
         return;
       }
@@ -261,7 +418,7 @@
         return;
       }
 
-      // Acciones de Taller de Dibujo
+      // Acciones completas de Taller de Dibujo + Touchpad Remoto
       if (data.type === 'colorPick') {
         const chip = document.querySelector(`.swatch-btn[data-color="${data.color}"]`) || 
                      document.querySelector(`.palette-chip[data-color="${data.color}"]`);
@@ -272,6 +429,36 @@
       if (data.type === 'colorTool') {
         const tBtn = document.querySelector(`.tool-btn[data-tool="${data.tool}"]`);
         if (tBtn) tBtn.click();
+        return;
+      }
+      if (data.type === 'colorSheet') {
+        if (window.Cinnamo?.coloringGame?.selectSheetById) {
+          window.Cinnamo.coloringGame.selectSheetById(data.sheetId);
+        }
+        return;
+      }
+      if (data.type === 'colorSize') {
+        if (window.Cinnamo?.coloringGame?.setBrushSize) {
+          window.Cinnamo.coloringGame.setBrushSize(data.size);
+        }
+        return;
+      }
+      if (data.type === 'colorStamp') {
+        if (window.Cinnamo?.coloringGame?.setStamp) {
+          window.Cinnamo.coloringGame.setStamp(data.stamp);
+        }
+        return;
+      }
+      if (data.type === 'colorSave') {
+        if (window.Cinnamo?.coloringGame?.saveArtRemotely) {
+          window.Cinnamo.coloringGame.saveArtRemotely();
+        }
+        return;
+      }
+      if (data.type === 'colorPad') {
+        if (window.Cinnamo?.coloringGame?.remotePad) {
+          window.Cinnamo.coloringGame.remotePad(data.action, data.x, data.y);
+        }
         return;
       }
       if (data.type === 'colorUndo') {
@@ -292,7 +479,37 @@
         return;
       }
 
-      // Acciones de Palabras Mágicas
+      // Acciones completas de Palabras Mágicas + Teclado A-Z + Touchpad de Trazo
+      if (data.type === 'writingMode') {
+        if (window.Cinnamo?.writingGame?.setModeRemote) {
+          window.Cinnamo.writingGame.setModeRemote(data.mode);
+        }
+        return;
+      }
+      if (data.type === 'writingTier') {
+        if (window.Cinnamo?.writingGame?.setTierRemote) {
+          window.Cinnamo.writingGame.setTierRemote(data.tier);
+        }
+        return;
+      }
+      if (data.type === 'writingKey') {
+        if (window.Cinnamo?.writingGame?.pressLetterKey) {
+          window.Cinnamo.writingGame.pressLetterKey(data.char);
+        }
+        return;
+      }
+      if (data.type === 'writingAutoStep') {
+        if (window.Cinnamo?.writingGame?.autoStepRemote) {
+          window.Cinnamo.writingGame.autoStepRemote();
+        }
+        return;
+      }
+      if (data.type === 'writingPad') {
+        if (window.Cinnamo?.writingGame?.remotePad) {
+          window.Cinnamo.writingGame.remotePad(data.action, data.x, data.y);
+        }
+        return;
+      }
       if (data.type === 'writingNext') {
         if (window.Cinnamo?.writingGame?.nextLetter) {
           window.Cinnamo.writingGame.nextLetter();
@@ -329,7 +546,7 @@
         return;
       }
 
-      // Navegación remota (Hub / Cambiar juego)
+      // Navegación remota (Hub / Cambiar juego / Música)
       if (data.type === 'nav') {
         if (data.screen === 'hub') {
           const btnH = document.getElementById('globalBtnHome');
@@ -337,6 +554,16 @@
         } else if (window.Cinnamo?.hub?.launchGame) {
           window.Cinnamo.hub.launchGame(data.screen);
         }
+        return;
+      }
+      if (data.type === 'toggleMusic') {
+        const btnM = document.getElementById('globalBtnMusic');
+        if (btnM) btnM.click();
+        return;
+      }
+      if (data.type === 'nextTrack') {
+        const btnT = document.getElementById('globalBtnTrack');
+        if (btnT) btnT.click();
         return;
       }
 
@@ -365,20 +592,25 @@
         return;
       }
 
-      // Botón estándar (d-pad o botones de acción)
+      // Botón estándar (d-pad o botones de acción por jugador P1/P2/P3)
       if (data.type === 'input' || data.btn !== undefined) {
-        this.handleRemoteInput(data.btn, data.pressed);
+        this.handleRemoteInput(data.btn, data.pressed, playerSlot);
         return;
       }
     }
 
-    handleRemoteJoystick(x, y, angle, dist) {
+    handleRemoteJoystick(x, y, angle, dist, playerSlot = 1) {
       const screen = window.Cinnamo?.hub?.currentScreen || 'platformer';
 
-      // 1. Super Cinnamoroll Run (Diagonales fluidas: correr y saltar/planear)
+      // 1. Super Cinnamoroll Run (Soporta P1, P2 y P3 simultáneos en pantalla)
       if (screen === 'platformer') {
         const plat = window.Cinnamo?.platformerGame;
-        if (plat && plat.keys) {
+        if (!plat) return;
+        if (playerSlot === 2 || playerSlot === 3) {
+          if (plat.setCoPlayerJoystick) plat.setCoPlayerJoystick(playerSlot, x, y);
+          return;
+        }
+        if (plat.keys) {
           plat.keys.left = x < -0.24;
           plat.keys.right = x > 0.24;
           const wantsJump = y < -0.65;
@@ -417,13 +649,40 @@
       }
     }
 
-    handleRemoteInput(btn, pressed) {
+    handleRemoteInput(btn, pressed, playerSlot = 1) {
       const screen = window.Cinnamo?.hub?.currentScreen || 'platformer';
 
-      // 1. Despachar a Super Cinnamoroll Run (platformer.js)
+      // Si hay un modal de victoria abierto en cualquier juego, permitir avanzar con Saltar/Dulce
+      if (pressed && (btn === 'jump' || btn === 'treat')) {
+        const modalBtnIds = [
+          'btnPlatNextCity',
+          'btnDoomReplay',
+          'btnNextMathParty',
+          'btnMemoryVictoryReplay',
+          'btnNextPuzzleModal',
+          'btnNextWordModal',
+          'btnNextSentenceModal',
+          'btnNextTraceLetter'
+        ];
+        for (const id of modalBtnIds) {
+          const el = document.getElementById(id);
+          if (el && !el.closest('.hidden') && el.offsetParent !== null) {
+            el.click();
+            return;
+          }
+        }
+      }
+
+      // 1. Despachar a Super Cinnamoroll Run (platformer.js) — Soporta P1, P2 y P3
       if (screen === 'platformer') {
         const plat = window.Cinnamo?.platformerGame;
-        if (plat && plat.keys) {
+        if (!plat) return;
+        if (playerSlot === 2 || playerSlot === 3) {
+          if (plat.setCoPlayerInput) plat.setCoPlayerInput(playerSlot, btn, pressed);
+          if (btn === 'treat' && pressed && plat.treat) plat.treat();
+          return;
+        }
+        if (plat.keys) {
           if (btn === 'left') plat.keys.left = pressed;
           if (btn === 'right') plat.keys.right = pressed;
           if (btn === 'jump' || btn === 'up') {
@@ -497,7 +756,7 @@
       }
     }
 
-    /* ---------- 4. SOPORTE DE MANDOS FÍSICOS (Gamepad API) ---------- */
+    /* ---------- 4. SOPORTE DE HASTA 3 MANDOS FÍSICOS (Gamepad API) ---------- */
     initPhysicalGamepadLoop() {
       window.addEventListener('gamepadconnected', (e) => {
         console.log('🎮 Mando físico conectado:', e.gamepad.id);
@@ -514,18 +773,17 @@
       const poll = () => {
         const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
         let anyConnected = false;
-        for (let i = 0; i < gamepads.length; i++) {
+        let slotIdx = 1;
+        for (let i = 0; i < gamepads.length && slotIdx <= 3; i++) {
           const gp = gamepads[i];
           if (!gp) continue;
           anyConnected = true;
+          const slot = slotIdx++;
 
-          // Ejes: Stick izquierdo
           const axisX = gp.axes[0] || 0;
           const axisY = gp.axes[1] || 0;
           const deadZone = 0.35;
 
-          // Botones estándar
-          // 0: A / Cruz, 1: B / Círculo, 12: Dpad Arriba, 13: Dpad Abajo, 14: Dpad Izq, 15: Dpad Der
           const btnA = gp.buttons[0]?.pressed || false;
           const btnB = gp.buttons[1]?.pressed || false;
           const dUp = gp.buttons[12]?.pressed || axisY < -deadZone;
@@ -534,14 +792,14 @@
           const dRight = gp.buttons[15]?.pressed || axisX > deadZone;
 
           const current = { left: dLeft, right: dRight, up: dUp, down: dDown, jump: btnA, treat: btnB };
+          const prev = this.lastGamepadState[slot] || {};
 
           for (const k in current) {
-            if (current[k] !== this.lastGamepadState[k]) {
-              this.handleRemoteInput(k, current[k]);
+            if (current[k] !== prev[k]) {
+              this.handleRemoteInput(k, current[k], slot);
             }
           }
-          this.lastGamepadState = current;
-          break; // Usar el primer mando activo
+          this.lastGamepadState[slot] = current;
         }
         this.physicalGamepadActive = anyConnected;
         requestAnimationFrame(poll);
@@ -565,7 +823,6 @@
         modal.setAttribute('aria-hidden', 'false');
         if (roomDisplay) roomDisplay.textContent = this.roomCode;
 
-        // Renderizar código QR
         if (qrContainer && typeof QRCode !== 'undefined') {
           qrContainer.innerHTML = '';
           try {
@@ -602,13 +859,13 @@
         if (!statusPill) return;
         if (st.count > 0) {
           statusPill.className = 'gamepad-status-pill connected';
-          statusPill.textContent = '🟢 ¡Celular conectado! Mando Listo ✨';
+          statusPill.textContent = `🟢 ¡${st.count} Mando(s) Celular Conectado(s)! (Hasta 3 Players) ✨`;
         } else if (st.gamepad) {
           statusPill.className = 'gamepad-status-pill connected';
           statusPill.textContent = '🎮 ¡Mando físico Bluetooth conectado!';
         } else {
           statusPill.className = 'gamepad-status-pill';
-          statusPill.textContent = '🟡 Esperando que el celular se conecte...';
+          statusPill.textContent = '🟡 Esperando que los celulares se conecten (1 a 3 Jugadores)...';
         }
       });
     }

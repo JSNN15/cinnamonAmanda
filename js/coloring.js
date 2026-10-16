@@ -549,6 +549,137 @@
       a.href = exportCanvas.toDataURL('image/png');
       a.click();
     }
+
+    selectSheetById(sheetId) {
+      if (!this.container) return;
+      const btn = this.container.querySelector(`.sheet-tab-btn[data-id="${sheetId}"]`);
+      if (btn) {
+        btn.click();
+      } else {
+        const found = SHEETS.find(s => s.id === sheetId);
+        if (found) {
+          A.unlock();
+          A.bubblePop(2);
+          this.currentSheet = found;
+          this.render();
+        }
+      }
+    }
+
+    setBrushSize(size) {
+      const sz = parseInt(size, 10) || 20;
+      this.brushSize = sz;
+      if (this.container) {
+        const btn = this.container.querySelector(`.size-pill[data-size="${sz}"]`);
+        if (btn) btn.click();
+      }
+    }
+
+    setStamp(emoji) {
+      if (!emoji) return;
+      this.selectedStamp = emoji;
+      this.currentTool = 'stamp';
+      if (this.container) {
+        const toolBtn = this.container.querySelector('.tool-btn[data-tool="stamp"]');
+        if (toolBtn) toolBtn.click();
+        const stBtn = this.container.querySelector(`.stamp-item-btn[data-stamp="${emoji}"]`);
+        if (stBtn) stBtn.click();
+      }
+    }
+
+    saveArtRemotely() {
+      if (!this.container) return;
+      const btn = this.container.querySelector('#btnDownloadArt');
+      if (btn) btn.click();
+    }
+
+    remotePad(action, normX, normY) {
+      if (!this.container) return;
+      const canvas = this.container.querySelector('#freehandCanvas');
+      const cursor = this.container.querySelector('#brushCursor');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const x = Math.max(0, Math.min(canvas.width, normX * canvas.width));
+      const y = Math.max(0, Math.min(canvas.height, normY * canvas.height));
+
+      if (cursor) {
+        const r = canvas.getBoundingClientRect();
+        cursor.style.opacity = action === 'up' ? '0' : '1';
+        cursor.style.left = `${(x / canvas.width) * r.width}px`;
+        cursor.style.top = `${(y / canvas.height) * r.height}px`;
+      }
+
+      if (action === 'down') {
+        A.unlock();
+        this.isDrawing = true;
+        this._remotePos = { x, y };
+        if (this.currentTool === 'stamp') {
+          ctx.save();
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.font = '38px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(this.selectedStamp, x, y);
+          ctx.restore();
+          A.sparkleChime();
+          this._remoteStampPos = { x, y };
+        } else {
+          ctx.beginPath();
+          ctx.arc(x, y, this.brushSize / 2, 0, Math.PI * 2);
+          if (this.currentTool === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.fill();
+          } else {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.fillStyle = this.selectedColor;
+            ctx.fill();
+          }
+          A.bubblePop(1);
+        }
+      } else if (action === 'move' && this.isDrawing) {
+        if (this.currentTool === 'stamp') {
+          const prev = this._remoteStampPos || { x: -999, y: -999 };
+          if (Math.hypot(x - prev.x, y - prev.y) > 44) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.font = '38px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(this.selectedStamp, x, y);
+            ctx.restore();
+            A.bubblePop(2);
+            this._remoteStampPos = { x, y };
+          }
+        } else if (this._remotePos) {
+          ctx.beginPath();
+          ctx.moveTo(this._remotePos.x, this._remotePos.y);
+          ctx.lineTo(x, y);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.lineWidth = this.brushSize;
+          if (this.currentTool === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+          } else {
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.strokeStyle = this.selectedColor;
+          }
+          ctx.stroke();
+          this._remotePos = { x, y };
+        }
+      } else if (action === 'up') {
+        if (this.isDrawing) {
+          this.isDrawing = false;
+          try {
+            const url = canvas.toDataURL();
+            this.history.push(url);
+            if (this.history.length > 20) this.history.shift();
+            if (this.savedCanvases) this.savedCanvases[this.currentSheet.id] = url;
+          } catch (_) {}
+        }
+        this._remotePos = null;
+        this._remoteStampPos = null;
+      }
+    }
   }
 
   window.Cinnamo = window.Cinnamo || {};

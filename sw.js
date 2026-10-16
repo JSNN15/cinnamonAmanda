@@ -3,7 +3,7 @@
  * y sólo usa la caché como respaldo cuando no hay conexión. Así un despliegue nuevo
  * nunca queda "atrapado" detrás de archivos viejos en caché.
  */
-const CACHE_NAME = 'cinnamoroll-land-v25';
+const CACHE_NAME = 'cinnamoroll-land-v26';
 const CORE_ASSETS = [
   './',
   './index.html',
