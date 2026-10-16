@@ -687,6 +687,13 @@
           <button class="btn-mini-pill" id="btnRemoteAvatarLight" style="background: #e0f2fe; color: #0369a1;">☀️ Luz</button>
         </div>
 
+        <!-- Controles rápidos de altitud para ¡A Volar! (visible en pantalla de vuelo) -->
+        <div class="remote-mini-pills hidden" id="flightActionStrip" style="max-width: 440px; gap: 8px;">
+          <button class="btn-mini-pill btn-flight-altitude" id="btnRemoteFlightUp" data-btn="up" style="background: #e0f2fe; color: #0288d1; border-color: #7dd3fc; font-weight: 800; font-size: 15px; padding: 6px 18px;">▲ SUBIR ALTO</button>
+          <button class="btn-mini-pill btn-flight-altitude" id="btnRemoteFlightDown" data-btn="down" style="background: #e0f2fe; color: #0288d1; border-color: #7dd3fc; font-weight: 800; font-size: 15px; padding: 6px 18px;">▼ BAJAR SUAVE</button>
+          <button class="btn-mini-pill" id="btnRemoteFlightSpin" data-btn="jump" style="background: #fdf2f8; color: #db2777; border-color: #f472b6;">✨ Pirueta</button>
+        </div>
+
         <div style="width: 100%; flex: 1; display: flex; justify-content: space-between; align-items: center;">
           <div class="joystick-zone" id="joystickZone">
             <div class="joystick-base" id="joystickBase">
@@ -1383,6 +1390,10 @@
           if (avatarActionStrip) {
             avatarActionStrip.classList.toggle('hidden', screen !== 'avatar');
           }
+          const flightActionStrip = document.getElementById('flightActionStrip');
+          if (flightActionStrip) {
+            flightActionStrip.classList.toggle('hidden', screen !== 'flight');
+          }
           if (screen === 'avatar') {
             footerLabel.textContent = '🏡 Casa Avatar';
             labelJump.textContent = '✨ USAR';
@@ -1394,8 +1405,8 @@
             }
           } else if (screen === 'flight') {
             footerLabel.textContent = '🛫 ¡A Volar!';
-            labelJump.textContent = 'PIRUETA';
-            labelTreat.textContent = 'SALUDO';
+            labelJump.textContent = '✨ GIRO';
+            labelTreat.textContent = '💖 SALUDO';
           } else if (screen === 'doom') {
             footerLabel.textContent = '🎮 Repartidor 3D';
             labelJump.textContent = 'LANZAR';

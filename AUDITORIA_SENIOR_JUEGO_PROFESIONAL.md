@@ -219,3 +219,52 @@ Inspirado en **Avatar World (Pazu Games) / Toca Life World**, se diseñó desde 
    - **En Pantalla Táctil:** Arrastrar cualquier personaje o mueble con el dedo, tocar el suelo para que el avatar activo camine hacia allí, o tocar un mueble para interactuar.
    - **Desde hasta 3 Celulares (`controller.html`):** Cada jugador mueve su propio avatar con el joystick analógico, usa muebles con `✨ USAR`, baila con `💃 BAILAR`, y dispone de la tira exclusiva `#avatarActionStrip` en el celular para cambiar de habitación (`🧁 Café`, `🛏️ Cuarto`, `🌸 Jardín`), cambiar ropa/gorro/lentes/objeto/expresión de su jugador y aparecer pasteles o peluches en la TV.
 
+---
+
+## 11. Evolución `v28`: Perfeccionamiento del Vuelo Vertical en *"¡A Volar!"* (Movimiento Continuo Arriba/Abajo, Físicas de Respuesta Ágil, Controles Táctiles en Pantalla y Mando Remoto)
+
+### 11.1 Diagnóstico Técnico y Cuello de Botella Previo
+En el minijuego original *"¡A Volar!"* (`js/game.js` e `js/input.js`), el personaje Cinnamoroll fue diseñado inicialmente para volar persiguiendo el dedo sobre tablets o respondiendo a comandos de voz/soplido. Sin embargo, al jugar con teclado, mando móvil o pantallas táctiles sin arrastre continuo, se detectaron **3 limitaciones críticas**:
+1. **Comportamiento por Impulso en lugar de Eje Continuo:** Al presionar `Arriba` o `Abajo` en el teclado o mando remoto, el sistema generaba únicamente un impulso balístico único (`S.p.vy = -1.9`) con un objetivo temporal de corta duración (`IN.setTarget('voice', ...)`), obligando al jugador a spamear botones sin poder mantener la altitud ni volar de forma sostenida.
+2. **Inercia Pesada y Aceleración Tardía:** El modelo físico anterior calculaba la aceleración como `acc = ctl.axis * 7 - p.vy * 4`. Requería casi 1 segundo para alcanzar velocidad terminal, dando una sensación de pesadez o falta de respuesta al intentar ascender o descender rápidamente para esquivar o atrapar estrellas.
+3. **Ausencia de Controles Táctiles Visibles para Altitud:** En tablets y pantallas táctiles de Smart TV no existían botones visibles de subida/bajada, obligando al usuario a adivinar que debía arrastrar el dedo por la pantalla.
+
+### 11.2 Solución de Ingeniería Implementada en `v28`
+1. **Control de Eje Vertical Continuo en `js/input.js`:**
+   - Se incorporó `customAxis`, `setKey(key, pressed)` y `setAxis(val)` al `InputManager`.
+   - `getControl()` consolida el eje analógico (`customAxis`) con el estado sostenido de teclas/botones direccionales (`keys.has('up')`, `keys.has('down')`), permitiendo tanto aceleración sostenida como control analógico directo.
+2. **Modelo Físico de Velocidad Objetivo y Frenado de Planeo en `js/game.js`:**
+   - Se rediseñó la física de vuelo vertical en `update(dt)`:
+     ```javascript
+     if (ctl.axis !== 0) {
+       const targetVy = ctl.axis * 2.8;
+       acc = (targetVy - p.vy) * 14;
+       delete IN.targets.voice;
+       delete IN.targets.pointer;
+     } else if (ctl.target !== null) {
+       acc = (ctl.target - p.y) * 36 - p.vy * 10;
+     } else {
+       acc = -p.vy * 7;
+     }
+     ```
+   - Al pulsar `Arriba` (`axis = -1`), Cinnamoroll alcanza de inmediato su velocidad de ascenso vertical (`-2.8`), con una respuesta instantánea (< 100 ms) y frenado suave de planeo de orejitas (`-p.vy * 7`) al soltar.
+3. **Controles Táctiles Kawaii Integrados en Pantalla (`#flightTouchControls`):**
+   - En `index.html` y `styles.css`, se implementó un HUD táctil flotante con botones kawaii de gran formato:
+     - D-Pad vertical izquierdo: `▲ Subir` y `▼ Bajar` con eventos de puntero (`pointerdown`/`pointerup`/`lostpointercapture`) y sonido procedimental `A.whoosh()`.
+     - Acciones derechas: `✨ Giro` (Pirueta) y `💖 Hola` (Saludo a Amanda).
+   - Integrado con el **Coordinador Inteligente de Entrada**: en modo Mando TV (`body.remote-controller-active`), los botones táctiles se atenúan suavemente (`opacity: 0.12`), y vuelven al 100% al tocar la pantalla.
+4. **Mando Móvil y Gamepads Físicos (`controller.html` + `js/controller-bridge.js`):**
+   - El Joystick analógico ahora modula directamente la altitud en tiempo real (`input.setAxis(y)`).
+   - Se añadió la barra de altitud `#flightActionStrip` con botones de un toque `▲ SUBIR ALTO` y `▼ BAJAR SUAVE`.
+   - Los mandos físicos de consola (Xbox, PlayStation, Joy-Con) mapean la palanca izquierda y la cruceta direccional para ascender y descender de forma inmediata.
+
+### 11.3 Resultados de Verificación E2E (`tools/test_all_games_controller.py`)
+```
+--- TEST 1: ¡A VOLAR! (VUELO VERTICAL: ARRIBA Y ABAJO) ---
+✅ Pantalla en TV: 'flight' | Mando UI: '🛫 ¡A Volar!'
+✅ Controles táctiles integrados en pantalla verificados (Up=True, Down=True).
+✅ Movimiento hacia ARRIBA verificado: y=0.50 -> 0.00 (vy=0.31).
+✅ Movimiento hacia ABAJO verificado: y=0.03 -> 1.00 (vy=2.80).
+✅ Joystick analógico arriba/abajo verificado (vy_joy_up=-1.93, vy_joy_down=1.86).
+🎉 ¡TODOS LOS 9 JUEGOS, AVATAR WORLD, 3 JUGADORES SIMULTÁNEOS (P1/P2/P3) Y SMART INPUT MODE 100% VERIFICADOS! 🎉
+```

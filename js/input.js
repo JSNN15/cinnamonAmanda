@@ -17,6 +17,7 @@
   class InputManager {
     constructor() {
       this.keys = new Set();
+      this.customAxis = 0;
       this.targets = {};      // source -> { y, until, at }
       this.listeners = {};
       this.pointerMapper = y => y / window.innerHeight; // el juego lo reemplaza
@@ -31,9 +32,19 @@
       this.targets[source] = { y: clamp(y, 0, 1), until: t + ttl, at: t };
     }
 
+    setKey(key, pressed) {
+      if (pressed) this.keys.add(key);
+      else this.keys.delete(key);
+    }
+
+    setAxis(val) {
+      this.customAxis = clamp(val, -1, 1);
+    }
+
     /** API pública para sensores externos. */
     feed(msg = {}) {
       const src = msg.source || 'external';
+      if (typeof msg.axis === 'number') this.setAxis(msg.axis);
       if (typeof msg.target === 'number') this.setTarget(src, msg.target, msg.ttl || 500);
       if (typeof msg.tilt === 'number') this.setTarget(src, 0.5 + clamp(msg.tilt, -1, 1) * 0.5, msg.ttl || 500);
       if (msg.action) this.emit('action', { type: msg.action, source: src });
@@ -41,9 +52,10 @@
 
     /** Estado consolidado que el juego lee cada frame. */
     getControl() {
-      let axis = 0;
+      let axis = this.customAxis || 0;
       if (this.keys.has('up')) axis -= 1;
       if (this.keys.has('down')) axis += 1;
+      axis = clamp(axis, -1, 1);
       const t = now();
       let best = null;
       for (const k in this.targets) {
@@ -73,14 +85,14 @@
   // El dedo "arrastra" a Cinnamoroll: lo más natural para una nena de 5 años en tablet.
   function attachPointer(el) {
     let down = false;
-    const upd = e => mgr.setTarget('pointer', mgr.pointerMapper(e.clientY), 250);
+    const upd = e => mgr.setTarget('pointer', mgr.pointerMapper(e.clientY), 800);
     el.addEventListener('pointerdown', e => { down = true; upd(e); el.setPointerCapture?.(e.pointerId); });
     el.addEventListener('pointermove', e => { if (down) upd(e); });
     const end = () => { down = false; };
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', end);
     // mantener el objetivo vivo mientras el dedo está apoyado y quieto
-    setInterval(() => { const t = mgr.targets.pointer; if (down && t) t.until = now() + 250; }, 100);
+    setInterval(() => { const t = mgr.targets.pointer; if (down && t) t.until = now() + 400; }, 100);
   }
 
   /* ---------------- Comandos de voz (Web Speech API) ---------------- */

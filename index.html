@@ -208,6 +208,30 @@
       <div id="heard" class="hidden"></div>
       <div id="cheer" class="hidden"></div>
 
+      <!-- Controles táctiles integrados para volar (subir, bajar, pirueta y saludo) -->
+      <div id="flightTouchControls" class="flight-touch-controls hidden">
+        <div class="flight-dpad-col">
+          <button id="btnFlightUp" class="flight-touch-btn btn-flight-up" aria-label="Subir">
+            <span class="flight-btn-icon">▲</span>
+            <span class="flight-btn-text">Subir</span>
+          </button>
+          <button id="btnFlightDown" class="flight-touch-btn btn-flight-down" aria-label="Bajar">
+            <span class="flight-btn-icon">▼</span>
+            <span class="flight-btn-text">Bajar</span>
+          </button>
+        </div>
+        <div class="flight-actions-col">
+          <button id="btnFlightSpin" class="flight-touch-btn btn-flight-spin" aria-label="Pirueta">
+            <span class="flight-btn-icon">✨</span>
+            <span class="flight-btn-text">Giro</span>
+          </button>
+          <button id="btnFlightHello" class="flight-touch-btn btn-flight-hello" aria-label="Saludo">
+            <span class="flight-btn-icon">💖</span>
+            <span class="flight-btn-text">Hola</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Menú inicio / pausa del vuelo -->
       <div id="menu" class="overlay">
         <div class="card">

@@ -53,18 +53,24 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 * **Control Híbrido Touch + Celular Multi-Player (P1, P2, P3):**
   * Toca y arrastra directamente en pantalla, o usa el joystick analógico y la barra `#avatarActionStrip` en el celular para mover avatares, cambiar cuartos y decorar.
 
-### 1. 🛫 ¡A Volar con Cinnamoroll! (`js/game.js`)
+### 1. 🛫 ¡A Volar con Cinnamoroll! (`js/game.js` · v28)
 * **Mecánica:** Vuela por cielos de colores recolectando estrellas mágicas ⭐, rollitos de canela 🍥 y corazones 💗.
-* **Física:** Movimiento con resorte amortiguado (suave, sin tirones) e imán generoso para que las estrellas se acerquen solas.
+* **Física de Vuelo Vertical Receptiva (Subir y Bajar Continuo):**
+  * Modelo de velocidad objetivo instantáneo (`acc = (targetVy - p.vy) * 14`) con frenado suave de planeo de orejitas (`-p.vy * 7`).
+  * Responder inmediatamente a presionar y mantener subida o bajada continua sin tirones ni necesidad de spamear.
+  * Imán generoso para que las estrellas se acerquen suavemente a Cinnamoroll.
 * **Sin frustración:** Cada 10 estrellas el cielo cambia de fase horaria (*día soleado → atardecer naranja → noche estrellada → amanecer pastel*) con lluvia de confeti.
-* **Optimización de Ciclo de Vida (`v24`):** Pausa automáticamente su loop de renderizado a 60 FPS y la captura de teclado cuando Amanda cambia a cualquier otro juego del Hub.
-* **Controles múltiples:**
-  * **Teclado:** `↑` / `↓` o `W` / `S` · `Espacio` = pirueta · `H` = saludo.
-  * **Pantalla táctil / Ratón:** Arrastrar el dedo para que Cinnamoroll lo siga suavemente.
+* **Controles Táctiles Integrados en Pantalla (`#flightTouchControls`):**
+  * Botones flotantes kawaii de gran tamaño en pantalla: `▲ Subir` y `▼ Bajar` en el lado izquierdo, y `✨ Giro` (Pirueta) y `💖 Hola` (Saludo) en el lado derecho.
+  * Integrados con el Coordinador Inteligente de Entrada (se atenúan automáticamente al usar mando en TV).
+* **Controles Múltiples:**
+  * **Mando Celular (`controller.html`):** Joystick analógico con modulación continua de altitud y tira rápida `#flightActionStrip` (`▲ SUBIR ALTO`, `▼ BAJAR SUAVE`, `✨ Pirueta`).
+  * **Mandos Físicos de Consola:** Soporte nativo para cruceta D-Pad y stick analógico en Xbox, PlayStation y Nintendo Switch.
+  * **Teclado:** `↑` / `↓` o `W` / `S` sostenido · `Espacio` = pirueta · `H` = saludo.
+  * **Pantalla táctil / Ratón:** Toque para volar a una altitud (TTL 800 ms) o arrastre suave continuo.
   * **Voz:** Decir *"arriba"*, *"abajo"*, *"gira"*, *"hola"*.
   * **Soplar / Cantar:** El nivel del micrófono eleva a Cinnamoroll al soplar.
   * **Giroscopio / Acelerómetro:** Inclinar el móvil o tablet para volar.
-  * **Mando Celular / Sensor externo:** Control desde el teléfono (`controller.html`) o vía WebSocket (`?ws=ws://IP:PUERTO`).
 
 ---
 

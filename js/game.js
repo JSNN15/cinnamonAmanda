@@ -203,16 +203,18 @@
     updateParticles(dt);
     if (S.mode !== 'play') return;
 
-    // movimiento: resorte amortiguado → suave, nunca brusco
+    // movimiento: resorte amortiguado → suave, directo y receptivo hacia arriba y hacia abajo
     const ctl = IN.getControl();
     let acc;
     if (ctl.axis !== 0) {
-      acc = ctl.axis * 7 - p.vy * 4;
+      const targetVy = ctl.axis * 2.8;
+      acc = (targetVy - p.vy) * 14;
       delete IN.targets.voice;
+      delete IN.targets.pointer;
     } else if (ctl.target !== null) {
-      acc = (ctl.target - p.y) * 30 - p.vy * 10;
+      acc = (ctl.target - p.y) * 36 - p.vy * 10;
     } else {
-      acc = -p.vy * 4;
+      acc = -p.vy * 7;
     }
     p.vy += acc * dt;
     p.y += p.vy * dt;
@@ -437,6 +439,8 @@
     $('menu').classList.add('hidden');
     $('hud').classList.remove('hidden');
     $('topbtns').classList.remove('hidden');
+    const touchControls = $('flightTouchControls');
+    if (touchControls) touchControls.classList.remove('hidden');
     if (first) A.kawaiiChirp('cheer');
     last = performance.now();
   }
@@ -444,8 +448,51 @@
     if (S.mode !== 'play') return;
     S.mode = 'pause';
     $('menu').classList.remove('hidden');
+    const touchControls = $('flightTouchControls');
+    if (touchControls) touchControls.classList.add('hidden');
     $('btnPlay').querySelector('.tri').textContent = '▶';
   }
+
+  function initFlightTouchControls() {
+    const wireButton = (btnId, key, soundFn) => {
+      const el = $(btnId);
+      if (!el) return;
+      const start = e => {
+        e.preventDefault();
+        e.stopPropagation();
+        IN.setKey(key, true);
+        el.classList.add('active');
+        try { el.setPointerCapture(e.pointerId); } catch (_) {}
+        if (soundFn) soundFn();
+      };
+      const end = e => {
+        IN.setKey(key, false);
+        el.classList.remove('active');
+        try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+      };
+      el.addEventListener('pointerdown', start);
+      el.addEventListener('pointerup', end);
+      el.addEventListener('pointercancel', end);
+      el.addEventListener('lostpointercapture', end);
+    };
+
+    wireButton('btnFlightUp', 'up', () => A.whoosh(true));
+    wireButton('btnFlightDown', 'down', () => A.whoosh(false));
+
+    const wireAction = (btnId, actionName) => {
+      const el = $(btnId);
+      if (!el) return;
+      el.addEventListener('pointerdown', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        IN.emit('action', { type: actionName, source: 'touch' });
+      });
+    };
+
+    wireAction('btnFlightSpin', 'spin');
+    wireAction('btnFlightHello', 'hello');
+  }
+  initFlightTouchControls();
 
   window.Cinnamo.startFlightGame = startGame;
   window.Cinnamo.pauseFlightGame = pause;
@@ -560,6 +607,16 @@
 
   window.Cinnamo.state = S; // útil para depurar desde la consola
   window.Cinnamo.game = S;
+  window.Cinnamo.flightGame = {
+    state: S,
+    startGame,
+    pause,
+    moveUp: (pressed = true) => IN.setKey('up', pressed),
+    moveDown: (pressed = true) => IN.setKey('down', pressed),
+    spin: () => IN.emit('action', { type: 'spin', source: 'api' }),
+    hello: () => IN.emit('action', { type: 'hello', source: 'api' }),
+    setAxis: (val) => IN.setAxis(val)
+  };
 
   // ?demo → arranca solo y vuela en piloto automático (para probar la visual)
   if (new URLSearchParams(location.search).has('demo')) {

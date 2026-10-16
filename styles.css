@@ -2597,13 +2597,15 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 /* Cuando el Mando Remoto está activo en la TV, ocultar los botones táctiles gigantes de pantalla
    para que la TV luzca limpia como una consola profesional (se reactivan al tocar la pantalla) */
 body.remote-controller-active .plat-touch-controls,
-body.remote-controller-active .doom-touch-controls {
+body.remote-controller-active .doom-touch-controls,
+body.remote-controller-active .flight-touch-controls {
   opacity: 0.12;
   pointer-events: auto;
   transition: opacity 0.35s ease;
 }
 body.touch-input-active .plat-touch-controls,
-body.touch-input-active .doom-touch-controls {
+body.touch-input-active .doom-touch-controls,
+body.touch-input-active .flight-touch-controls {
   opacity: 1;
 }
 
@@ -2893,4 +2895,105 @@ body.touch-input-active .doom-touch-controls {
   color: #334155;
 }
 
+/* ============================================================
+   CONTROLES TÁCTILES INTEGRADOS PARA VUELO (A VOLAR)
+   ============================================================ */
+.flight-touch-controls {
+  position: absolute;
+  inset: auto 16px 20px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 15;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.flight-touch-controls.hidden {
+  display: none !important;
+}
+.flight-dpad-col,
+.flight-actions-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: auto;
+}
+.flight-touch-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 3.5px solid #b3e5fc;
+  box-shadow: 0 6px 0 #7dd3fc, 0 10px 20px rgba(125, 211, 252, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  touch-action: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.08s, box-shadow 0.08s, background-color 0.1s;
+}
+.flight-touch-btn:active,
+.flight-touch-btn.active {
+  transform: scale(0.92) translateY(4px);
+  box-shadow: 0 2px 0 #7dd3fc, 0 4px 10px rgba(125, 211, 252, 0.35);
+  background: #e0f2fe;
+}
+.flight-btn-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+.flight-btn-text {
+  font-size: 11px;
+  font-weight: 800;
+  color: #0284c7;
+  letter-spacing: 0.5px;
+}
+.btn-flight-up {
+  border-color: #7dd3fc;
+}
+.btn-flight-down {
+  border-color: #7dd3fc;
+}
+.btn-flight-spin {
+  border-color: #fbcfe8;
+  box-shadow: 0 6px 0 #f472b6, 0 10px 20px rgba(244, 114, 182, 0.35);
+}
+.btn-flight-spin:active,
+.btn-flight-spin.active {
+  box-shadow: 0 2px 0 #f472b6;
+  background: #fdf2f8;
+}
+.btn-flight-spin .flight-btn-text {
+  color: #db2777;
+}
+.btn-flight-hello {
+  border-color: #fed7aa;
+  box-shadow: 0 6px 0 #fb923c, 0 10px 20px rgba(251, 146, 60, 0.35);
+}
+.btn-flight-hello:active,
+.btn-flight-hello.active {
+  box-shadow: 0 2px 0 #fb923c;
+  background: #fff7ed;
+}
+.btn-flight-hello .flight-btn-text {
+  color: #ea580c;
+}
 
+@media (max-width: 600px) {
+  .flight-touch-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 20px;
+  }
+  .flight-btn-icon {
+    font-size: 20px;
+  }
+  .flight-btn-text {
+    font-size: 10px;
+  }
+}

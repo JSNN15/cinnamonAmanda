@@ -192,13 +192,48 @@ try:
     # -------------------------------------------------------------
     # PRUEBA 1: Navegación desde el Mando (Hub -> A Volar)
     # -------------------------------------------------------------
-    print("\n--- TEST 1: ¡A VOLAR! ---")
+    print("\n--- TEST 1: ¡A VOLAR! (VUELO VERTICAL: ARRIBA Y ABAJO) ---")
     ws_phone.eval("sendData({ type: 'nav', screen: 'flight' })")
     time.sleep(1.2)
     screen_host = ws_host.eval("window.Cinnamo?.hub?.currentScreen")
     mode_phone = ws_phone.eval("document.getElementById('footerGameLabel')?.textContent")
     assert screen_host == 'flight', f"Host screen should be flight, got {screen_host}"
     print(f"✅ Pantalla en TV: '{screen_host}' | Mando UI: '{mode_phone}'")
+
+    # Iniciar vuelo si está en menú
+    ws_host.eval("if (window.Cinnamo?.game?.mode !== 'play') window.Cinnamo?.startFlightGame?.()")
+    time.sleep(0.3)
+    game_mode = ws_host.eval("window.Cinnamo?.game?.mode")
+    assert game_mode == 'play', f"Flight game should be in play mode, got {game_mode}"
+
+    # Verificar presencia de controles táctiles en pantalla
+    has_touch_controls = ws_host.eval("!document.getElementById('flightTouchControls')?.classList.contains('hidden')")
+    has_btn_up = ws_host.eval("!!document.getElementById('btnFlightUp')")
+    has_btn_down = ws_host.eval("!!document.getElementById('btnFlightDown')")
+    assert has_touch_controls and has_btn_up and has_btn_down, "Flight touch controls and up/down buttons must exist!"
+    print(f"✅ Controles táctiles integrados en pantalla verificados (Up={has_btn_up}, Down={has_btn_down}).")
+
+    # Test Mover Hacia Arriba (sendButton('up', true))
+    y_start = ws_host.eval("window.Cinnamo?.game?.p?.y")
+    ws_phone.eval("sendButton('up', true)")
+    time.sleep(0.35)
+    vy_up = ws_host.eval("window.Cinnamo?.game?.p?.vy")
+    y_after_up = ws_host.eval("window.Cinnamo?.game?.p?.y")
+    ws_phone.eval("sendButton('up', false)")
+    time.sleep(0.1)
+    assert vy_up < 0 or y_after_up < y_start, f"Character should move upwards! vy={vy_up}, y_start={y_start}, y_after={y_after_up}"
+    print(f"✅ Movimiento hacia ARRIBA verificado: y={y_start:.2f} -> {y_after_up:.2f} (vy={vy_up:.2f}).")
+
+    # Test Mover Hacia Abajo (sendButton('down', true))
+    y_before_down = ws_host.eval("window.Cinnamo?.game?.p?.y")
+    ws_phone.eval("sendButton('down', true)")
+    time.sleep(0.35)
+    vy_down = ws_host.eval("window.Cinnamo?.game?.p?.vy")
+    y_after_down = ws_host.eval("window.Cinnamo?.game?.p?.y")
+    ws_phone.eval("sendButton('down', false)")
+    time.sleep(0.1)
+    assert vy_down > 0 or y_after_down > y_before_down, f"Character should move downwards! vy={vy_down}, y_before={y_before_down}, y_after={y_after_down}"
+    print(f"✅ Movimiento hacia ABAJO verificado: y={y_before_down:.2f} -> {y_after_down:.2f} (vy={vy_down:.2f}).")
 
     # Mando interactúa: pirueta (jump) y saludo (treat)
     ws_phone.eval("sendButton('jump', true)")
@@ -207,11 +242,15 @@ try:
     ws_phone.eval("sendButton('treat', true)")
     time.sleep(0.1)
     ws_phone.eval("sendButton('treat', false)")
-    # Joystick analógico
+    # Joystick analógico hacia arriba y abajo
     ws_phone.eval("sendData({ type: 'joystick', x: 0, y: -0.7, dist: 0.7, angle: -90 })")
     time.sleep(0.2)
+    vy_joy_up = ws_host.eval("window.Cinnamo?.game?.p?.vy")
+    ws_phone.eval("sendData({ type: 'joystick', x: 0, y: 0.7, dist: 0.7, angle: 90 })")
+    time.sleep(0.2)
+    vy_joy_down = ws_host.eval("window.Cinnamo?.game?.p?.vy")
     ws_phone.eval("sendData({ type: 'joystick', x: 0, y: 0, dist: 0, angle: 0 })")
-    print("✅ Controles de ¡A Volar! (Pirueta, Saludo, Stick) respondieron con éxito.")
+    print(f"✅ Joystick analógico arriba/abajo verificado (vy_joy_up={vy_joy_up:.2f}, vy_joy_down={vy_joy_down:.2f}).")
 
     # -------------------------------------------------------------
     # PRUEBA 2: Pastelería de Números (Math + Nivel + Modo + Contar)

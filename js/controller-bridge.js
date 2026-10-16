@@ -753,11 +753,19 @@
         return;
       }
 
-      // 3. A Volar (Vuelo 360° analógico suave sin saturar el audio)
+      // 3. A Volar (Vuelo analógico suave: subir y bajar con respuesta directa)
       if (screen === 'flight') {
         const input = IN();
-        if (input && Math.abs(y) > 0.15) {
-          input.setTarget('gamepad', Math.max(0.06, Math.min(0.94, 0.5 + y * 0.45)), 180);
+        if (input) {
+          if (Math.abs(y) > 0.12) {
+            input.setAxis(y);
+            if (input.targets) {
+              delete input.targets.voice;
+              delete input.targets.pointer;
+            }
+          } else {
+            input.setAxis(0);
+          }
         }
         return;
       }
@@ -851,16 +859,23 @@
         return;
       }
 
-      // 3. Despachar a A Volar (game.js)
+      // 3. Despachar a A Volar (game.js: subir/bajar continuo, pirueta, saludo)
       if (screen === 'flight') {
         const input = IN();
         if (input) {
-          if (btn === 'up' && pressed) input.feed({ action: 'up' });
-          if (btn === 'down' && pressed) input.feed({ action: 'down' });
+          if (btn === 'up') {
+            input.setKey('up', pressed);
+            if (pressed) input.feed({ action: 'up' });
+          }
+          if (btn === 'down') {
+            input.setKey('down', pressed);
+            if (pressed) input.feed({ action: 'down' });
+          }
           if ((btn === 'jump' || btn === 'spin') && pressed) input.feed({ action: 'spin' });
-          if (btn === 'treat' && pressed) input.feed({ action: 'hello' });
-          if (pressed && window.Cinnamo?.game?.mode !== 'play') {
-            input.feed({ action: 'start' });
+          if ((btn === 'treat' || btn === 'hello') && pressed) input.feed({ action: 'hello' });
+          if (pressed && (window.Cinnamo?.game?.mode !== 'play' || window.Cinnamo?.flightGame?.state?.mode !== 'play')) {
+            if (window.Cinnamo?.startFlightGame) window.Cinnamo.startFlightGame();
+            else input.feed({ action: 'start' });
           }
         }
         return;
