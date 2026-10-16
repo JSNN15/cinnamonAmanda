@@ -381,6 +381,13 @@
     }
 
     submitAnswer(val) {
+      if (this.container) {
+        const partyBtn = this.container.querySelector('#btnNextMathParty');
+        if (partyBtn) {
+          partyBtn.click();
+          return;
+        }
+      }
       if (this.answered || this.isCountingHelpActive) return;
       A.unlock();
       const chosen = parseInt(val, 10);

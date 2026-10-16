@@ -34,239 +34,119 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 
 ---
 
-## 🎮 Detalle Completo de los 6 Juegos
+## 🎮 Detalle Completo de los 8 Juegos (`v24`)
 
-### 1. 🛫 ¡A Volar con Cinnamoroll!
+> 📋 **Registro Técnico y Auditoría Senior:** Consulta el informe integral de arquitectura, jugabilidad, contenido pedagógico y aseguramiento de calidad en [`AUDITORIA_SENIOR_JUEGO_PROFESIONAL.md`](./AUDITORIA_SENIOR_JUEGO_PROFESIONAL.md).
+
+### 1. 🛫 ¡A Volar con Cinnamoroll! (`js/game.js`)
 * **Mecánica:** Vuela por cielos de colores recolectando estrellas mágicas ⭐, rollitos de canela 🍥 y corazones 💗.
 * **Física:** Movimiento con resorte amortiguado (suave, sin tirones) e imán generoso para que las estrellas se acerquen solas.
 * **Sin frustración:** Cada 10 estrellas el cielo cambia de fase horaria (*día soleado → atardecer naranja → noche estrellada → amanecer pastel*) con lluvia de confeti.
+* **Optimización de Ciclo de Vida (`v24`):** Pausa automáticamente su loop de renderizado a 60 FPS y la captura de teclado cuando Amanda cambia a cualquier otro juego del Hub.
 * **Controles múltiples:**
   * **Teclado:** `↑` / `↓` o `W` / `S` · `Espacio` = pirueta · `H` = saludo.
   * **Pantalla táctil / Ratón:** Arrastrar el dedo para que Cinnamoroll lo siga suavemente.
   * **Voz:** Decir *"arriba"*, *"abajo"*, *"gira"*, *"hola"*.
   * **Soplar / Cantar:** El nivel del micrófono eleva a Cinnamoroll al soplar.
   * **Giroscopio / Acelerómetro:** Inclinar el móvil o tablet para volar.
-  * **Sensor externo:** Conexión vía WebSocket (`?ws=ws://IP:PUERTO`) lista para microcontroladores (ESP32, Arduino, micro:bit).
+  * **Mando Celular / Sensor externo:** Control desde el teléfono (`controller.html`) o vía WebSocket (`?ws=ws://IP:PUERTO`).
 
 ---
 
-### 2. 🧁 Pastelería de Números (Sumas y Conteo Preescolar)
-* **Mecánica:** Cinnamoroll y el pequeño **Milk** hornean delicias. Amanda cuenta cuántos dulces hay en la bandeja (sumas visuales del 1 al 8, y desafíos matemáticos para niñas mayores).
-* **Interacción táctil:** Tocar cada pastelito hace que salte con un sonido de burbuja (*pop*) y muestre su número en orden (1, 2, 3...) para ayudarla a contar con el dedo.
-* **Tipografía Kawaii Homogénea (v15):** Los números grandes y de dos cifras (como el 23) conservan estrictamente la tipografía redondeada de ensueño (*Baloo 2*) con proporciones armonizadas (`.double-digit`) sin perder la estética mágica del juego.
-* **Control Remoto para Televisor (v15):** Al conectar el celular como mando, la pantalla del teléfono muestra un teclado numérico táctil interactivo con las opciones de respuesta gigantes, permitiendo jugar en la TV desde el sillón.
-* **Botones adaptados para no-lectores:** Cada botón de respuesta muestra el número grande y los puntitos correspondientes debajo (`● ● ●`) para comparar directamente con los dulces contados.
-* **Cero frustración:** Si elige otro número, la bandeja simplemente se balancea con un suave sonido elástico y el juego invita a contar de nuevo con alegría.
+### 2. 🧁 Pastelería de Números (`js/math.js` · 5 a 8 Años)
+* **Mecánica:** Cinnamoroll y el pequeño **Milk** hornean delicias. Adaptado con **3 niveles evolutivos por edad**:
+  * **5–6 Años:** Sumas y restas visuales hasta 10 con conteo táctil.
+  * **6–7 Años:** Sumas y restas hasta 20 con bandejas dobles.
+  * **7–8 Años:** Desafíos de suma/resta avanzada y **Multiplicación por grupos visuales** (`2 × 3`, `3 × 4`, etc.).
+* **Interacción táctil:** Tocar cada pastelito hace que salte con un sonido de burbuja (*pop*) y muestre su número en orden (`1, 2, 3...`).
+* **Control Remoto Sincronizado para TV (`v24`):** Al conectar el celular como mando, el teléfono recibe en tiempo real la pregunta exacta y despliega los **3 botones numéricos con las opciones reales de la ronda**, permitiendo responder y avanzar rondas desde el sofá.
+* **Cero frustración (Guía Paso a Paso):** Si elige otro número, Milk y Cinnamoroll cuentan juntos los pastelitos uno por uno iluminándolos antes de volver a intentar.
 
 ---
 
-### 3. 🎨 Taller de Dibujo (Colorear con Sanrio)
-* **5 Láminas Oficiales Normalizadas con Calidad de Imprenta (600x500):**
-  1. **Cinnamoroll:** Flotando en el cielo con sus orejitas extendidas.
-  2. **Milk (みるく):** Con su chupete celeste y su osito de peluche.
-  3. **Pompompurin (ポムポムプリン):** Con su boina de chocolate y plato de flan con corazón.
-  4. **Mocha (モカ):** Con sus largas orejitas onduladas, flor en la oreja y contornos de cuello/barbilla restaurados.
-  5. **Chiffon (シフォン):** Con sus orejas esponjosas como nubes y boina, con tinta negra nítida y pura.
-  * **Normalización Milimétrica (v14):** Procesadas mediante supersampling Lanczos 2x, anti-aliasing subpixel y calibración de grosor de trazo (7-8px homogéneos en todos los personajes), eliminando bordes dentados y grises difusos.
+### 3. 🎨 Taller de Dibujo (`js/coloring.js` · Colorear con Sanrio)
+* **8 Láminas Oficiales Normalizadas con Calidad de Imprenta (`600×500`):**
+  1. **Cinnamoroll** · 2. **Milk (みるく)** · 3. **Pompompurin (ポムポムプリン)** · 4. **Mocha (モカ)** · 5. **Chiffon (シフォン)** · 6. **Cappuccino** · 7. **Espresso** · 8. **Fiesta de Amigos**.
 * **Herramientas de Arte & Experiencia Amanda:**
-  * **↩️ Botón Deshacer (Undo):** Pila de retroceso de 20 pasos para que Amanda pueda corregir trazos con total tranquilidad.
-  * **💾 Persistencia por Lámina:** Cambiar de personaje ya no borra el dibujo; el taller guarda en memoria el boceto de cada amigo.
-  * **Crayón / Pincel libre:** Con 3 grosores (fino, medio, grueso), trazo suave redondeado y cursor dinámico con aro de previsualización de grosor.
-  * **Contorno protegido:** Los colores se aplican con modo `multiply` bajo las líneas originales, garantizando que el contorno negro nunca quede cubierto por la pintura.
-  * **Relleno Mágico (Tap-to-fill / Bucket):** Tocar cualquier zona cerrada rellena el área respetando el contorno negro.
-  * **Borrador suave:** Para limpiar cualquier trazo.
-  * **Sellitos y Estampas:** Estrellitas ✨, corazones 💖, florecitas 🌸 y brillos con partículas flotantes.
-  * **Botón Guardar con Firma:** Descarga la obra terminada en PNG firmada con: *"✨ Obra de Arte de Amanda • Cinnamoroll Land"*.
+  * **↩️ Botón Deshacer (Undo):** Pila de retroceso de 20 pasos para corregir trazos con tranquilidad.
+  * **💾 Persistencia por Lámina:** Cambiar de personaje guarda automáticamente en memoria el dibujo de cada lámina.
+  * **🖍️ Crayón / Pincel libre:** Con 3 grosores (8px fino, 20px medio, 40px grueso) y cursor dinámico.
+  * **🛡️ Contorno Protegido (`mix-blend-mode: multiply`):** La capa de líneas originales nunca queda tapada por la pintura.
+  * **🧽 Borrador Suave y ⭐ 8 Sellitos Mágicos:** Estrellitas, corazones, flores, arcoíris y dulces.
+  * **📱 Trackpad de Pintura en el Celular (`v24`):** Permite pintar a distancia deslizando el dedo en el teléfono, elegir entre los 10 colores pastel y cambiar de lámina.
+  * **📸 Botón Guardar con Firma:** Descarga la obra terminada en PNG firmada con *"✨ Obra de Arte de Amanda • Cinnamoroll Land"*.
 
 ---
 
-### 4. 🃏 Memorice de Sanrio (Juego de Memoria)
+### 4. 🃏 Memorice de Sanrio (`js/memory.js`)
 * **Mecánica:** Encontrar las parejas de los amigos de Cinnamoroll volteando tarjetas mágicas con giro 3D.
-* **Personajes Oficiales:** Cinnamoroll, Milk con osito, Pompompurin con boina, Mocha con flor, Chiffon esponjosa, y Bebé Milk.
-* **3 Niveles de Dificultad:**
-  * **Fácil (6 cartas):** 3 parejas, ideal para partidas rápidas.
-  * **Medio (8 cartas):** 4 parejas.
-  * **Difícil (12 cartas):** 6 parejas.
-* **Celebración:** Efecto de confeti y arpa al completar el tablero.
+* **3 Niveles de Dificultad por Edad:**
+  * **5–6 Años (8 cartas):** 4 parejas.
+  * **6–7 Años (12 cartas):** 6 parejas.
+  * **7–8 Años (16 cartas):** 8 parejas.
+* **Mando Espejo en Celular (`v24`):** El teléfono genera dinámicamente la cuadrícula de 8, 12 o 16 botones de cartas para voltear cualquier tarjeta desde el celular mirando la TV.
 
 ---
 
-### 5. 🏃 Super Cinnamoroll Run (Gira Mundial de Sanrio por 5 Ciudades · v20)
-Completamente renovado con arte vectorial artesanal Canvas 2D de alta calidad, niveles de larga duración (hasta 9.200 px), controles ultra-responsivos sin bloqueos y suelo continuo:
+### 5. 🏃 Super Cinnamoroll Run (`js/platformer.js` · Gira Mundial por 5 Ciudades)
+Completamente renovado con arte vectorial artesanal Canvas 2D de alta calidad, niveles extensos, controles ultra-responsivos sin bloqueos y suelo continuo:
 
-* **Física y Salto 100% Responsivo (v20):**
-  * **Método Unificado `jump()` & `tryJump()`:** Respuesta instantánea en todas las vías de entrada: teclado (`Espacio`, `↑`, `W`), botón táctil en pantalla (`#btnPlatJump`), toque directo en el canvas, o control remoto desde el celular (`controller.html` vía `controller-bridge.js`).
-  * **Potencia de Salto Calibrada (520-550 px/s):** Impulso ágil, amplio y seguro para niñas de 5 años.
-  * **Doble Salto y Aleteo Mágico con Orejitas (`canDoubleJump`):** Si Amanda salta y presiona de nuevo en el aire, Cinnamoroll realiza un segundo aleteo suave con nube de polvo esponjoso y gorjeo tierno (*cheer*), permitiendo corregir caídas con total libertad y diversión.
-  * **Planeo de Orejitas con Gravedad Reducida (165-210 px/s²):** Mantener presionado el salto permite flotar suavemente por el cielo recolectando dulces aéreos con estela de chispitas.
-  * **Coyote Time Extendido (0.20s) y Jump Buffer (0.22s):** Perdona saltos pulsados una fracción de segundo antes de tocar el suelo o tras abandonar el borde de una plataforma.
-* **Eliminación Total de Bloqueos ("Cero Quedarse Pegado" · v20):**
-  * **Captura de Puntero Táctil (`setPointerCapture`):** Elimina el error donde el deslizamiento milimétrico del pulgar en pantallas táctiles disparaba `pointerleave` y frenaba el personaje en seco. El movimiento y salto se mantienen firmes hasta que el dedo realmente se levanta.
-  * **Suelo Continuo en las 5 Ciudades (Cero Pozos Mortales):** Todas las ciudades cuentan con una calzada o pradera continua a nivel del suelo (`y: 410-440`), mientras que las plataformas flotantes (sakura, muelles, teleféricos, pagodas y nubes) funcionan como entretenidas rutas aéreas opcionales accesibles con trampolines.
-  * **Rescate Anti-Bucle de Caídas:** Si ocurre un rescate por caída, Cinnamoroll se asienta sobre la plataforma segura con velocidad horizontal y vertical anuladas (`vx: 0, vy: 0, grounded: true`), eliminando cualquier bucle infinito de caídas.
-  * **Limpieza de Teclas en Pérdida de Foco:** Listeners en `window.blur` y `visibilitychange` previenen que el personaje siga corriendo solo si se cambia de pestaña o aplicación.
-* **5 Ciudades Emblemáticas con Arte Vectorial Detallado y Parallax Profundo:**
-  * 🇨🇱 **Concepción (Chile · Nivel 1 · 5.800 px · 16 ítems):** Campus de la Universidad de Concepción con el icónico **Campanil UdeC** (reloj con manecillas, campanas de bronce, arcos belfry y cúpula de cobre), **Arco de Medicina** neoclásico con columnata, **Río Biobío** con el Puente Llacolén y bosques de **cerezos en flor (sakura)** con pétalos rosas flotando en la brisa.
-  * 🏖️ **La Serena (Chile · Nivel 2 · 6.600 px · 20 ítems):** Atardecer dorado en la **Avenida del Mar**, el histórico **Faro Monumental colonial** (muros almenados de piedra, franjas rojas carmesí, balcón con barandilla y un haz de luz giratorio volumétrico), olas rompientes del **Océano Pacífico** con espuma animada, palmeras costeras chilenas, gaviotas planeando y dunas de arena dorada.
-  * 🇧🇷 **Río de Janeiro (Brasil · Nivel 3 · 7.400 px · 24 ítems):** Crepúsculo tropical púrpura y magenta, la cumbre selvática del Corcovado coronada por el majestuoso **Cristo Redentor** con brazos abiertos y aura celestial, el **Morro Pan de Azúcar** con el teleférico *Bondinho* amarillo cruzando el cable sobre la bahía, paseo marítimo con el mosaico ondulado de Copacabana, flores de hibisco y confeti carnavalesco.
-  * 🏔️ **Santiago de Chile (Nivel 4 · 8.200 px · 28 ítems):** Espectacular **Cordillera de los Andes** con 3 planos de picos nevados iluminados por el resplandor andino (*Alpenglow*), la imponente **Gran Torre Costanera** con vidrios facetados y baliza roja estroboscópica de aviación, la red del **Teleférico San Cristóbal** con cabinas rojas, azules y amarillas animadas cruzando el cielo (además de cabinas como plataformas móviles), y bosques de **Araucarias milenarias**.
-  * 🏮 **China Mágica (Nivel 5 · Gran Final · 9.200 px · 32 ítems):** Picos kársticos de ensueño cubiertos de niebla mística, la **Gran Muralla** serpenteando por los riscos con torres de vigilancia y estandartes imperiales de dragón, **Pagodas imperiales de 5 pisos** con aleros curvos dorados, cañaverales de bambú verde esmeralda, linternas colgantes de seda roja con borlas doradas que se mecen con el viento y flores de loto sagradas.
-* **Cero Emojis en el Gameplay · 100% Arte Vectorial Kawaii:**
-  * **Coleccionables Temáticos:** Rollitos de canela glaseados con caritas sonrientes (Concepción), estrellas marinas pastel con ojitos y rubor (La Serena), cocos tropicales con pajita rayada y flor (Río), frutillas andinas rubí con pepitas doradas (Santiago), y dumplings dorados con rizos de vapor aromático (China), todos con halos de luz y destellos de estrellas de 4 puntas.
-  * **Trampolines Mecánicos de Flor:** Resortes espirales metálicos con animación física de compresión al pisarlos y cojines mullidos elásticos de color pastel.
-  * **Gran Arco Triunfal y Picnic Sanrio:** Columnas de caramelo rosa, cartel luminoso de bienvenida (`¡BIENVENIDA A [CIUDAD] AMANDA!`), arcoíris pastel en el fondo, racimos de globos de helio y los amigos oficiales (**Milk, Pompompurin, Mocha y Chiffon**) celebrando en la meta con confeti continuo.
-* **HUD con Barra de Recorrido en Tiempo Real:**
-  * Indicador de distancia dinámico con bandera de la ciudad y avatar miniatura de Cinnamoroll que corre a lo largo de la barra desde el 0% hasta el 100%.
-* **Selector de Personajes y Ciudades 100% Accesible en Móviles:**
-  * Toda la píldora superior es táctil para abrir los modales con un solo toque del dedo en pantallas táctiles.
-  * Modales con cuadrícula adaptable de 2 columnas en teléfonos, botones gigantes para niños y cierre suave por fondo o botón.
-* **Selector de 5 Héroes de Sanrio Jugables:**
-  * 🐶 **Cinnamoroll:** Planeo de orejas extendidas (*Ear-Glide*) con caída ultra suave y estela celeste.
-  * 🍼 **Milk:** Flotación de bebé (*Baby Float*) con saltitos tiernos y su osito de peluche.
-  * 🍮 **Pompompurin:** Rebote elástico (*Custard Bounce*) con gran impulso como flan de caramelo.
-  * 🌸 **Chiffon:** Salto alto y ágil (*Cloud Leap*) con sus orejitas de nube esponjosa.
-  * 🎀 **Mocha:** Salto elegante y ágil (*Graceful Leap*) con flores rosas y estela lila.
+* **Física y Salto 100% Responsivo (`v24`):**
+  * **Método Unificado `jump()` & `tryJump()`:** Respuesta instantánea en teclado (`Espacio`, `↑`, `W`), botón táctil en pantalla (`#btnPlatJump`), toque directo en el canvas o mando remoto (`controller.html`) sin duplicación de eventos al reingresar al juego.
+  * **Doble Salto y Aleteo Mágico con Orejitas (`canDoubleJump`):** Permite corregir saltos en el aire con nube de partículas y planeo suave.
+  * **Coyote Time (160ms) y Jump Buffer (160ms):** Perdona saltos pulsados una fracción de segundo antes de tocar el suelo o tras abandonar el borde de una plataforma.
+  * **Captura de Puntero Táctil (`setPointerCapture`):** El movimiento y salto se mantienen firmes aunque el pulgar se deslice ligeramente en pantallas táctiles.
+* **5 Ciudades Emblemáticas con Arte Vectorial Detallado y Parallax Multicapa:**
+  * 🇨🇱 **Concepción (Chile):** Campanil UdeC, Arco de Medicina, Río Biobío y cerezos en flor.
+  * 🏖️ **La Serena (Chile):** Faro Monumental colonial con haz de luz giratorio, Avenida del Mar y olas del Pacífico.
+  * 🇧🇷 **Río de Janeiro (Brasil):** Cristo Redentor en el Corcovado, Pan de Azúcar con teleférico *Bondinho* y paseo de Copacabana.
+  * 🏔️ **Santiago de Chile:** Cordillera de los Andes con *Alpenglow*, Gran Torre Costanera, Teleférico San Cristóbal y Araucarias.
+  * 🏮 **China Mágica:** Montañas kársticas, Gran Muralla, Pagodas imperiales de 5 pisos, bosques de bambú y linternas flotantes.
 
 ---
 
-### 6. 🎮 Repartidor de Dulces 3D (Motor DOOM 2.5D Pabellón Sanrio)
-Completamente rediseñado con mapa espacioso, eliminación de atascos y renderizado pseudo-3D de alta gama:
-
-* **Mapa de Pabellón Amplio (14 x 12):**
-  * Eliminación total de pasillos de 1 sola casilla.
-  * Pasillos anchos de **2 a 4 baldosas**, gran plaza central abierta y 4 salones temáticos dedicados a cada personaje.
-* **Física Anti-Atascos e IA de Cortesía (Cero Bloqueos):**
-  * **Separación Elástica de Amigos (Boids Flocking Repulsion):** Los personajes se repelen continuamente a distancia de seguridad (`minDist = 1.2`), garantizando que **NUNCA se encimen ni se superpongan**.
-  * **Ceder el Paso Cortésmente (Gentle Step-Aside):** Al acercarse Amanda a menos de 1 metro, los amigos se deslizan amablemente hacia un espacio libre para dejarla pasar.
-  * **Radio de Colisión Suave:** Optimizado (`radius + 0.16`) para permitir deslizarse fluidamente incluso en esquinas con múltiples personajes alrededor.
-* **Renderizado Tridimensional de Personajes (Eliminación de la apariencia "a mano"):**
-  * **Sombra de Suelo Proyectada en Perspectiva:** Elipse difusa bajo los pies de cada amigo que se escala según la distancia y el salto, anclándolos visualmente al piso 3D.
-  * **Iluminación 3D Ambiental & Depth Fog:** Los sprites reciben tinte y sombreado volumétrico del entorno en lugar de flotar como calcomanías planas.
-  * **Espejo Direccional & Respiración 3D:** Orientación dinámica según la dirección de caminata y balanceo de respiración orgánico.
-* **Primera Persona Volumétrica de Calidad de Consola:**
-  * Brazos redondeados con gradientes cilíndricos y luces especulares.
-  * Bandeja de porcelana con filo dorado metálico y reflejo cerámico brillante.
-  * Dulces modelados en 3D con relieve glaseado, espirales de canela, botella de leche translúcida y flan con caramelo chorreante.
+### 6. 🎮 Repartidor de Dulces 3D (`js/doom.js` · Motor Raycaster 2.5D)
+* **Pabellón 3D Sin Violencia:** Los amigos de Sanrio caminan por el salón; al lanzarles su dulce favorito con la bandeja pastelera, se sientan felices a merendar.
+* **Física Anti-Atascos e IA de Cortesía:** Separación elástica entre personajes, sombras proyectadas en perspectiva, minimapa en vivo y captura táctil continua (`setPointerCapture` en `v24`).
 
 ---
 
-### 7. ✏️ Palabras Mágicas (Taller Waldorf & Montessori de Escritura)
-Diseñado con metodología preescolar multisensorial para que Amanda aprenda a escribir sus primeras palabras con alegría y afecto:
-
-* **Vocabulario Afectivo y Amigos de Sanrio:**
-  * 💖 **Familia y Amanda:** `MAMÁ`, `PAPÁ`, `AMANDA`, `AMOR`.
-  * 🐶 **Amigos de Sanrio:** `CINNAMOROLL`, `MILK`, `PURIN`, `MOCHA`, `CHIFFON`.
-  * 🌸 **Naturaleza y Dulces:** `SOL`, `NUBE`, `FLOR`, `PASTEL`.
-* **Arrastre Táctil y Ergonomía de Pantalla (Pointer Events):**
-  * **Arrastre Real con Dedo o Ratón:** Seguimiento a 60fps con clon flotante de galleta dorada con sombra 3D elevada (`pointer-events: none`).
-  * **Imán Magnético Inteligente (75px):** Al acercar la galleta a su molde correspondiente, el casillero pulsa con un aura mágica rosa/dorada (`slot-magnet-match`).
-  * **Snap & Fónica Musical:** Al soltar la galleta sobre su molde, encaja con sonido de campana afinada, ráfaga de estrellitas y pronunciación fónica de la letra.
-  * **Asistencia Dual (Tap-to-Place):** Si la niña da un toque rápido sin arrastrar, la galletita vuela automáticamente a su molde correspondiente.
-  * **Autocorrección Libre (Montessori):** Tocar una letra colocada la devuelve suavemente a la bandeja de galletitas sin penalizaciones.
-  * **Normalización de Tildes:** Acepta tanto `Á` como `A` en palabras como `MAMÁ` y `PAPÁ` para evitar frustraciones ortográficas tempranas.
-* **3 Modos Pedagógicos:**
-  1. 🍪 **Alfabeto Móvil Montessori:** Bandeja de galletitas horneadas con moldes en relieve.
-  2. ✨ **Trazado Caligráfico Waldorf & Abecedario Completo (v17):**
-     * **Mapeo Integral de 32 Letras:** Cada letra del abecedario español (`A` a la `Z`, `Ñ`, `Á`, `É`, `Í`, `Ó`, `Ú`) cuenta con su esqueleto caligráfico oficial y sus **waypoints numerados de principio a fin** (`① ➔ ② ➔ ③ ➔ ④ ➔ ⑤`). En la letra `M`, se incorporan sus 5 puntos completos resolviendo cualquier punto faltante en la pierna final.
-     * **Orientación Oficial de Tilde Agudo (`/` o `´`):** Corregida la orientación en todas las vocales acentuadas (`Á`, `É`, `Í`, `Ó`, `Ú`). El trazo inicia arriba a la derecha `(0.56, 0.03)` y desciende hacia la izquierda `(0.44, 0.12)`, siguiendo las normas de caligrafía escolar en español.
-     * **Completitud Estricta sin Cierres Prematuros:** Elimina el falso positivo donde levantar el dedo al 85% celebraba antes de tiempo. Ahora se exige que **todos los waypoints numerados hayan sido visitados** y que **cada trazo individual cuente con cobertura mínima**. Si se levanta el dedo antes de terminar, una guía cariñosa indica exactamente qué falta (*"✍️ ¡Casi listo! Falta trazar el tilde arriba 🌸"* o *"✍️ ¡Vas muy bien Amanda! Continúa hacia el punto 5 💖"*).
-     * **Puntos Guía Imborrables (Cero Punto 1 Comido):** Renderizado por capas con offscreen canvas donde el pincel de Amanda se dibuja debajo de los waypoints. Al tocar un número, este se transforma en una estrella dorada con checkmark `✓`, impidiendo que el punto ① sea tapado o borrado por el trazo.
-     * **Cinta del Abecedario Completo (32 Letras):** Permite elegir y practicar cualquier letra (`A - Z`, `Ñ`, `Á - Ú`) libremente con el botón *"Siguiente Letra 🌸"*.
-     * **Banner de Victoria No Invasivo:** La felicitación aparece como una notificación inferior suave sin tapar la pizarra, dejando el trazo visible para su disfrute.
-  3. 🖍️ **Pizarra Libre con Tizas Pastel:** Pizarra de cuaderno caligráfico para escribir libremente con tizas de colores (rosa, celeste, amarillo sol, menta, blanco) y esponjita de borrar.
-* **Fónica con Voz en Español:** Pronunciación dulce y cariñosa mediante `SpeechSynthesis` (*"¡Ma-má! ¡Excelente Amanda!"*).
+### 7. ✏️ Palabras Mágicas (`js/writing.js` · Escuela Waldorf & Montessori)
+Diseñado con progresión curricular de **5 a 8 años** y **4 modos pedagógicos completos**:
+1. 🔤 **Palabras Montessori:** Armado de palabras con fichas de letras e imán inteligente.
+2. 📖 **Frases Mágicas:** Construcción de oraciones completas ordenando palabras con sentido gramatical y lectura por voz.
+3. ✍️ **Trazos Caligráficos A–Z (27 Letras incl. `Ñ` y vocales con tilde):**
+   * Waypoints numerados paso a paso (`① ➔ ② ➔ ③...`) con validación secuencial estricta por trazo, orientación escolar de tilde agudo y puntos guía imborrables.
+4. 🎨 **Pizarra Libre Waldorf:** Lienzo libre con tizas pastel de colores y borrador.
+* **Control desde el Celular (`v24`):** Incluye teclado completo `A–Z + Ñ` en la pantalla del teléfono, botón `🔊 Escuchar`, `🧹 Borrar` y navegación funcional `◀ Anterior / Siguiente ▶` en los 4 modos.
 
 ---
 
-### 8. 🧩 Puzzles de Lógica (Rompecabezas Visual de Madera Sanrio)
-Diseñado desde cero bajo criterios de Game Design para niñas de prebásica (4 a 5 años, pre-lectoras):
-
-* **100% Visual · CERO Necesidad de Leer Texto:**
-  * Sustitución total de botones con texto ("Cabeza Nube", "Taza") por auténticas **piezas ilustradas troqueladas de los personajes**.
-  * Reconocimiento natural de patrones visuales: orejitas de nube, colita de canela, osito de peluche, boina de flan.
-* **5 Cuadros de Alta Resolución de Sanrio:**
-  1. 🪽 **Cinnamoroll en el Cielo de Nubes:** Cinnamoroll volando suavemente entre nubes de algodón y arcoíris pastel.
-  2. 🍼 **Milk y su Osito de Peluche:** El bebé Milk con su biberón y su osito favorito en tonos lavanda.
-  3. 🌸 **Chiffon en el Prado de Flores:** Chiffon saltando alegre con sus orejitas de nube entre flores de cerezo.
-  4. 🍮 **Pompompurin y su Flan Gigante:** Pompompurin con su boina de chocolate y delicioso flan de caramelo.
-  5. 🎀 **Mocha en la Fiesta del Té:** La elegante Mocha con su flor rosa en un salón de té con pasteles.
-* **Tablero con Marco de Madera y Silueta Guía ("Ghost Image"):**
-  * Marco de madera biselado con relieve dorado.
-  * Marca de agua semitransparente (opacidad 28%) en el fondo del tablero para que la niña compare formas y sepa intuitivamente dónde va cada pieza.
-* **Dificultad Adaptativa Preescolar:**
-  * 🧩 **4 Piezas Grandes (2x2):** Formato gigante ideal para pre-kínder (4 años).
-  * ⭐ **6 Piezas (3x2):** Desafío para kínder (5 años).
-* **Física Táctil y Encaje Magnético:**
-  * Arrastre suave con clon tridimensional flotante.
-  * Encaje magnético con destello dorado, campanita musical ascendente y lluvia de purpurina.
-  * Asistencia gentil: Si Amanda toca directamente una ranura vacía del cuadro, la pieza de la bandeja vuela automáticamente a su lugar.
-* **Gran Victoria:** El cuadro completo resplandece con animación arcoíris, fanfarria festiva y confeti.
+### 8. 🧩 Rompecabezas Mágico (`js/puzzle.js` · Jigsaw Troquelado)
+* **Piezas Reales con Pestañas Bezier:** Cortadas dinámicamente sobre Canvas a partir de las ilustraciones oficiales de Sanrio.
+* **4 Niveles de Dificultad Progresiva:**
+  * 🌟 **6 Piezas (3×2)** · ⭐ **9 Piezas (3×3)** · 🏆 **12 Piezas (4×3)** · 👑 **16 Piezas (4×4)**.
+* **Marco de Madera con Silueta Guía ("Ghost Guide"):** Conmutable desde la pantalla o desde el mando del celular, más botón mágico `🧩 Encajar Pieza`.
 
 ---
 
-## 🎵 Motor de Audio Procedural Kawaii
-* **Cero Voces Sintéticas Robóticas:** Todo el audio está generado mediante la **Web Audio API** de forma procedural, sin dependencias externas ni archivos de audio pesados.
-* **4 Melodías Procedurales con Selector Directo:**
-  1. 🌸 *"Nubes de Algodón"* (Canción de cuna en 3/4)
-  2. 🧁 *"Paseo por la Pastelería"* (Marcha alegre en 4/4)
-  3. ☕ *"Hora del Té con Mocha"* (Vals dulce en 3/4)
-  4. 🌈 *"Aventura en el Arcoíris"* (Escala pentatónica saltarina en 4/4)
-* **Selector en la Barra Superior (`#globalBtnTrack`):** Amanda o sus padres pueden cambiar la melodía con un solo toque sin interrumpir el juego. Las canciones rotan automáticamente cada 2 repeticiones.
-* **Efectos Sintetizados:** Chimes de campanas, pops de burbujas, arpas de victoria y formantes infantiles suaves.
+## 🎵 Motor de Audio Procedural Kawaii (`js/audio.js`)
+* **100% Web Audio API Procedural:** Sintetizador en tiempo real con escalas pentatónicas mayores, compresor dinámico de protección auditiva infantil (`-14 dB`) y 4 pistas musicales en bucle con selector en la barra superior (`#globalBtnTrack`) y en el mando remoto.
 
 ---
 
-## 🎮 Mando Inteligente Kawaii en tu Celular & Gamepad Físico (v15)
-
-Permite transformar cualquier teléfono inteligente en un mando de consola inteligente de última generación o usar mandos físicos Bluetooth/USB:
-
-* **📱 Mando Inteligente y Dinámico en el Celular (`controller.html`):**
-  * **Cero descargas:** No requiere instalar apps de la App Store ni Google Play; funciona en cualquier navegador móvil escaneando el código QR.
-  * **🕹️ Mando Palanca Virtual (Joystick Análogo 360°):** Reemplaza las flechas estáticas por una palanca táctil fluida con resorte que permite movimientos diagonales precisos (correr y saltar simultáneamente, planeo en diagonal, giros 360° en vuelo y desplazamiento omnidireccional en el laberinto 3D).
-  * **🎯 Botones Contextuales Adaptados al Juego Activo (Smart Companion):**
-    * **🧁 Modo Pastelería (Juego en Televisor / PC):** El teléfono detecta automáticamente la pregunta en pantalla y despliega un **teclado numérico táctil gigante** con los números de las alternativas (`[ 5 ] [ 6 ] [ 7 ]`). La niña puede responder desde el sillón mirando la tele directamente.
-    * **🏃 Modo Super Run:** Palanca analógica + Botón Salto 🌸 + Botón Dulce 🧁 + Botón `🔄 AMIGO` para alternar de héroe (Cinnamoroll, Milk, Purin, Chiffon) sin tocar la pantalla principal.
-    * **🛫 Modo Vuelo:** Palanca analógica + Botón Pirueta 🌀 + Botón Saludo 👋.
-    * **🎮 Modo Repartidor 3D:** Palanca analógica 360° + Botón Lanzar Dulce 🍬.
-    * **🏠 Modo Hub (Menú Principal):** Cuadrícula de acceso rápido para lanzar cualquiera de los 8 juegos remotamente desde el móvil, más botón `🏠 Menú` omnipresente.
-  * **WebRTC P2P de Ultrabaja Latencia (PeerJS):** Conexión directa y ultra-rápida (< 15ms) entre el móvil y la computadora/TV, con respaldo automático local por `BroadcastChannel`.
-  * **Feedback Táctil & Sonoro:** Respuesta háptica por vibración (`navigator.vibrate`) y pitidos de burbuja instantáneos para cada pulsación y movimiento.
-* **🕹️ Soporte Nativo de Mandos Físicos (Gamepad API):**
-  * Conexión instantánea Plug-and-Play vía Bluetooth o USB.
-  * Compatible con:
-    * **Nintendo Switch:** Mandos Joy-Con individuales o emparejados, Pro Controller.
-    * **PlayStation:** DualShock 4 (PS4), DualSense (PS5).
-    * **Xbox:** Mandos Xbox One, Xbox Series X/S.
-    * **8BitDo & Genéricos:** Cualquier mando compatible con HID estándar.
-  * Mapeo unificado para salto, movimiento lateral, piruetas y navegación.
+## 📱 Mando Inalámbrico Inteligente en tu Celular & Gamepad Físico (`v24`)
+* **Sincronización Contextual en los 8 Juegos (`controller.html` + `js/controller-bridge.js`):**
+  * Emparejamiento instantáneo por **Código QR** o código de 4 caracteres vía **WebRTC (PeerJS)** con reconexión automática, latido (`ping`/`pong`) cada 2s y respaldo local por `BroadcastChannel`.
+  * Botón rápido de **Pantalla Completa (`⛶`)** integrado tanto en la pantalla principal como en el mando móvil (con guía visual para iOS Safari).
+  * Soporte nativo Plug-and-Play para **mandos físicos Bluetooth/USB** (Nintendo Switch, PlayStation, Xbox) vía `Gamepad API`.
 
 ---
 
-## 📱 Centrado y Adaptabilidad Multi-Dispositivo (PC & Smartphone)
-* **Centrado Universal:** Todos los juegos cuentan con contenedores Flexbox y reglas estrictas de `aspect-ratio` (`object-fit: contain`) para mantenerse perfectamente centrados tanto en vertical como en horizontal.
-* **Smartphones en Vertical (ej. iPhone / Android 390x844):** Canales y lienzos centrados milimétricamente en el viewport, HUD superior despejado y botones táctiles adaptados al pulgar infantil.
-* **Smartphones en Horizontal (ej. 844x390):** Barra superior compacta (44px), área de juego a pantalla completa sin cortes y mandos táctiles laterales accesibles.
-* **Computadores y Tablets (1280x800, 1920x1080):** Lienzos nítidos con proporciones doradas y atajos de teclado completos.
-
----
-
-## 🎨 Pipeline de Arte Oficial de Sanrio
-
-Para garantizar la fidelidad con los personajes oficiales de Sanrio:
-* **Paleta Oficial:** Contorno suave marrón chocolate (`#5c3d2e`), tonos pasteles, y proporciones exactas.
-* **Herramientas de Procesamiento (`tools/make_chiffon.py`):**
-  * Extracción con corrección de halo (des-matizado de fondos blancos y antialiasing preservado).
-  * Generación dual: Sprite a color transparente para juegos dinámicos + lámina de líneas vectorizadas en blanco y negro para el taller de colorear.
-  * Almacenamiento de referencias en `tools/ref/`.
-
----
-
-## ⚡ Rendimiento, PWA y Cero Build Step
-
-* **Vanilla JavaScript:** 100% código nativo (ES6+), sin frameworks pesados, sin Webpack, sin npm, sin bundlers.
-* **Service Worker Silencioso (v18):** Estrategia Network-First (`sw.js`). Se eliminó cualquier recarga automática intempestiva (`controllerchange` forzado); las actualizaciones se instalan de forma 100% transparente sin interrumpir la partida activa.
-* **Preservación de Estado por Hash (`#flight`, `#writing`, etc.):** Si la página se recarga manualmente o se refresca el navegador, el usuario continúa exactamente en el juego en que estaba. Además, integra el evento `popstate` para que el botón "Atrás" nativo de Android e iOS vuelva suavemente al menú principal sin cerrar la aplicación.
-* **Carga Inmediata:** Fuentes asíncronas (`media="print" onload="this.media='all'"`), splash screen pastel ultrarrápido y preloading de imágenes clave.
+## ⚡ Rendimiento, PWA y Cero Build Step (`v24`)
+* **Vanilla JavaScript (ES6+):** Cero dependencias de compilación, carga instantánea.
+* **Service Worker Silencioso (`sw.js` · `cinnamoroll-land-v24`):** Estrategia *Network-First* sin recargas forzadas (`controllerchange` eliminado), garantizando que una actualización en segundo plano jamás devuelva a la jugadora al menú de inicio mientras juega.
+* **Suite de Pruebas E2E Multi-Dispositivo (`tools/test_all_games_controller.py`):** Verifica con Playwright en Chromium tanto la pantalla de TV como el celular conectado en los 8 juegos.
 
 ---
 

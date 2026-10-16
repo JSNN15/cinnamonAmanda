@@ -881,41 +881,47 @@
     }
 
     bindInputs() {
-      // Teclado
-      window.addEventListener('keydown', (e) => {
-        if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = true;
-        if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = true;
-        if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
-          e.preventDefault();
-          this.jump();
-        }
-      });
-
       const onReleaseJump = () => {
         this.keys.jump = false;
-        if (this.p.vy < -180) {
+        if (this.p && this.p.vy < -180) {
           this.p.vy *= 0.65;
         }
       };
 
-      window.addEventListener('keyup', (e) => {
-        if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = false;
-        if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = false;
-        if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
-          onReleaseJump();
-        }
-      });
+      // Teclado global (registrar una sola vez para evitar saltos dobles acumulados)
+      if (!this.keyboardBound) {
+        this.keyboardBound = true;
 
-      // Limpiar teclas si se pierde el foco de la ventana o pestaña (evita que se quede corriendo solo)
-      const clearKeys = () => {
-        this.keys.left = false;
-        this.keys.right = false;
-        this.keys.jump = false;
-      };
-      window.addEventListener('blur', clearKeys);
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) clearKeys();
-      });
+        window.addEventListener('keydown', (e) => {
+          if (!this.running) return;
+          if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = true;
+          if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = true;
+          if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
+            e.preventDefault();
+            if (!e.repeat) this.jump();
+          }
+        });
+
+        window.addEventListener('keyup', (e) => {
+          if (!this.running) return;
+          if (e.code === 'ArrowLeft' || e.code === 'KeyA') this.keys.left = false;
+          if (e.code === 'ArrowRight' || e.code === 'KeyD') this.keys.right = false;
+          if (e.code === 'ArrowUp' || e.code === 'KeyW' || e.code === 'Space') {
+            onReleaseJump();
+          }
+        });
+
+        // Limpiar teclas si se pierde el foco de la ventana o pestaña (evita que se quede corriendo solo)
+        const clearKeys = () => {
+          this.keys.left = false;
+          this.keys.right = false;
+          this.keys.jump = false;
+        };
+        window.addEventListener('blur', clearKeys);
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) clearKeys();
+        });
+      }
 
       const btnL = this.container.querySelector('#btnPlatLeft');
       const btnR = this.container.querySelector('#btnPlatRight');

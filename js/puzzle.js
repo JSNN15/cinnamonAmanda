@@ -708,6 +708,13 @@
 
     nextCharacter() {
       A.unlock();
+      if (this.container) {
+        const nextModalBtn = this.container.querySelector('#btnNextPuzzleModal');
+        if (nextModalBtn) {
+          nextModalBtn.click();
+          return;
+        }
+      }
       A.bubblePop(1);
       const nextIdx = (this.currentCharIdx + 1) % PUZZLE_CHARACTERS.length;
       this.loadPuzzle(nextIdx, this.pieceCountMode);
@@ -716,6 +723,13 @@
     }
 
     placeNextPiece() {
+      if (this.container) {
+        const nextModalBtn = this.container.querySelector('#btnNextPuzzleModal');
+        if (nextModalBtn) {
+          nextModalBtn.click();
+          return;
+        }
+      }
       const nextPiece = this.trayPieces.find(p => !this.placedPieces[p.id]);
       if (nextPiece) {
         A.unlock();

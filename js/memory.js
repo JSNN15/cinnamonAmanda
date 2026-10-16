@@ -127,6 +127,13 @@
     }
 
     flipCard(index) {
+      if (this.container) {
+        const playAgainBtn = this.container.querySelector('#btnPlayAgainMemory');
+        if (playAgainBtn) {
+          playAgainBtn.click();
+          return;
+        }
+      }
       this.handleCardClick(index);
     }
 

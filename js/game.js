@@ -112,6 +112,7 @@
   function currentPointer() { return S.p.y; }
 
   function onAction({ type, source }) {
+    if (window.Cinnamo?.hub && window.Cinnamo.hub.currentScreen !== 'flight') return;
     if (type === 'start') { if (S.mode !== 'play') startGame(); return; }
     if (type === 'pause') { S.mode === 'play' ? pause() : S.mode === 'pause' && startGame(); return; }
     if (type === 'mute') { toggle('sound'); return; }
@@ -545,8 +546,10 @@
   function frame(t) {
     const dt = Math.min(0.05, (t - last) / 1000);
     last = t;
-    update(dt);
-    render();
+    if (!window.Cinnamo?.hub || window.Cinnamo.hub.currentScreen === 'flight') {
+      update(dt);
+      render();
+    }
     requestAnimationFrame(frame);
   }
 
@@ -556,6 +559,7 @@
   requestAnimationFrame(frame);
 
   window.Cinnamo.state = S; // útil para depurar desde la consola
+  window.Cinnamo.game = S;
 
   // ?demo → arranca solo y vuela en piloto automático (para probar la visual)
   if (new URLSearchParams(location.search).has('demo')) {

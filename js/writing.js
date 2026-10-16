@@ -2387,16 +2387,17 @@
         };
       };
 
-      canvas.addEventListener('pointerdown', (e) => {
+      canvas.onpointerdown = (e) => {
         e.preventDefault();
+        try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
         A.unlock();
         drawing = true;
         const p = getPos(e);
         ctx.beginPath();
         ctx.moveTo(p.x, p.y);
-      });
+      };
 
-      canvas.addEventListener('pointermove', (e) => {
+      canvas.onpointermove = (e) => {
         if (!drawing) return;
         e.preventDefault();
         const p = getPos(e);
@@ -2410,46 +2411,91 @@
 
         ctx.lineTo(p.x, p.y);
         ctx.stroke();
-      });
+      };
 
-      const stop = () => {
+      const stop = (e) => {
+        if (e && e.pointerId !== undefined && canvas.releasePointerCapture) {
+          try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
         if (drawing) {
           drawing = false;
           ctx.shadowBlur = 0;
         }
       };
 
-      canvas.addEventListener('pointerup', stop);
-      canvas.addEventListener('pointercancel', stop);
+      canvas.onpointerup = stop;
+      canvas.onpointercancel = stop;
     }
 
     nextLetter() {
-      const btnNext = this.container ? (this.container.querySelector('#btnNextTraceLetter') || this.container.querySelector('.btn-w-next')) : null;
-      if (btnNext && !btnNext.classList.contains('hidden')) {
-        btnNext.click();
+      A.unlock();
+      if (this.container) {
+        const modalBtn = this.container.querySelector('#btnNextWordModal') || this.container.querySelector('#btnNextSentenceModal');
+        if (modalBtn) {
+          modalBtn.click();
+          return;
+        }
+      }
+      if (this.mode === 'trace') {
+        const curChar = this.customTraceChar || (this.getFilteredWords()[this.currentWordIdx]?.word[0]) || 'A';
+        const idx = Math.max(0, ALPHABET.indexOf(curChar));
+        this.customTraceChar = ALPHABET[(idx + 1) % ALPHABET.length];
+        this.traceProgress = 0;
+        this.traceDone = false;
+        this.render();
+        this.speak(`Letra ${this.customTraceChar}`);
+      } else if (this.mode === 'sentences') {
+        const sents = SENTENCES_DATA[this.ageTier] || SENTENCES_DATA['5-6'];
+        this.loadSentence((this.currentSentenceIdx + 1) % sents.length);
+        this.render();
+        const sObj = sents[this.currentSentenceIdx];
+        if (sObj) this.speak(sObj.voicePrompt);
       } else {
-        const list = (typeof WORDS_TIERS !== 'undefined' && WORDS_TIERS[this.ageTier]) ? WORDS_TIERS[this.ageTier] : [];
+        const list = this.getFilteredWords();
         if (list.length) {
-          const nextIdx = (this.currentWordIdx + 1) % list.length;
-          this.selectWord(nextIdx);
+          this.loadWord((this.currentWordIdx + 1) % list.length);
+          this.render();
+          const wObj = list[this.currentWordIdx];
+          if (wObj) this.speak(`${wObj.title}. ${wObj.hint}`);
         }
       }
     }
 
     prevLetter() {
-      const list = (typeof WORDS_TIERS !== 'undefined' && WORDS_TIERS[this.ageTier]) ? WORDS_TIERS[this.ageTier] : [];
-      if (list.length) {
-        const prevIdx = (this.currentWordIdx - 1 + list.length) % list.length;
-        this.selectWord(prevIdx);
+      A.unlock();
+      if (this.mode === 'trace') {
+        const curChar = this.customTraceChar || (this.getFilteredWords()[this.currentWordIdx]?.word[0]) || 'A';
+        const idx = Math.max(0, ALPHABET.indexOf(curChar));
+        this.customTraceChar = ALPHABET[(idx - 1 + ALPHABET.length) % ALPHABET.length];
+        this.traceProgress = 0;
+        this.traceDone = false;
+        this.render();
+        this.speak(`Letra ${this.customTraceChar}`);
+      } else if (this.mode === 'sentences') {
+        const sents = SENTENCES_DATA[this.ageTier] || SENTENCES_DATA['5-6'];
+        this.loadSentence((this.currentSentenceIdx - 1 + sents.length) % sents.length);
+        this.render();
+        const sObj = sents[this.currentSentenceIdx];
+        if (sObj) this.speak(sObj.voicePrompt);
+      } else {
+        const list = this.getFilteredWords();
+        if (list.length) {
+          this.loadWord((this.currentWordIdx - 1 + list.length) % list.length);
+          this.render();
+          const wObj = list[this.currentWordIdx];
+          if (wObj) this.speak(`${wObj.title}. ${wObj.hint}`);
+        }
       }
     }
 
     speakCurrent() {
+      A.unlock();
       const btnHear = this.container ? (this.container.querySelector('#btnHearWord') || this.container.querySelector('#btnHearSentence')) : null;
       if (btnHear) {
         btnHear.click();
-      } else if (this.customTraceChar) {
-        this.speak(`Letra ${this.customTraceChar}`);
+      } else {
+        const ch = this.customTraceChar || (this.getFilteredWords()[this.currentWordIdx]?.word[0]) || 'A';
+        this.speak(`Letra ${ch}`);
       }
     }
 

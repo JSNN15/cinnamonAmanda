@@ -58,6 +58,15 @@
       this.history = [];       // Pila de estados para Deshacer (Undo)
     }
 
+    stop() {
+      this.isDrawing = false;
+      if (this._onWinPointerUp) {
+        window.removeEventListener('pointerup', this._onWinPointerUp);
+        window.removeEventListener('pointercancel', this._onWinPointerUp);
+        this._onWinPointerUp = null;
+      }
+    }
+
     init(containerEl) {
       this.container = containerEl;
       this.render();
@@ -440,10 +449,16 @@
         this.lastStampPos = null;
       };
 
+      if (this._onWinPointerUp) {
+        window.removeEventListener('pointerup', this._onWinPointerUp);
+        window.removeEventListener('pointercancel', this._onWinPointerUp);
+      }
+      this._onWinPointerUp = onPointerUp;
+
       canvasBox.addEventListener('pointerdown', onPointerDown);
       canvasBox.addEventListener('pointermove', onPointerMove);
-      window.addEventListener('pointerup', onPointerUp);
-      window.addEventListener('pointercancel', onPointerUp);
+      window.addEventListener('pointerup', this._onWinPointerUp);
+      window.addEventListener('pointercancel', this._onWinPointerUp);
 
       // 8. Deshacer el último trazo (Undo)
       const btnUndo = this.container.querySelector('#btnUndoArt');

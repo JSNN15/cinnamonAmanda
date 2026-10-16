@@ -175,6 +175,8 @@
       if (window.Cinnamo.puzzleGame && window.Cinnamo.puzzleGame.stop) window.Cinnamo.puzzleGame.stop();
       if (window.Cinnamo.writingGame && window.Cinnamo.writingGame.stop) window.Cinnamo.writingGame.stop();
       if (window.Cinnamo.mathGame && window.Cinnamo.mathGame.stop) window.Cinnamo.mathGame.stop();
+      if (window.Cinnamo.memoryGame && window.Cinnamo.memoryGame.stop) window.Cinnamo.memoryGame.stop();
+      if (window.Cinnamo.coloringGame && window.Cinnamo.coloringGame.stop) window.Cinnamo.coloringGame.stop();
     }
 
     showScreen(screenName) {
@@ -255,7 +257,8 @@
       }
 
       // Reconfirmar sincronización de contexto con el mando tras montar el juego
-      if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
+      // (math y memory ya emiten su contexto enriquecido con opciones/cartas dentro de init)
+      if (gameKey !== 'math' && gameKey !== 'memory' && window.Cinnamo?.controllerBridge?.broadcastGameContext) {
         window.Cinnamo.controllerBridge.broadcastGameContext({ screen: gameKey });
       }
     }

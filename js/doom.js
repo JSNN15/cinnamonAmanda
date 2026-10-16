@@ -312,13 +312,14 @@
       if (!this.inputsBound) {
         this.inputsBound = true;
         window.addEventListener('keydown', (e) => {
+          if (!this.running) return;
           if (e.code === 'KeyW' || e.code === 'ArrowUp') this.keys.forward = true;
           if (e.code === 'KeyS' || e.code === 'ArrowDown') this.keys.backward = true;
           if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.keys.left = true;
           if (e.code === 'KeyD' || e.code === 'ArrowRight') this.keys.right = true;
           if (e.code === 'Space') {
             e.preventDefault();
-            this.shootTreat();
+            if (!e.repeat) this.shootTreat();
           }
         });
 
@@ -328,15 +329,33 @@
           if (e.code === 'KeyA' || e.code === 'ArrowLeft') this.keys.left = false;
           if (e.code === 'KeyD' || e.code === 'ArrowRight') this.keys.right = false;
         });
+
+        window.addEventListener('blur', () => {
+          this.keys.forward = false;
+          this.keys.backward = false;
+          this.keys.left = false;
+          this.keys.right = false;
+        });
       }
 
       const hook = (id, prop) => {
         const el = this.container.querySelector(id);
         if (!el) return;
-        el.addEventListener('pointerdown', (e) => { e.preventDefault(); A.unlock(); this.keys[prop] = true; });
-        el.addEventListener('pointerup', () => { this.keys[prop] = false; });
-        el.addEventListener('pointercancel', () => { this.keys[prop] = false; });
-        el.addEventListener('pointerleave', () => { this.keys[prop] = false; });
+        const release = (e) => {
+          if (e && e.pointerId !== undefined && el.releasePointerCapture) {
+            try { el.releasePointerCapture(e.pointerId); } catch (_) {}
+          }
+          this.keys[prop] = false;
+        };
+        el.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          try { el.setPointerCapture(e.pointerId); } catch (_) {}
+          A.unlock();
+          this.keys[prop] = true;
+        });
+        el.addEventListener('pointerup', release);
+        el.addEventListener('pointercancel', release);
+        el.addEventListener('lostpointercapture', () => { this.keys[prop] = false; });
       };
 
       hook('#btnDoomUp', 'forward');

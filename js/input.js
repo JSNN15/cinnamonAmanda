@@ -60,10 +60,13 @@
   const KEYMAP = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down' };
   const ACTIONKEYS = { Space: 'spin', KeyH: 'hello', KeyP: 'pause', Escape: 'pause', Enter: 'start', KeyM: 'mute' };
   window.addEventListener('keydown', e => {
+    if (window.Cinnamo?.hub && window.Cinnamo.hub.currentScreen !== 'flight') return;
     if (KEYMAP[e.code]) { mgr.keys.add(KEYMAP[e.code]); e.preventDefault(); }
     else if (ACTIONKEYS[e.code] && !e.repeat) { mgr.emit('action', { type: ACTIONKEYS[e.code], source: 'keys' }); e.preventDefault(); }
   });
-  window.addEventListener('keyup', e => { if (KEYMAP[e.code]) mgr.keys.delete(KEYMAP[e.code]); });
+  window.addEventListener('keyup', e => {
+    if (KEYMAP[e.code]) mgr.keys.delete(KEYMAP[e.code]);
+  });
   window.addEventListener('blur', () => mgr.keys.clear());
 
   /* ---------------- Toque / mouse ---------------- */
