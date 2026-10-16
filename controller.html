@@ -661,7 +661,7 @@
 
     <!-- Escenario Dinámico Según el Juego Activo en TV/PC -->
     <main class="gamepad-dynamic-stage" id="gamepadStage">
-      <!-- 1. MODO ACCIÓN / RUN / FLIGHT / DOOM (Palanca Analógica Diagonales + Ciudades) -->
+      <!-- 1. MODO ACCIÓN / RUN / FLIGHT / DOOM / AVATAR WORLD (Palanca Analógica Diagonales + Ciudades / Casa) -->
       <div id="layoutAction" class="layout-action" style="flex-direction: column; justify-content: space-between; padding: 4px 8px;">
         <!-- Selector directo de Ciudad (visible en Super Run) -->
         <div class="remote-mini-pills" id="actionCityStrip">
@@ -670,6 +670,21 @@
           <button class="btn-mini-pill" data-city="2">🇧🇷 Río</button>
           <button class="btn-mini-pill" data-city="3">🏔️ Stgo</button>
           <button class="btn-mini-pill" data-city="4">🏮 China</button>
+        </div>
+
+        <!-- Controles remotos de Cinnamoroll World: Casa de Sueños (Habitaciones + Vestidor + Decoración) -->
+        <div class="remote-mini-pills hidden" id="avatarActionStrip" style="max-width: 480px; gap: 4px;">
+          <button class="btn-mini-pill active" data-av-room="0">🧁 Café</button>
+          <button class="btn-mini-pill" data-av-room="1">🛏️ Cuarto</button>
+          <button class="btn-mini-pill" data-av-room="2">🌸 Jardín</button>
+          <button class="btn-mini-pill" data-av-custom="outfit" style="background: #fdf2f8; color: #be185d;">👗 Ropa</button>
+          <button class="btn-mini-pill" data-av-custom="hat" style="background: #fdf2f8; color: #be185d;">👑 Gorro</button>
+          <button class="btn-mini-pill" data-av-custom="glasses" style="background: #fdf2f8; color: #be185d;">🕶️ Lentes</button>
+          <button class="btn-mini-pill" data-av-custom="prop" style="background: #fdf2f8; color: #be185d;">🪄 Mano</button>
+          <button class="btn-mini-pill" data-av-custom="expr" style="background: #fdf2f8; color: #be185d;">😊 Cara</button>
+          <button class="btn-mini-pill" data-av-decor="cake" style="background: #fef9c3; color: #854d0e;">🎂 Pastel</button>
+          <button class="btn-mini-pill" data-av-decor="plush" style="background: #fef9c3; color: #854d0e;">🧸 Peluche</button>
+          <button class="btn-mini-pill" id="btnRemoteAvatarLight" style="background: #e0f2fe; color: #0369a1;">☀️ Luz</button>
         </div>
 
         <div style="width: 100%; flex: 1; display: flex; justify-content: space-between; align-items: center;">
@@ -720,12 +735,13 @@
       <!-- 3. MODO HUB (Selector de Juegos a Distancia) -->
       <div id="layoutHub" class="layout-hub hidden">
         <div class="hub-companion-title">✨ Elige un juego para jugar en la tele: ✨</div>
-        <div class="hub-companion-grid">
+        <div class="hub-companion-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <button class="btn-hub-remote" data-screen="avatar" style="border-color: #f472b6; background: #fdf2f8;"><span class="hub-ico">🏡</span><span class="hub-lbl">Casa Avatar</span></button>
+          <button class="btn-hub-remote" data-screen="platformer"><span class="hub-ico">🏃</span><span class="hub-lbl">Super Run</span></button>
           <button class="btn-hub-remote" data-screen="flight"><span class="hub-ico">🛫</span><span class="hub-lbl">Volar</span></button>
           <button class="btn-hub-remote" data-screen="math"><span class="hub-ico">🧁</span><span class="hub-lbl">Sumas</span></button>
           <button class="btn-hub-remote" data-screen="coloring"><span class="hub-ico">🎨</span><span class="hub-lbl">Dibujo</span></button>
           <button class="btn-hub-remote" data-screen="memory"><span class="hub-ico">🃏</span><span class="hub-lbl">Memoria</span></button>
-          <button class="btn-hub-remote" data-screen="platformer"><span class="hub-ico">🏃</span><span class="hub-lbl">Super Run</span></button>
           <button class="btn-hub-remote" data-screen="doom"><span class="hub-ico">🎮</span><span class="hub-lbl">Repartidor 3D</span></button>
           <button class="btn-hub-remote" data-screen="writing"><span class="hub-ico">✏️</span><span class="hub-lbl">Palabras</span></button>
           <button class="btn-hub-remote" data-screen="puzzle"><span class="hub-ico">🧩</span><span class="hub-lbl">Puzzles</span></button>
@@ -1115,6 +1131,34 @@
         });
       });
 
+      // Controles Remotos de Cinnamoroll World: Casa de Sueños (Habitaciones, Vestidor, Muebles y Luz)
+      document.querySelectorAll('#avatarActionStrip [data-av-room]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(610);
+          document.querySelectorAll('#avatarActionStrip [data-av-room]').forEach(b => b.classList.toggle('active', b === btn));
+          sendData({ type: 'avatarRoom', roomIdx: parseInt(btn.dataset.avRoom, 10) });
+        });
+      });
+      document.querySelectorAll('#avatarActionStrip [data-av-custom]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(660);
+          sendData({ type: 'avatarCustom', category: btn.dataset.avCustom, player: playerSlot });
+        });
+      });
+      document.querySelectorAll('#avatarActionStrip [data-av-decor]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          playHapticBeep(640);
+          sendData({ type: 'avatarDecor', decorType: btn.dataset.avDecor, player: playerSlot });
+        });
+      });
+      const btnRemoteAvatarLight = document.getElementById('btnRemoteAvatarLight');
+      if (btnRemoteAvatarLight) {
+        btnRemoteAvatarLight.addEventListener('click', () => {
+          playHapticBeep(580);
+          sendData({ type: 'avatarLight', player: playerSlot });
+        });
+      }
+
       // -------------------------------------------------------------
       // GESTIÓN DEL CÓDIGO DE SALA (Modal Táctil)
       // -------------------------------------------------------------
@@ -1184,6 +1228,7 @@
       const layoutColoring = document.getElementById('layoutColoring');
       const layoutWriting = document.getElementById('layoutWriting');
       const actionCityStrip = document.getElementById('actionCityStrip');
+      const avatarActionStrip = document.getElementById('avatarActionStrip');
 
       const labelJump = document.getElementById('labelJump');
       const labelTreat = document.getElementById('labelTreat');
@@ -1329,13 +1374,25 @@
           layoutWriting.classList.remove('hidden');
           footerLabel.textContent = '✏️ Palabras Mágicas';
 
-        // 7. MODO ACCIÓN: SUPER RUN / A VOLAR / REPARTIDOR 3D
+        // 7. MODO ACCIÓN: SUPER RUN / A VOLAR / REPARTIDOR 3D / CASA AVATAR
         } else {
           layoutAction.classList.remove('hidden');
           if (actionCityStrip) {
             actionCityStrip.classList.toggle('hidden', screen !== 'platformer');
           }
-          if (screen === 'flight') {
+          if (avatarActionStrip) {
+            avatarActionStrip.classList.toggle('hidden', screen !== 'avatar');
+          }
+          if (screen === 'avatar') {
+            footerLabel.textContent = '🏡 Casa Avatar';
+            labelJump.textContent = '✨ USAR';
+            labelTreat.textContent = '💃 BAILAR';
+            if (typeof ctx.roomIdx === 'number') {
+              document.querySelectorAll('#avatarActionStrip [data-av-room]').forEach(b => {
+                b.classList.toggle('active', parseInt(b.dataset.avRoom, 10) === ctx.roomIdx);
+              });
+            }
+          } else if (screen === 'flight') {
             footerLabel.textContent = '🛫 ¡A Volar!';
             labelJump.textContent = 'PIRUETA';
             labelTreat.textContent = 'SALUDO';

@@ -13,7 +13,7 @@
   <noscript>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
   </noscript>
-  <link rel="stylesheet" href="styles.css?v=24" />
+  <link rel="stylesheet" href="styles.css?v=27" />
 </head>
 <body>
   <!-- PANTALLA DE CARGA INSTANTÁNEA (Splash Pastel) -->
@@ -34,6 +34,9 @@
     </button>
     <div class="top-brand">Cinnamoroll Land 🌸</div>
     <div class="top-right-actions">
+      <div id="globalInputModeBadge" class="input-mode-badge mode-touch" title="Coordinador automático Touch vs Mando Inalámbrico">
+        <span id="inputModeIcon">👆</span> <span id="inputModeText">Touch Activo</span>
+      </div>
       <button id="globalBtnPassport" class="top-nav-btn passport-btn" title="Pasaporte Mágico y Álbum de Stickers" aria-label="Pasaporte de Stickers">
         <span class="btn-icon">🏅</span>
         <span id="passportBadgeText" class="btn-text">Stickers</span>
@@ -58,17 +61,30 @@
   </header>
 
   <main id="appContainer">
-    <!-- PANTALLA 1: HUB CENTRAL (Selector visual de 8 juegos) -->
+    <!-- PANTALLA 1: HUB CENTRAL (Selector visual de 9 juegos) -->
     <section id="screen-hub" class="screen active">
       <div class="hub-header">
         <div class="cinna-mascot-box">
           <img src="cinnamoroll_sprite.png" class="cinna-mascot-img" alt="Cinnamoroll" width="180" height="96" fetchpriority="high" loading="eager" />
         </div>
         <h1>¡El Mundo de Cinnamoroll!</h1>
-        <p class="subtitle">¡8 divertidos juegos para aprender y jugar con Cinnamoroll y sus amigos (5 a 8 años)!</p>
+        <p class="subtitle">¡9 juegos mágicos para crear, aprender y jugar con Cinnamoroll y sus amigos (1 a 3 Jugadores)!</p>
       </div>
 
       <div class="game-cards-grid">
+        <!-- Tarjeta Destacada: Cinnamoroll World (Estilo Avatar World) -->
+        <article class="game-card card-avatar" data-game="avatar">
+          <div class="card-badge">🏡 ¡NUEVO!</div>
+          <div class="card-illustration">
+            <span class="card-hero-emoji">👗</span>
+            <span class="card-deco deco-star">👑</span>
+            <span class="card-deco deco-flower">🛋️</span>
+          </div>
+          <h2>Cinnamoroll World</h2>
+          <p>Casa de Sueños estilo Avatar World: viste a tus personajes, decora 3 habitaciones e interactúa (1 a 3 Players).</p>
+          <div class="card-play-tag">▶ ¡Crear y Vivir!</div>
+        </article>
+
         <!-- Tarjeta 1: A Volar -->
         <article class="game-card card-flight" data-game="flight">
           <div class="card-badge">✨ Vuelo</div>
@@ -130,7 +146,7 @@
             <span class="card-deco deco-cookie">🍓</span>
           </div>
           <h2>Super Cinnamoroll Run</h2>
-          <p>Gira mundial de plataformas: Concepción, La Serena, Río, Santiago y China.</p>
+          <p>Gira mundial cooperativa (1 a 3 Players): Concepción, La Serena, Río, Santiago y China.</p>
           <div class="card-play-tag">▶ ¡Viajar y Correr!</div>
         </article>
 
@@ -255,6 +271,11 @@
     <section id="screen-puzzle" class="screen">
       <div id="puzzle-mount"></div>
     </section>
+
+    <!-- PANTALLA 10: CINNAMOROLL WORLD · CASA DE SUEÑOS (AVATAR WORLD) -->
+    <section id="screen-avatar" class="screen">
+      <div id="avatar-mount"></div>
+    </section>
   </main>
 
   <!-- MODAL DE CONEXIÓN DE MANDO / CELULAR -->
@@ -286,19 +307,20 @@
   <!-- MÓDULOS DE LA SUITE -->
   <script src="js/peerjs.min.js"></script>
   <script src="js/qrcode.min.js"></script>
-  <script src="js/audio.js?v=26"></script>
-  <script src="js/input.js?v=26"></script>
-  <script src="js/controller-bridge.js?v=26"></script>
-  <script src="js/character.js?v=26"></script>
-  <script src="js/game.js?v=26"></script>
-  <script src="js/math.js?v=26"></script>
-  <script src="js/coloring.js?v=26"></script>
-  <script src="js/memory.js?v=26"></script>
-  <script src="js/platformer.js?v=26"></script>
-  <script src="js/doom.js?v=26"></script>
-  <script src="js/writing.js?v=26"></script>
-  <script src="js/puzzle.js?v=26"></script>
-  <script src="js/hub.js?v=26"></script>
-  <script src="js/passport.js?v=26"></script>
+  <script src="js/audio.js?v=27"></script>
+  <script src="js/input.js?v=27"></script>
+  <script src="js/controller-bridge.js?v=27"></script>
+  <script src="js/character.js?v=27"></script>
+  <script src="js/game.js?v=27"></script>
+  <script src="js/math.js?v=27"></script>
+  <script src="js/coloring.js?v=27"></script>
+  <script src="js/memory.js?v=27"></script>
+  <script src="js/platformer.js?v=27"></script>
+  <script src="js/doom.js?v=27"></script>
+  <script src="js/writing.js?v=27"></script>
+  <script src="js/puzzle.js?v=27"></script>
+  <script src="js/avatar-world.js?v=27"></script>
+  <script src="js/hub.js?v=27"></script>
+  <script src="js/passport.js?v=27"></script>
 </body>
 </html>

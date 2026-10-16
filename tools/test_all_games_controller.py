@@ -443,8 +443,91 @@ try:
     passport_open = ws_host.eval("!document.getElementById('passportModal')?.classList.contains('hidden')")
     assert passport_open is True, "Passport modal should open on TV when triggered from phone"
     print("✅ Modal de Pasaporte de Stickers abierto en TV desde el celular.")
+    ws_host.eval("document.getElementById('btnClosePassportModal')?.click()")
+    time.sleep(0.2)
 
-    print("\n🎉 ¡TODOS LOS 8 JUEGOS, 3 JUGADORES SIMULTÁNEOS (P1/P2/P3) Y CONTROL TV 100% VERIFICADOS! 🎉")
+    # -------------------------------------------------------------
+    # PRUEBA 11: Cinnamoroll World: Casa de Sueños (Avatar World + 3 Players + Vestidor + Decoración + Smart Input Mode)
+    # -------------------------------------------------------------
+    print("\n--- TEST 11: CINNAMOROLL WORLD: CASA DE SUEÑOS (AVATAR WORLD + SMART INPUT MODE) ---")
+    ws_phone.eval("sendData({ type: 'nav', screen: 'avatar' })")
+    time.sleep(1.2)
+    screen_host = ws_host.eval("window.Cinnamo?.hub?.currentScreen")
+    mode_phone = ws_phone.eval("document.getElementById('footerGameLabel')?.textContent")
+    input_mode = ws_host.eval("window.Cinnamo?.controllerBridge?.inputMode")
+    badge_text = ws_host.eval("document.getElementById('inputModeText')?.textContent")
+    assert screen_host == 'avatar', f"Host screen should be avatar, got {screen_host}"
+    assert input_mode == 'remote', f"Input mode should be remote when controller sends commands, got {input_mode}"
+    print(f"✅ TV: '{screen_host}' | Mando: '{mode_phone}' | Smart Input Mode: '{input_mode}' ({badge_text})")
+
+    # Activar y personalizar los 3 jugadores simultáneos en Casa Avatar
+    ws_phone.eval("sendData({ type: 'setPlayerSlot', slot: 2, player: 2, heroId: 'milk', active: true })")
+    ws_phone.eval("sendData({ type: 'setPlayerSlot', slot: 3, player: 3, heroId: 'mocha', active: true })")
+    ws_phone.eval("sendData({ type: 'avatarCustom', category: 'outfit', player: 1 })")
+    ws_phone.eval("sendData({ type: 'avatarCustom', category: 'hat', player: 1 })")
+    ws_phone.eval("sendData({ type: 'avatarCustom', category: 'prop', player: 2 })")
+    ws_phone.eval("sendData({ type: 'avatarCustom', category: 'expr', player: 3 })")
+    time.sleep(0.5)
+    aw_p2 = ws_host.eval("window.Cinnamo?.avatarWorldGame?.players?.[2]?.active")
+    aw_p3 = ws_host.eval("window.Cinnamo?.avatarWorldGame?.players?.[3]?.active")
+    aw_outfit1 = ws_host.eval("window.Cinnamo?.avatarWorldGame?.players?.[1]?.outfitId")
+    assert aw_p2 is True and aw_p3 is True, f"P2 and P3 should be active in Avatar World! P2={aw_p2}, P3={aw_p3}"
+    print(f"✅ 3 Avatares activos y personalizados desde el mando (P1 outfit={aw_outfit1}, P2=Milk, P3=Mocha).")
+
+    # Mover a los 3 jugadores, interactuar con muebles y bailar
+    ws_phone.eval("sendData({ type: 'joystick', player: 1, x: -0.7, y: 0.2, dist: 0.7, angle: 160 })")
+    ws_phone.eval("sendData({ type: 'joystick', player: 2, x: 0.6, y: -0.3, dist: 0.7, angle: -25 })")
+    ws_phone.eval("sendData({ type: 'input', player: 3, btn: 'treat', pressed: true })")
+    time.sleep(0.35)
+    ws_phone.eval("sendData({ type: 'joystick', player: 1, x: 0, y: 0, dist: 0, angle: 0 })")
+    ws_phone.eval("sendData({ type: 'joystick', player: 2, x: 0, y: 0, dist: 0, angle: 0 })")
+    ws_phone.eval("sendData({ type: 'input', player: 3, btn: 'treat', pressed: false })")
+    ws_phone.eval("sendData({ type: 'input', player: 1, btn: 'jump', pressed: true })")
+    time.sleep(0.1)
+    ws_phone.eval("sendData({ type: 'input', player: 1, btn: 'jump', pressed: false })")
+
+    # Agregar muebles / comida desde el mando y cambiar de habitación e iluminación
+    items_before = ws_host.eval("window.Cinnamo?.avatarWorldGame?.getRoomItems?.()?.length || 0")
+    ws_phone.eval("sendData({ type: 'avatarDecor', decorType: 'cake', player: 1 })")
+    ws_phone.eval("sendData({ type: 'avatarDecor', decorType: 'plush', player: 2 })")
+    time.sleep(0.3)
+    items_after = ws_host.eval("window.Cinnamo?.avatarWorldGame?.getRoomItems?.()?.length || 0")
+    assert items_after >= items_before + 2, f"Decor items should spawn in room! {items_before} -> {items_after}"
+    print(f"✅ Decoración interactiva desde mando verificada (objetos en sala: {items_before} -> {items_after}).")
+
+    # Guardar captura de la Cafetería con los 3 personajes y objetos
+    artifact_dir = r"C:\Users\JuliánNeiraNova\.gemini\antigravity\brain\b4ade427-5458-4e3a-bc9d-65fece9018b2"
+    if os.path.isdir(artifact_dir):
+        shot1 = ws_host.send_cmd("Page.captureScreenshot", {"format": "png"})
+        if shot1 and "result" in shot1 and "data" in shot1["result"]:
+            with open(os.path.join(artifact_dir, "avatar_world_cafe_3players.png"), "wb") as f:
+                f.write(base64.b64decode(shot1["result"]["data"]))
+
+    # Cambiar a Jardín & Fiesta (roomIdx = 2) y probar iluminación Atardecer
+    ws_phone.eval("sendData({ type: 'avatarRoom', roomIdx: 2 })")
+    ws_phone.eval("sendData({ type: 'avatarLight' })")
+    time.sleep(0.5)
+    aw_room = ws_host.eval("window.Cinnamo?.avatarWorldGame?.currentRoomIdx")
+    aw_light = ws_host.eval("window.Cinnamo?.avatarWorldGame?.lightingMode")
+    assert aw_room == 2 and aw_light == 'sunset', f"Avatar room/light should be 2/sunset, got {aw_room}/{aw_light}"
+    print(f"✅ Cambio de habitación ({aw_room} · Jardín) e Iluminación continua ('{aw_light}') verificados.")
+
+    if os.path.isdir(artifact_dir):
+        shot2 = ws_host.send_cmd("Page.captureScreenshot", {"format": "png"})
+        if shot2 and "result" in shot2 and "data" in shot2["result"]:
+            with open(os.path.join(artifact_dir, "avatar_world_garden_sunset.png"), "wb") as f:
+                f.write(base64.b64decode(shot2["result"]["data"]))
+
+        # Abrir Vestidor Kawaii y capturar screenshot
+        ws_host.eval("window.Cinnamo?.avatarWorldGame?.openWardrobe(1)")
+        time.sleep(0.35)
+        shot3 = ws_host.send_cmd("Page.captureScreenshot", {"format": "png"})
+        if shot3 and "result" in shot3 and "data" in shot3["result"]:
+            with open(os.path.join(artifact_dir, "avatar_world_wardrobe_modal.png"), "wb") as f:
+                f.write(base64.b64decode(shot3["result"]["data"]))
+        ws_host.eval("window.Cinnamo?.avatarWorldGame?.closeWardrobe()")
+
+    print("\n🎉 ¡TODOS LOS 9 JUEGOS, AVATAR WORLD, 3 JUGADORES SIMULTÁNEOS (P1/P2/P3) Y SMART INPUT MODE 100% VERIFICADOS! 🎉")
 
 finally:
     if chrome_host:

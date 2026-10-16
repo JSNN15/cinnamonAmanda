@@ -43,7 +43,8 @@
         platformer: document.getElementById('screen-platformer'),
         doom: document.getElementById('screen-doom'),
         writing: document.getElementById('screen-writing'),
-        puzzle: document.getElementById('screen-puzzle')
+        puzzle: document.getElementById('screen-puzzle'),
+        avatar: document.getElementById('screen-avatar')
       };
 
       this.btnHome = document.getElementById('globalBtnHome');
@@ -177,6 +178,7 @@
       if (window.Cinnamo.mathGame && window.Cinnamo.mathGame.stop) window.Cinnamo.mathGame.stop();
       if (window.Cinnamo.memoryGame && window.Cinnamo.memoryGame.stop) window.Cinnamo.memoryGame.stop();
       if (window.Cinnamo.coloringGame && window.Cinnamo.coloringGame.stop) window.Cinnamo.coloringGame.stop();
+      if (window.Cinnamo.avatarWorldGame && window.Cinnamo.avatarWorldGame.stop) window.Cinnamo.avatarWorldGame.stop();
     }
 
     showScreen(screenName) {
@@ -253,6 +255,11 @@
         const puzzleMount = document.getElementById('puzzle-mount');
         if (window.Cinnamo.puzzleGame) {
           window.Cinnamo.puzzleGame.init(puzzleMount);
+        }
+      } else if (gameKey === 'avatar') {
+        const avatarMount = document.getElementById('avatar-mount');
+        if (window.Cinnamo.avatarWorldGame) {
+          window.Cinnamo.avatarWorldGame.init(avatarMount);
         }
       }
 

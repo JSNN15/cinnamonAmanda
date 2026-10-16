@@ -178,3 +178,44 @@ La versión `v26` fue validada mediante pruebas automatizadas de extremo a extre
 - ✅ Selección de lámina (`Milk`), grosor (`40px`) y trazo continuo desde el **Touchpad Remoto** en **Estudio de Arte**.
 - ✅ Colocación de letras con `✨ Paso Mágico`, cambio a modo `Trazar`, selección con teclado `A–Z` y trazo por Touchpad en **Escuela de Escritura**.
 
+---
+
+## 10. Evolución `v27`: Coordinador Inteligente `Touch vs Mando TV` y Nuevo Juego Insignia #9 — *"Cinnamoroll World: Casa de Sueños"* (Estilo Avatar World)
+
+### 10.1 Coordinador Inteligente de Modo de Entrada (`Touch / Local Activo` vs `Mando TV Activo` + `P1 / P2 / P3`)
+Para que la transición entre jugar tocando directamente una Tablet/Pantalla táctil y jugar desde el sofá con hasta 3 celulares como mando en una TV sea **100% transparente y explícita**, se implementó en `js/controller-bridge.js`, `index.html` y `styles.css`:
+- **Indicador Global en Vivo (`#globalInputModeBadge`):** Píldora interactiva permanente en la barra superior que muestra en tiempo real qué modo de control y qué jugadores están activos:
+  - `👆 Touch Activo` (o `👆 Touch + 📱 P1🌸 P2🩵` en modo híbrido cuando alguien toca la pantalla con mandos enlazados).
+  - `📱 Mando TV · P1🌸 P2🩵 P3💛` (se activa automáticamente en cuanto cualquier celular o control Bluetooth envía una acción).
+- **Adaptación Automática de HUD en TV (`body.remote-controller-active` vs `body.touch-input-active`):**
+  - Cuando el sistema detecta `remote-controller-active`, los botones direccionales flotantes en pantalla (`.plat-touch-controls`, `.doom-touch-controls`) atenúan su opacidad para despejar la vista en la televisión como una consola dedicada.
+  - En el instante en que un jugador toca físicamente la pantalla (`pointerdown` nativo), el coordinador conmuta inmediatamente a `touch-input-active`, restaurando los controles táctiles sin fricción.
+
+### 10.2 Nuevo Juego #9: *"Cinnamoroll World: Casa de Sueños"* (`js/avatar-world.js`)
+Inspirado en **Avatar World (Pazu Games) / Toca Life World**, se diseñó desde cero un motor de casa de muñecas interactiva y creador de personajes con **estética vectorial continua de libro ilustrado japonés (cero aspecto de "sticker pegado")**:
+
+1. **Dirección de Arte "Soft-Vector" Continua (Eliminación del Efecto Sticker):**
+   - **Renderizado Vectorial Articulado en 11 Capas por Personaje:** Sombra elíptica de contacto con el suelo (que se comprime al saltar/caminar), piernas con ciclo sinusoidal de marcha, torso con ropa ilustrada e iluminación radial, brazos articulados, objeto sostenido en mano (`prop`), cabeza con sombreado suave, **orejas físicas con resorte amortiguado (`earAngle`, `earVel`)**, rostro expresivo con parpadeo orgánico, mejillas sonrojadas, accesorios oculares (`glasses`) y sombreros/coronas (`hat`).
+   - **Contornos Unificados Cálidos (`#5c3d2e`, `2.8px`):** Tanto los personajes como los muebles, paredes, ventanas, pasteles y plantas comparten el mismo grosor de trazo color cacao tibio y paleta pastel armónica.
+   - **Profundidad Real (`Y-Sorting` Dinámico) e Iluminación Ambiental Continua:** Todos los personajes (`P1`, `P2`, `P3`), muebles y objetos decorativos se ordenan por coordenada `sortY` en cada fotograma (`60 FPS`), permitiendo caminar por detrás de mesas/mostradores y por delante de camas/estantes. Una capa global de atmósfera (`☀️ Día`, `🌅 Atardecer Dorado`, `🌙 Noche Mágica`) baña simultáneamente la habitación y los personajes para integrarlos en el mismo espacio lumínico.
+
+2. **Vestidor Kawaii Completo (`#avatarWardrobeModal`):**
+   - Permite personalizar en tiempo real a **`P1 🌸`**, **`P2 🩵`** y **`P3 💛`** eligiendo entre:
+     - **6 Amigos Base:** *Cinnamoroll, Milk, Mocha, Chiffon, Pompompurin y Cappuccino*.
+     - **7 Trajes (`Outfits`):** *Delantal Pastelero,Vestido Fresa, Pijama de Nubes, Capa Estelar,Vestido Gala, Jardinera Kimono y Sin Traje*.
+     - **8 Gorros y Tocados (`Hats`):** *Gorro de Chef, Corona Real, Moño Rosa, Boina Caramelo, Flor Sakura, Gorrito Dormilón, Orejitas Mágicas*.
+     - **5 Lentes (`Glasses`):** *Lentes Corazón, Lentes Estrella, Gafas Redondas, Antifaz Sueños*.
+     - **6 Objetos de Mano (`Props`):** *Cupcake, Varita Mágica, Tacita de Té, Peluche, Globo, Micrófono*.
+     - **6 Expresiones Faciales en Vivo:** *Feliz, Estrellitas, Delicioso, Dormilón, Fiesta, Enamorado*.
+   - Todo el vestuario persiste automáticamente en `localStorage` (`cinnamo_avatar_world_v1`).
+
+3. **3 Espacios Interactivos y Editables (`Catálogo de Decoración Drag & Drop`):**
+   - 🧁 **Cafetería & Cocina:** Horno pastelero interactivo (hornea pasteles reales al usarlo), vitrina de postres, mesa de té y radio musical con notas flotantes.
+   - 🛏️ **Cuarto de Nubes:** Cama nube donde los personajes se acuestan tapados con cobija (`💤`), tocador con espejo que abre el Vestidor Kawaii, lámpara lunar que cambia la iluminación del cuarto y alfombra suave.
+   - 🌸 **Jardín & Fiesta:** Columpio de cerezo con física pendular donde los personajes se sientan a columpiarse, fuente de agua animada, escenario musical con luces de concierto y pastel de fiesta.
+   - 🛋️ **Modo Decorar Casa (`#avatarDecorDrawer`):** Catálogo deslizable con 8 muebles, juguetes, plantas y comidas que se pueden agregar, arrastrar libremente por la habitación o **dar de comer a los personajes** (animación de masticar `😋` + corazones).
+
+4. **Control Híbrido Touch + Multijugador de hasta 3 Mandos Móviles (`P1 🌸`, `P2 🩵`, `P3 💛`):**
+   - **En Pantalla Táctil:** Arrastrar cualquier personaje o mueble con el dedo, tocar el suelo para que el avatar activo camine hacia allí, o tocar un mueble para interactuar.
+   - **Desde hasta 3 Celulares (`controller.html`):** Cada jugador mueve su propio avatar con el joystick analógico, usa muebles con `✨ USAR`, baila con `💃 BAILAR`, y dispone de la tira exclusiva `#avatarActionStrip` en el celular para cambiar de habitación (`🧁 Café`, `🛏️ Cuarto`, `🌸 Jardín`), cambiar ropa/gorro/lentes/objeto/expresión de su jugador y aparecer pasteles o peluches en la TV.
+

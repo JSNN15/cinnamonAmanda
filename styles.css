@@ -2566,3 +2566,331 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
   transform: translateX(-50%) translateY(0); opacity: 1;
 }
 
+/* ============================================================
+   COORDINADOR INTELIGENTE DE MODO DE ENTRADA (MANDO TV vs TOUCH)
+   ============================================================ */
+.input-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: #f1f5f9;
+  color: #475569;
+  border: 2px solid #cbd5e1;
+  transition: all 0.25s ease;
+}
+.input-mode-badge.mode-remote {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #15803d;
+  border-color: #4ade80;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
+}
+.input-mode-badge.mode-touch {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+  color: #be185d;
+  border-color: #f472b6;
+}
+
+/* Cuando el Mando Remoto está activo en la TV, ocultar los botones táctiles gigantes de pantalla
+   para que la TV luzca limpia como una consola profesional (se reactivan al tocar la pantalla) */
+body.remote-controller-active .plat-touch-controls,
+body.remote-controller-active .doom-touch-controls {
+  opacity: 0.12;
+  pointer-events: auto;
+  transition: opacity 0.35s ease;
+}
+body.touch-input-active .plat-touch-controls,
+body.touch-input-active .doom-touch-controls {
+  opacity: 1;
+}
+
+/* ============================================================
+   JUEGO 9: CINNAMOROLL WORLD · CASA DE SUEÑOS (AVATAR WORLD)
+   ============================================================ */
+#screen-avatar {
+  align-items: center;
+  justify-content: center;
+}
+#avatar-mount {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+}
+
+.card-avatar {
+  background: linear-gradient(145deg, #fff1f2 0%, #fae8ff 50%, #e0f2fe 100%) !important;
+  border-color: #f472b6 !important;
+}
+
+.avatar-world-shell {
+  width: 100%;
+  max-width: 1080px;
+  height: 100%;
+  max-height: 650px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aw-hud-top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 3px solid #ffffff;
+  border-radius: 22px;
+  padding: 6px 12px;
+  box-shadow: 0 6px 18px rgba(236, 72, 153, 0.14);
+}
+
+.aw-room-tabs, .aw-action-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.aw-room-btn, .aw-pill-btn {
+  border: 2.5px solid #e2e8f0;
+  background: #ffffff;
+  color: #475569;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #cbd5e1;
+  transition: transform 0.1s, background 0.15s;
+}
+.aw-room-btn:active, .aw-pill-btn:active {
+  transform: translateY(2px);
+}
+.aw-room-btn.active {
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+  color: #ffffff;
+  border-color: #ffffff;
+  box-shadow: 0 3px 0 #be185d;
+}
+.aw-btn-wardrobe {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fbcfe8 100%);
+  color: #be185d;
+  border-color: #f472b6;
+}
+.aw-btn-decor.active {
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  color: #ffffff;
+  border-color: #ffffff;
+}
+
+.aw-canvas-stage {
+  flex: 1;
+  position: relative;
+  background: #fffdf9;
+  border: 5px solid #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 14px 36px rgba(92, 61, 46, 0.14);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#avatarWorldCanvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  touch-action: none;
+  cursor: pointer;
+}
+
+/* Catálogo Inferior de Decoración */
+.aw-decor-Catalog {
+  position: absolute;
+  bottom: 10px;
+  left: 14px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 3px solid #bae6fd;
+  border-radius: 22px;
+  padding: 8px 14px;
+  box-shadow: 0 10px 26px rgba(2, 132, 199, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 20;
+}
+.aw-drawer-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #0369a1;
+  text-align: center;
+}
+.aw-decor-items {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  justify-content: center;
+  padding-bottom: 2px;
+}
+.aw-decor-chip {
+  border: 2px solid #e0f2fe;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12px;
+  color: #334155;
+  box-shadow: 0 2px 0 #cbd5e1;
+  white-space: nowrap;
+}
+.aw-decor-chip:hover {
+  background: #e0f2fe;
+  border-color: #38bdf8;
+}
+
+/* Modal de Vestidor Kawaii */
+.aw-wardrobe-modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(45, 20, 40, 0.45);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  z-index: 30;
+}
+.aw-wardrobe-card {
+  background: #ffffff;
+  border: 4px solid #fbcfe8;
+  border-radius: 26px;
+  padding: 16px 18px;
+  width: 100%;
+  max-width: 620px;
+  box-shadow: 0 16px 40px rgba(236, 72, 153, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.aw-wardrobe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.aw-wardrobe-header h3 {
+  font-size: 17px;
+  font-weight: 800;
+  color: #db2777;
+}
+.aw-wardrobe-player-tabs {
+  display: flex;
+  gap: 4px;
+}
+.aw-p-tab {
+  border: 2px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.aw-p-tab.active {
+  background: #ec4899;
+  color: #ffffff;
+  border-color: #be185d;
+}
+.aw-wardrobe-close {
+  background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 14px;
+  padding: 4px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #15803d;
+}
+.aw-wardrobe-cats {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.aw-cat-btn {
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 4px 11px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: #475569;
+  cursor: pointer;
+}
+.aw-cat-btn.active {
+  background: #fdf2f8;
+  border-color: #ec4899;
+  color: #db2777;
+}
+.aw-wardrobe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 4px;
+}
+.aw-opt-card {
+  border: 2.5px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.08s;
+}
+.aw-opt-card.active {
+  border-color: #ec4899;
+  background: #fdf2f8;
+  box-shadow: 0 3px 0 #db2777;
+}
+.aw-opt-ico, .aw-opt-swatch {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border: 2px solid #f1f5f9;
+}
+.aw-opt-name {
+  font-size: 11px;
+  font-weight: 800;
+  color: #334155;
+}
+
+

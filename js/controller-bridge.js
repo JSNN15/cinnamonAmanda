@@ -18,6 +18,7 @@
       this.connectedCount = 0;
       this.statusListeners = [];
       this.physicalGamepadActive = false;
+      this.inputMode = 'touch'; // 'touch' | 'remote'
       this.lastGamepadState = { 1: {}, 2: {}, 3: {} };
       this.players = {
         1: { slot: 1, active: true, heroId: 'cinna', conn: null },
@@ -28,6 +29,77 @@
       this.initBroadcast();
       this.initPeerHost();
       this.initPhysicalGamepadLoop();
+      this.initInputModeCoordinator();
+    }
+
+    /* ---------- COORDINADOR INTELIGENTE TOUCH vs MANDO REMOTO + MULTI-PLAYER ---------- */
+    initInputModeCoordinator() {
+      const applyInitial = () => {
+        document.body.classList.add('touch-input-active');
+        this.updateInputModeBadge();
+        const badge = document.getElementById('globalInputModeBadge');
+        if (badge && !badge._boundClick) {
+          badge._boundClick = true;
+          badge.style.cursor = 'pointer';
+          badge.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (this.connectedCount > 0 || this.physicalGamepadActive) {
+              this.setInputMode(this.inputMode === 'remote' ? 'touch' : 'remote');
+            } else {
+              const btnGp = document.getElementById('globalBtnGamepad');
+              if (btnGp) btnGp.click();
+            }
+          });
+        }
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyInitial);
+      } else {
+        applyInitial();
+      }
+
+      window.addEventListener('pointerdown', (e) => {
+        if (!e.isTrusted) return;
+        if (e.target && (e.target.closest('#gamepadModal') || e.target.closest('#globalInputModeBadge'))) return;
+        if (this.inputMode !== 'touch') {
+          this.setInputMode('touch');
+        }
+      }, { passive: true });
+    }
+
+    setInputMode(mode) {
+      const normalized = mode === 'remote' ? 'remote' : 'touch';
+      this.inputMode = normalized;
+      if (document.body) {
+        document.body.classList.toggle('remote-controller-active', normalized === 'remote');
+        document.body.classList.toggle('touch-input-active', normalized === 'touch');
+      }
+      this.updateInputModeBadge();
+    }
+
+    updateInputModeBadge() {
+      const badge = document.getElementById('globalInputModeBadge');
+      const iconEl = document.getElementById('inputModeIcon');
+      const textEl = document.getElementById('inputModeText');
+      if (!badge || !iconEl || !textEl) return;
+
+      const tags = ['P1🌸'];
+      if (this.players[2]?.active) tags.push('P2🩵');
+      if (this.players[3]?.active) tags.push('P3💛');
+      const playersStr = tags.join(' ');
+
+      if (this.inputMode === 'remote') {
+        badge.className = 'input-mode-badge mode-remote';
+        iconEl.textContent = '📱';
+        textEl.textContent = `Mando TV · ${playersStr}`;
+      } else {
+        badge.className = 'input-mode-badge mode-touch';
+        iconEl.textContent = '👆';
+        textEl.textContent = (this.connectedCount > 0 || this.physicalGamepadActive || this.players[2]?.active || this.players[3]?.active)
+          ? `Touch + 📱 ${playersStr}`
+          : 'Touch Activo';
+      }
     }
 
     getOrGenerateRoomCode(forceNew = false) {
@@ -79,6 +151,10 @@
           if ((s === 2 || s === 3) && window.Cinnamo?.platformerGame?.selectHeroById) {
             window.Cinnamo.platformerGame.selectHeroById(this.players[s].heroId, s);
           }
+          if (window.Cinnamo?.avatarWorldGame?.players?.[s]) {
+            window.Cinnamo.avatarWorldGame.players[s].active = true;
+            window.Cinnamo.avatarWorldGame.syncPlayerBadgesUI?.();
+          }
           return s;
         }
       }
@@ -88,14 +164,16 @@
 
     onStatus(fn) {
       this.statusListeners.push(fn);
-      fn({ count: this.connectedCount, room: this.roomCode, gamepad: this.physicalGamepadActive, players: this.getActivePlayersSummary() });
+      fn({ count: this.connectedCount, room: this.roomCode, gamepad: this.physicalGamepadActive, inputMode: this.inputMode, players: this.getActivePlayersSummary() });
     }
 
     notifyStatus() {
+      this.updateInputModeBadge();
       const state = {
         count: this.connectedCount,
         room: this.roomCode,
         gamepad: this.physicalGamepadActive,
+        inputMode: this.inputMode,
         players: this.getActivePlayersSummary()
       };
       this.statusListeners.forEach(fn => { try { fn(state); } catch (_) {} });
@@ -129,6 +207,7 @@
               const slot = (reqSlot >= 1 && reqSlot <= 3) ? reqSlot : 1;
               this.players[slot].active = true;
               this.connectedCount = Math.max(1, this.connectedCount);
+              this.setInputMode('remote');
               this.notifyStatus();
               this.broadcastChannel.postMessage({
                 type: 'welcome',
@@ -187,6 +266,7 @@
           console.log(`📱 ¡Celular conectado al mando como Jugador ${assignedSlot}!`);
           this.connections.push(conn);
           this.connectedCount = this.connections.length;
+          this.setInputMode('remote');
           this.notifyStatus();
           const slotBadges = { 1: 'P1 🌸', 2: 'P2 🩵', 3: 'P3 💛' };
           this.showToast(`📱 ¡Mando ${slotBadges[assignedSlot]} conectado! ✨`);
@@ -220,6 +300,7 @@
                 conn._playerSlot = parseInt(data.player, 10);
                 this.players[conn._playerSlot].active = true;
               }
+              this.setInputMode('remote');
               try {
                 conn.send({
                   type: 'welcome',
@@ -266,6 +347,9 @@
     /* ---------- 3. TRADUCCIÓN DE ENTRADA REMOTA HACIA TODOS LOS JUEGOS ---------- */
     handleRemoteData(data, conn = null) {
       if (!data) return;
+      if (this.inputMode !== 'remote') {
+        this.setInputMode('remote');
+      }
       const playerSlot = Math.max(1, Math.min(3, parseInt(data.player || conn?._playerSlot || 1, 10)));
 
       // Selección / activación de Jugador (P1, P2, P3) para multijugador hasta 3 players
@@ -283,6 +367,14 @@
               plat.coPlayers[slot].active = false;
             }
           }
+        }
+        const aw = window.Cinnamo?.avatarWorldGame;
+        if (aw && aw.players?.[slot]) {
+          aw.players[slot].active = this.players[slot].active;
+          if (data.heroId && aw.applyCustomization) {
+            aw.applyCustomization(slot, 'base', data.heroId);
+          }
+          aw.syncPlayerBadgesUI?.();
         }
         const badge = slot === 1 ? 'P1 🌸' : (slot === 2 ? 'P2 🩵' : 'P3 💛');
         this.showToast(`🎮 ¡${badge} listo en la partida!`);
@@ -302,7 +394,9 @@
         this.players[playerSlot].heroId = heroId;
         this.players[playerSlot].active = true;
         const screen = window.Cinnamo?.hub?.currentScreen;
-        if (screen === 'doom' && window.Cinnamo?.doomGame?.selectHeroById) {
+        if (screen === 'avatar' && window.Cinnamo?.avatarWorldGame?.applyCustomization) {
+          window.Cinnamo.avatarWorldGame.applyCustomization(playerSlot, 'base', heroId);
+        } else if (screen === 'doom' && window.Cinnamo?.doomGame?.selectHeroById) {
           window.Cinnamo.doomGame.selectHeroById(heroId);
         } else if (screen === 'puzzle' && window.Cinnamo?.puzzleGame?.selectCharacterById) {
           window.Cinnamo.puzzleGame.selectCharacterById(heroId);
@@ -313,10 +407,12 @@
         return;
       }
 
-      // Cambio cíclico rápido de personaje en Super Run o Repartidor 3D
+      // Cambio cíclico rápido de personaje en Super Run, Repartidor 3D o Avatar World
       if (data.type === 'switchHero') {
         const screen = window.Cinnamo?.hub?.currentScreen;
-        if (screen === 'platformer' && window.Cinnamo?.platformerGame) {
+        if (screen === 'avatar' && window.Cinnamo?.avatarWorldGame?.cycleCustomForPlayer) {
+          window.Cinnamo.avatarWorldGame.cycleCustomForPlayer(playerSlot, 'base');
+        } else if (screen === 'platformer' && window.Cinnamo?.platformerGame) {
           if (playerSlot === 2 || playerSlot === 3) {
             const heroOrder = ['cinna', 'milk', 'purin', 'chiffon', 'mocha'];
             const curr = this.players[playerSlot].heroId || 'milk';
@@ -329,6 +425,24 @@
         } else if (screen === 'doom' && window.Cinnamo?.doomGame?.nextHero) {
           window.Cinnamo.doomGame.nextHero();
         }
+        return;
+      }
+
+      // Acciones remotas de Cinnamoroll World: Casa de Sueños (Avatar World)
+      if (data.type === 'avatarRoom') {
+        window.Cinnamo?.avatarWorldGame?.selectRoom?.(parseInt(data.roomIdx, 10) || 0);
+        return;
+      }
+      if (data.type === 'avatarCustom') {
+        window.Cinnamo?.avatarWorldGame?.cycleCustomForPlayer?.(playerSlot, data.category || 'outfit');
+        return;
+      }
+      if (data.type === 'avatarDecor') {
+        window.Cinnamo?.avatarWorldGame?.spawnDecorItem?.(data.decorType || 'cake');
+        return;
+      }
+      if (data.type === 'avatarLight') {
+        window.Cinnamo?.avatarWorldGame?.cycleLighting?.();
         return;
       }
 
@@ -647,6 +761,12 @@
         }
         return;
       }
+
+      // 4. Cinnamoroll World: Casa de Sueños (Avatar World — P1, P2 y P3 simultáneos)
+      if (screen === 'avatar') {
+        window.Cinnamo?.avatarWorldGame?.setPlayerJoystick?.(playerSlot, x, y);
+        return;
+      }
     }
 
     handleRemoteInput(btn, pressed, playerSlot = 1) {
@@ -671,6 +791,12 @@
             return;
           }
         }
+      }
+
+      // 0. Despachar a Cinnamoroll World: Casa de Sueños (avatar-world.js) — Soporta P1, P2 y P3
+      if (screen === 'avatar') {
+        window.Cinnamo?.avatarWorldGame?.setPlayerInput?.(playerSlot, btn, pressed);
+        return;
       }
 
       // 1. Despachar a Super Cinnamoroll Run (platformer.js) — Soporta P1, P2 y P3

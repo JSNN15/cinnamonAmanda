@@ -6,7 +6,7 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
 
 ---
 
-## 🗺️ Arquitectura de la Suite (8 Juegos)
+## 🗺️ Arquitectura de la Suite (9 Juegos · v27)
 
 ```
                        ┌─────────────────────────────────────────┐
@@ -15,28 +15,43 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñ
                        └────────────────────┬────────────────────┘
           ┌─────────────────┬───────────────┼───────────────┬─────────────────┐
           ▼                 ▼               ▼               ▼                 ▼
-   🛫 ¡A Volar!      🧁 Pastelería    🎨 Taller de    🃏 Memorice de   🏃 Super Run
-   Vuelo por nubes   Sumas y conteo   Dibujo Sanrio   Cartas y parejas  Plataformas 2D
-   Voz y sensores    Con Milk y Cinna 5 láminas B&W   3 dificultades   Planeo de orejas
+   🏡 Casa de Sueños  🛫 ¡A Volar!    🧁 Pastelería   🎨 Taller de    🏃 Super Run
+   Estilo Avatar W.   Vuelo por nubes Sumas y conteo  Dibujo Sanrio   Plataformas 2D
+   Vestidor & Muebles Voz y sensores  Con Milk & Cinna 5 láminas B&W  5 Ciudades & Co-op
           │                 │               │               │                 │
           └─────────────────┴───────────────┼───────────────┴─────────────────┘
-                            ┌───────────────┴───────────────┐
-                            ▼                               ▼
-                     🎮 Repartidor 3D               ✏️ Palabras Mágicas
-                     Motor DOOM 2.5D Pabellón       Taller Waldorf / Montessori
-                     Sombras 3D y bandejas          Mamá, Papá, Amanda y Sanrio
-                            │                               │
-                            └───────────────┬───────────────┘
+                            ┌───────────────┼───────────────┐
+                            ▼               ▼               ▼
+                     🎮 Repartidor 3D ✏️ Palabras     🧩 Puzzles Sanrio
+                     Motor 2.5D Doom  Escuela Waldorf Tangram y Jigsaw
+                     3D y bandejas    Montessori A-Z  6 a 16 piezas
+                            │               │               │
+                            └───────────────┼───────────────┘
                                             ▼
-                                     🧩 Puzzles de Lógica
-                                     Tangram de formas y figuras
+                                     🃏 Memorice Sanrio
+                                     Parejas y memoria visual
 ```
 
 ---
 
-## 🎮 Detalle Completo de los 8 Juegos (`v24`)
+## 🎮 Detalle Completo de los 9 Juegos (`v27`)
 
 > 📋 **Registro Técnico y Auditoría Senior:** Consulta el informe integral de arquitectura, jugabilidad, contenido pedagógico y aseguramiento de calidad en [`AUDITORIA_SENIOR_JUEGO_PROFESIONAL.md`](./AUDITORIA_SENIOR_JUEGO_PROFESIONAL.md).
+
+### 0. 🏡 Cinnamoroll World: Casa de Sueños (`js/avatar-world.js` · Estilo Avatar World / Toca Life)
+* **Dirección de Arte "Soft-Vector" Continua (Cero "Sticker Pegado"):**
+  * Personajes y habitaciones dibujados 100% en Canvas 2D vectorial artesanal con contornos color cacao cálido (`#5c3d2e`, `2.8px`), sombras elípticas de contacto con el suelo y ordenamiento de profundidad dinámico (**Y-Sorting a 60 FPS**).
+  * **Iluminación Ambiental Integrada:** Capa atmosférica continua (`☀️ Día`, `🌅 Atardecer Dorado`, `🌙 Noche Mágica`) que baña en tiempo real personajes, muebles y habitaciones.
+  * **Físicas y Expresividad Orgánica:** Orejas con resorte amortiguado de inercia (`earAngle`), parpadeo suave, caminata sinusoidal y burbujas de emoción.
+* **Vestidor Kawaii Completo:**
+  * Personaliza a los 3 jugadores (**`P1 🌸`**, **`P2 🩵`**, **`P3 💛`**) con **6 amigos Sanrio** (*Cinnamoroll, Milk, Mocha, Chiffon, Pompompurin, Cappuccino*), **7 trajes**, **8 sombreros**, **5 lentes**, **6 objetos en mano** y **6 expresiones faciales**. Persistencia automática en `localStorage`.
+* **3 Habitaciones Interactivas y Editables:**
+  * 🧁 **Cafetería & Cocina:** Horno pastelero interactivo (hornea cupcakes reales al usarlo), vitrina de postres, mesa de té y radio musical.
+  * 🛏️ **Cuarto de Nubes:** Cama nube donde los personajes se acuestan tapados con cobija (`💤`), tocador con espejo que abre el vestidor y lámpara lunar.
+  * 🌸 **Jardín & Fiesta:** Columpio de cerezo con física pendular para subirse, fuente de agua animada y escenario musical.
+  * 🛋️ **Modo Decorar Casa:** Catálogo deslizable con 8 muebles y comidas para agregar, arrastrar o dar de comer a los personajes (`😋`).
+* **Control Híbrido Touch + Celular Multi-Player (P1, P2, P3):**
+  * Toca y arrastra directamente en pantalla, o usa el joystick analógico y la barra `#avatarActionStrip` en el celular para mover avatares, cambiar cuartos y decorar.
 
 ### 1. 🛫 ¡A Volar con Cinnamoroll! (`js/game.js`)
 * **Mecánica:** Vuela por cielos de colores recolectando estrellas mágicas ⭐, rollitos de canela 🍥 y corazones 💗.
@@ -150,20 +165,23 @@ Diseñado con progresión curricular de **5 a 8 años** y **4 modos pedagógicos
 
 ---
 
-## 📺 Modo Consola TV "Zero-Keyboard / Zero-Mouse" y Multijugador hasta 3 Players (`v26`)
+## 📺 Modo Consola TV "Zero-Keyboard / Zero-Mouse" y Multijugador hasta 3 Players (`v26 / v27`)
 * **Control Total 100% desde el Celular (`controller.html` + `js/controller-bridge.js`):** Al conectar un PC a la TV, nunca necesitarás tocar el mouse ni el teclado:
   * **Selector Directo de los 5 Personajes Sanrio:** Elige a *Cinnamoroll, Milk, Pompompurin, Chiffon o Mocha* directamente desde la barra superior del celular en cualquier momento (en *Repartidor 3D*, tocar el personaje lo selecciona e inicia el mundo 3D automáticamente).
   * **Selector Directo de Ciudades, Niveles y Modos:** Viaja entre las 5 ciudades de *Super Run*, cambia edades (`5-6`, `6-7`, `7-8`), operaciones matemáticas (`➕`, `➖`, `✖️`, `🎲`), cantidad de cartas en *Memorice* (`8`, `12`, `16`), piezas en *Puzzles* (`6`, `9`, `12`, `16`) y modos en *Palabras Mágicas* (`🍪 Palabras`, `📖 Frases`, `✍️ Trazar`, `🖍️ Pizarra`).
   * **Touchpad Táctil en Vivo y Teclado `A–Z + Ñ`:** Dibuja, pinta, estampa sellitos y traza letras en la TV deslizando el dedo sobre el Touchpad del celular.
-* **Hasta 3 Jugadores Simultáneos (`P1 🌸`, `P2 🩵`, `P3 💛`):** Conecta hasta 3 celulares escaneando el QR (o hasta 3 mandos Bluetooth). En *Super Cinnamoroll Run*, los 3 jugadores corren, saltan y recolectan cupcakes juntos en pantalla con rescate automático en burbuja mágica.
+  * **Control de Casa de Sueños (Avatar World):** Mueve tu avatar, interactúa con muebles, cambia de cuarto (`🧁 Café`, `🛏️ Cuarto`, `🌸 Jardín`), cambia de ropa y agrega pasteles o peluches a la habitación desde el celular.
+* **Coordinador Inteligente de Entrada (`Touch Activo` vs `Mando TV Activo` + `P1 / P2 / P3` en `v27`):**
+  * La insignia superior `#globalInputModeBadge` indica en tiempo real si el sistema está respondiendo al toque directo o al mando inalámbrico de la TV con etiquetas de jugadores (`P1🌸`, `P2🩵`, `P3💛`), ocultando automáticamente controles en pantalla en la TV para una vista de consola limpia cuando se usa el mando móvil.
+* **Hasta 3 Jugadores Simultáneos (`P1 🌸`, `P2 🩵`, `P3 💛`):** Conecta hasta 3 celulares escaneando el QR (o hasta 3 mandos Bluetooth). Soportado tanto en *Super Cinnamoroll Run* como en *Cinnamoroll World: Casa de Sueños*.
 * **Sesiones Paralelas Aisladas (`sessionStorage`):** Permite abrir múltiples sesiones independientes en paralelo sin colisión de códigos de sala.
 
 ---
 
-## ⚡ Rendimiento, PWA y Cero Build Step (`v26`)
+## ⚡ Rendimiento, PWA y Cero Build Step (`v27`)
 * **Vanilla JavaScript (ES6+):** Cero dependencias de compilación, carga instantánea.
-* **Service Worker Silencioso (`sw.js` · `cinnamoroll-land-v26`):** Estrategia *Network-First* sin recargas forzadas (`controllerchange` eliminado), garantizando que una actualización en segundo plano jamás devuelva a la jugadora al menú de inicio mientras juega.
-* **Suite de Pruebas E2E Multi-Dispositivo (`tools/test_all_games_controller.py`):** Verifica en Chromium tanto la pantalla de TV como los celulares conectados (`P1`, `P2`, `P3`) en los 8 juegos, el Modo Cooperativo y el Pasaporte de Stickers.
+* **Service Worker Silencioso (`sw.js` · `cinnamoroll-land-v27`):** Estrategia *Network-First* sin recargas forzadas (`controllerchange` eliminado), garantizando que una actualización en segundo plano jamás devuelva a la jugadora al menú de inicio mientras juega.
+* **Suite de Pruebas E2E Multi-Dispositivo (`tools/test_all_games_controller.py`):** Verifica en Chromium tanto la pantalla de TV como los celulares conectados (`P1`, `P2`, `P3`) en los 9 juegos, el Modo Cooperativo, el Pasaporte de Stickers y el Coordinador Inteligente de Entrada.
 
 ---
 
