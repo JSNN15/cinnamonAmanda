@@ -347,6 +347,24 @@
         return;
       }
 
+      // Modo Cooperativo Asimétrico (TV + Celular) & Pasaporte de Stickers
+      if (data.type === 'coopStarRain') {
+        window.Cinnamo?.coop?.triggerStarRain?.();
+        return;
+      }
+      if (data.type === 'coopShield') {
+        window.Cinnamo?.coop?.triggerShield?.();
+        return;
+      }
+      if (data.type === 'coopCheer') {
+        window.Cinnamo?.coop?.triggerCheer?.();
+        return;
+      }
+      if (data.type === 'coopPassport') {
+        window.Cinnamo?.passport?.togglePassport?.();
+        return;
+      }
+
       // Botón estándar (d-pad o botones de acción)
       if (data.type === 'input' || data.btn !== undefined) {
         this.handleRemoteInput(data.btn, data.pressed);

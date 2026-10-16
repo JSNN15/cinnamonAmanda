@@ -128,16 +128,17 @@ El mando móvil cambia su interfaz automáticamente según la pantalla activa en
 
 ---
 
-## 7. Hoja de Ruta Estratégica (Roadmap Sugerido para Futuras Versiones)
+## 7. Evolución y Hoja de Ruta (`v25` Implementado + Backlog Deseable)
 
-Aunque `v24` alcanza un nivel sobresaliente de pulido técnico y pedagógico (**9.7/10**), como análisis Senior se proponen las siguientes evoluciones opcionales a mediano plazo:
-
-1. **Álbum de Stickers y Pasaporte de Progreso Persistente (`localStorage`):**
-   - Guardar cuántas estrellas, ciudades de *Super Run*, palabras de *Escritura* y rompecabezas ha completado Amanda a lo largo de las semanas, otorgando estampillas coleccionables de Cinnamoroll, Mocha, Milk, Espresso y Cappuccino en un "Pasaporte Mágico" dentro del Hub.
-2. **Herramienta de Relleno Mágico (*Flood Fill* por Scanline) en `js/coloring.js`:**
-   - Añadir una cuarta herramienta opcional de "Cubeta de Pintura" usando un algoritmo *Scanline Flood-Fill* tolerante al antialiasing sobre una copia en memoria de la lámina B&W.
-3. **Modo Cooperativo Asimétrico (TV + Celular):**
-   - Permitir que mientras Amanda juega en la tablet/TV en *Super Run* o *Vuelo Mágico*, un segundo jugador desde el celular pueda lanzar "lluvias de estrellas" o "escudos de algodón de azúcar" de ayuda en tiempo real.
+1. ✅ **[IMPLEMENTADO EN `v25`] Álbum de Stickers y Pasaporte de Progreso Persistente (`js/passport.js` + `localStorage`):**
+   - Guarda automáticamente las estrellas mágicas, partidas jugadas por minijuego y **10 Stickers coleccionables oficiales** (Cinnamoroll, Milk, Pompompurin, Mocha, Chiffon y medallas temáticas) en un **"Pasaporte Mágico de Amanda"** accesible desde el botón superior `🏅 Stickers` (`#globalBtnPassport`) o desde el mando móvil (`🏅 Stickers`).
+2. ✅ **[IMPLEMENTADO EN `v25`] Modo Cooperativo Asimétrico (TV + Celular en Tiempo Real):**
+   - La barra cooperativa del mando móvil (`#coopPowerBar` en `controller.html`) permite que un acompañante desde el celular (o la misma jugadora) dispare 3 ayudas mágicas en tiempo real hacia la pantalla principal:
+     - 🌟 **Lluvia de Estrellas (`coopStarRain`):** Genera estrellas/monedas extra en *Vuelo Mágico* y *Super Run*, lanza dulces en *Castillo 3D*, encaja piezas en *Rompecabezas* o ayuda a contar en *Pastelería*, sumando +5 ⭐ al Pasaporte.
+     - 🛡️ **Escudo de Algodón de Azúcar (`coopShield`):** Activa durante **8 segundos** una burbuja protectora de invulnerabilidad (`invulnT = 8.0`) e impulso de vuelo en *Super Run* y *Vuelo Mágico*.
+     - 💖 **Porra de Ánimo (`coopCheer`):** Despliega un banner festivo con voz de aliento y lluvia de corazones en la TV.
+3. 💡 **[DESEABLE / BACKLOG OPCIONAL] Herramienta de Relleno Mágico (*Flood Fill* por Scanline) en `js/coloring.js`:**
+   - Registrado exclusivamente como deseable a futuro (no prioritario): añadir una herramienta opcional de "Cubeta de Pintura" usando *Scanline Flood-Fill*.
 
 ---
 

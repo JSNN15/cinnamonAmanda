@@ -135,18 +135,25 @@ Diseñado con progresión curricular de **5 a 8 años** y **4 modos pedagógicos
 
 ---
 
-## 📱 Mando Inalámbrico Inteligente en tu Celular & Gamepad Físico (`v24`)
+## 📱 Mando Inalámbrico Inteligente, Modo Cooperativo Asimétrico & Pasaporte de Stickers (`v25`)
 * **Sincronización Contextual en los 8 Juegos (`controller.html` + `js/controller-bridge.js`):**
   * Emparejamiento instantáneo por **Código QR** o código de 4 caracteres vía **WebRTC (PeerJS)** con reconexión automática, latido (`ping`/`pong`) cada 2s y respaldo local por `BroadcastChannel`.
-  * Botón rápido de **Pantalla Completa (`⛶`)** integrado tanto en la pantalla principal como en el mando móvil (con guía visual para iOS Safari).
+  * Botón rápido de **Pantalla Completa (`📺`)** integrado tanto en la pantalla principal como en el mando móvil (con guía visual para iOS Safari).
   * Soporte nativo Plug-and-Play para **mandos físicos Bluetooth/USB** (Nintendo Switch, PlayStation, Xbox) vía `Gamepad API`.
+* **✨ Modo Cooperativo Asimétrico TV + Celular (`js/passport.js`):**
+  * Barra de ayuda mágica en tiempo real (`#coopPowerBar`) en el celular para acompañar a Amanda mientras juega en la TV/Tablet/PC:
+    * 🌟 **Lluvia de Estrellas (`coopStarRain`):** Lanza estrellas/dulces extra en *Vuelo Mágico* y *Super Run*, dispara pastelitos en *Castillo 3D*, encaja una pieza en *Rompecabezas* o ayuda a contar en *Pastelería*.
+    * 🛡️ **Escudo de Algodón de Azúcar (`coopShield`):** Activa durante **8 segundos** una burbuja de protección e impulso aéreo en *Super Run* y *Vuelo Mágico*.
+    * 💖 **Porra de Ánimo (`coopCheer`):** Muestra un banner festivo de aliento con voz cariñosa y lluvia de corazones en pantalla.
+* **🏅 Pasaporte Mágico y Álbum de Stickers (`cinnamo_passport_v1` en `localStorage`):**
+  * Registra las estrellas mágicas ganadas y desbloquea **10 Stickers coleccionables oficiales de Sanrio** accesibles desde el botón `🏅 Stickers` en la barra superior o desde el mando móvil.
 
 ---
 
-## ⚡ Rendimiento, PWA y Cero Build Step (`v24`)
+## ⚡ Rendimiento, PWA y Cero Build Step (`v25`)
 * **Vanilla JavaScript (ES6+):** Cero dependencias de compilación, carga instantánea.
-* **Service Worker Silencioso (`sw.js` · `cinnamoroll-land-v24`):** Estrategia *Network-First* sin recargas forzadas (`controllerchange` eliminado), garantizando que una actualización en segundo plano jamás devuelva a la jugadora al menú de inicio mientras juega.
-* **Suite de Pruebas E2E Multi-Dispositivo (`tools/test_all_games_controller.py`):** Verifica con Playwright en Chromium tanto la pantalla de TV como el celular conectado en los 8 juegos.
+* **Service Worker Silencioso (`sw.js` · `cinnamoroll-land-v25`):** Estrategia *Network-First* sin recargas forzadas (`controllerchange` eliminado), garantizando que una actualización en segundo plano jamás devuelva a la jugadora al menú de inicio mientras juega.
+* **Suite de Pruebas E2E Multi-Dispositivo (`tools/test_all_games_controller.py`):** Verifica en Chromium tanto la pantalla de TV como el celular conectado en los 8 juegos, el Modo Cooperativo y el Pasaporte de Stickers.
 
 ---
 

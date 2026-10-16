@@ -3,7 +3,7 @@
  * y sólo usa la caché como respaldo cuando no hay conexión. Así un despliegue nuevo
  * nunca queda "atrapado" detrás de archivos viejos en caché.
  */
-const CACHE_NAME = 'cinnamoroll-land-v24';
+const CACHE_NAME = 'cinnamoroll-land-v25';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -42,7 +42,8 @@ const CORE_ASSETS = [
   './js/doom.js',
   './js/writing.js',
   './js/puzzle.js',
-  './js/hub.js'
+  './js/hub.js',
+  './js/passport.js'
 ];
 
 self.addEventListener('install', (event) => {

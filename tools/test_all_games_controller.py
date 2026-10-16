@@ -13,13 +13,19 @@ import base64
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-PORT = 8995
-CDP_PORT_HOST = 9225
-CDP_PORT_PHONE = 9226
+import tempfile
+import shutil
+
+PORT = 8996
+CDP_PORT_HOST = 9325
+CDP_PORT_PHONE = 9326
 
 class QuietHandler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
         pass
+    def end_headers(self):
+        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+        super().end_headers()
     def handle(self):
         try:
             super().handle()
@@ -35,8 +41,8 @@ t_server = threading.Thread(target=httpd.serve_forever, daemon=True)
 t_server.start()
 
 chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-user_data_dir_host = os.path.join(os.environ.get("TEMP", "C:\\temp"), "cinna_all_host")
-user_data_dir_phone = os.path.join(os.environ.get("TEMP", "C:\\temp"), "cinna_all_phone")
+user_data_dir_host = tempfile.mkdtemp(prefix="cinna_host_")
+user_data_dir_phone = tempfile.mkdtemp(prefix="cinna_phone_")
 
 class MinimalWS:
     def __init__(self, ws_url):
@@ -401,7 +407,29 @@ try:
     assert screen_final == 'hub', f"Final screen should be hub, got {screen_final}"
     print(f"✅ TV volvió al Menú: '{screen_final}' | Mando UI: '{mode_final}'")
 
-    print("\n🎉 ¡TODOS LOS 8 JUEGOS Y ACCIONES DEL MANDO VERIFICADOS AL 100%! 🎉")
+    # -------------------------------------------------------------
+    # PRUEBA 10: Modo Cooperativo Asimétrico & Pasaporte de Stickers
+    # -------------------------------------------------------------
+    print("\n--- TEST 10: MODO COOPERATIVO ASIMÉTRICO & PASAPORTE DE STICKERS ---")
+    stars_before = ws_host.eval("window.Cinnamo?.passport?.state?.stars || 0")
+    ws_phone.eval("document.getElementById('btnCoopStarRain').click()")
+    time.sleep(0.5)
+    ws_phone.eval("document.getElementById('btnCoopShield').click()")
+    time.sleep(0.4)
+    ws_phone.eval("document.getElementById('btnCoopCheer').click()")
+    time.sleep(0.4)
+    stars_after = ws_host.eval("window.Cinnamo?.passport?.state?.stars || 0")
+    unlocked_count = ws_host.eval("window.Cinnamo?.passport?.state?.unlocked?.length || 0")
+    assert stars_after > stars_before, f"Stars should increase after Co-op powers! {stars_before} -> {stars_after}"
+    print(f"✅ Poderes Cooperativos (Lluvia, Escudo, Ánimo) sumaron estrellas: {stars_before} -> {stars_after} (Stickers: {unlocked_count}/10)")
+
+    ws_phone.eval("document.getElementById('btnCoopPassport').click()")
+    time.sleep(0.5)
+    passport_open = ws_host.eval("!document.getElementById('passportModal')?.classList.contains('hidden')")
+    assert passport_open is True, "Passport modal should open on TV when triggered from phone"
+    print("✅ Modal de Pasaporte de Stickers abierto en TV desde el celular.")
+
+    print("\n🎉 ¡TODOS LOS 8 JUEGOS, MODO COOPERATIVO Y PASAPORTE VERIFICADOS AL 100%! 🎉")
 
 finally:
     if chrome_host:

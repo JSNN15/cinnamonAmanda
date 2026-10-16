@@ -422,6 +422,43 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.06);
     }
 
+    /* Barra de Ayuda Cooperativa Asimétrica (TV + Celular) */
+    .coop-power-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 4px 6px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 2px solid #fbcfe8;
+      border-radius: 16px;
+      box-shadow: 0 3px 10px rgba(236, 72, 153, 0.12);
+    }
+    .btn-coop-power {
+      flex: 1;
+      height: 34px;
+      border-radius: 12px;
+      border: 2px solid #ffffff;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      color: #5c3d2e;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 2px 0 rgba(0,0,0,0.12);
+      transition: transform 0.12s;
+    }
+    .btn-coop-power:active {
+      transform: scale(0.94);
+    }
+    .btn-coop-stars { background: linear-gradient(135deg, #fef08a 0%, #facc15 100%); }
+    .btn-coop-shield { background: linear-gradient(135deg, #bae6fd 0%, #38bdf8 100%); color: #0c4a6e; }
+    .btn-coop-cheer { background: linear-gradient(135deg, #fbcfe8 0%, #f472b6 100%); color: #831843; }
+    .btn-coop-passport { background: linear-gradient(135deg, #e9d5ff 0%, #c084fc 100%); color: #4c1d95; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -564,6 +601,14 @@
         <input type="text" id="roomCodeInput" class="room-modal-input" maxlength="4" placeholder="SALA" autofocus />
         <button id="btnRoomModalConnect" class="btn-room-modal-connect">✨ ¡CONECTAR MANDO! ✨</button>
       </div>
+    </div>
+
+    <!-- Barra de Ayuda Cooperativa Asimétrica (TV + Celular) & Pasaporte -->
+    <div class="coop-power-bar" id="coopPowerBar">
+      <button id="btnCoopStarRain" class="btn-coop-power btn-coop-stars" title="Lanzar Lluvia de Estrellas en la TV">🌟 Lluvia</button>
+      <button id="btnCoopShield" class="btn-coop-power btn-coop-shield" title="Activar Escudo de Algodón de Azúcar (8s)">🛡️ Escudo</button>
+      <button id="btnCoopCheer" class="btn-coop-power btn-coop-cheer" title="Enviar Porra Mágica a Amanda">💖 Ánimo</button>
+      <button id="btnCoopPassport" class="btn-coop-power btn-coop-passport" title="Ver Pasaporte de Stickers en TV">🏅 Stickers</button>
     </div>
 
     <!-- Footer -->
@@ -1267,6 +1312,20 @@
         el.addEventListener('pointerup', end);
         el.addEventListener('pointercancel', end);
       });
+
+      // Botones del Modo Cooperativo Asimétrico (TV + Celular) & Pasaporte
+      const bindCoopBtn = (id, type, freq) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('click', () => {
+          playHapticBeep(freq);
+          sendData({ type });
+        });
+      };
+      bindCoopBtn('btnCoopStarRain', 'coopStarRain', 780);
+      bindCoopBtn('btnCoopShield', 'coopShield', 660);
+      bindCoopBtn('btnCoopCheer', 'coopCheer', 880);
+      bindCoopBtn('btnCoopPassport', 'coopPassport', 720);
     })();
   </script>
 </body>
