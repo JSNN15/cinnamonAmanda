@@ -498,6 +498,12 @@
       this.container.querySelector('#btnDownloadArt').addEventListener('click', () => {
         A.unlock();
         A.celebrate();
+        // Estrellas solo si pintó algo, una vez por lámina
+        this.rewardedSheets = this.rewardedSheets || new Set();
+        if (this.history.length > 0 && !this.rewardedSheets.has(this.currentSheet.id)) {
+          this.rewardedSheets.add(this.currentSheet.id);
+          window.Cinnamo?.passport?.addStars?.(2, 'coloring');
+        }
         this.exportArtwork(canvas, sheetImg);
       });
 
