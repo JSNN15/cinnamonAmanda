@@ -1476,6 +1476,7 @@
         if (msg) msg.textContent = `¡Los amigos de Sanrio están felices de haber viajado contigo a ${city.name}, ${city.country}! 💖`;
 
         const pct = this.score / city.totalItems;
+        window.Cinnamo?.passport?.addStars?.(pct >= 0.8 ? 3 : pct >= 0.5 ? 2 : 1, 'platformer');
         if (starsEl) {
           if (pct >= 0.8) starsEl.textContent = '⭐⭐⭐ ¡Puntaje Perfecto!';
           else if (pct >= 0.5) starsEl.textContent = '⭐⭐ ¡Súper Exploradora!';

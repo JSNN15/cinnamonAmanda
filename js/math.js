@@ -427,6 +427,7 @@
       btnEl.classList.add('correct');
 
       A.celebrate();
+      window.Cinnamo?.passport?.addStars?.(1, 'math');
 
       const cinna = this.container.querySelector('#cinnaBaker');
       const milk = this.container.querySelector('#milkBaker');
@@ -493,6 +494,7 @@
 
     triggerPartyVictory() {
       A.celebrate();
+      window.Cinnamo?.passport?.addStars?.(3, 'math');
       const modal = document.createElement('div');
       modal.className = 'w-victory-modal-overlay';
       modal.innerHTML = `

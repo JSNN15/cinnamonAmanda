@@ -1918,6 +1918,7 @@
       const list = this.getFilteredWords();
       const w = list[this.currentWordIdx] || WORDS[0];
       A.celebrate();
+      window.Cinnamo?.passport?.addStars?.(3, 'writing');
       this.speak(`¡Excelente Amanda! ¡Completaste la palabra ${w.word}!`);
 
       const modal = document.createElement('div');
@@ -1959,6 +1960,7 @@
     triggerSentenceVictory() {
       const s = SENTENCES[this.currentSentenceIdx];
       A.celebrate();
+      window.Cinnamo?.passport?.addStars?.(3, 'writing');
       this.speak(`¡Maravilloso Amanda! ¡Leíste y ordenaste la frase: ${s.phrase}!`);
 
       const modal = document.createElement('div');
@@ -2237,6 +2239,7 @@
         if (isComplete && !this.traceCompleted) {
           this.traceCompleted = true;
           A.celebrate();
+          window.Cinnamo?.passport?.addStars?.(2, 'writing');
           if (starsText) starsText.textContent = '⭐⭐⭐ ¡Completado!';
           if (btnNext) btnNext.classList.remove('hidden');
           if (banner) {

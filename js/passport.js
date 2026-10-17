@@ -148,7 +148,6 @@
       this.createPassportModal();
       this.createCoopOverlay();
       this.updateTopBarBadge();
-      this.hookGameMilestones();
     }
 
     injectStyles() {
@@ -463,7 +462,7 @@
               } catch (_) {}
             }
           } else {
-            this.showCoopBanner(`🔒 Juega o usa Lluvia de Estrellas para ganar "${st.name}" (⭐ ${st.starsReq})`, 2600);
+            this.showCoopBanner(`🔒 Gana estrellas aprendiendo en los juegos para conseguir "${st.name}" (⭐ ${st.starsReq})`, 2600);
           }
         });
       });
@@ -499,19 +498,6 @@
         this.openPassport();
       } else {
         this.closePassport();
-      }
-    }
-
-    hookGameMilestones() {
-      // Otorgar estrellas y stickers al lanzar cualquier juego desde el Hub
-      const hub = window.Cinnamo?.hub;
-      if (hub && !hub._passportHooked) {
-        hub._passportHooked = true;
-        const origLaunch = hub.launchGame.bind(hub);
-        hub.launchGame = (gameKey) => {
-          origLaunch(gameKey);
-          this.addStars(2, gameKey);
-        };
       }
     }
 
