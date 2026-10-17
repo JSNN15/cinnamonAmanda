@@ -2997,3 +2997,38 @@ body.touch-input-active .flight-touch-controls {
     font-size: 10px;
   }
 }
+
+/* ---------- Matemáticas: nivel automático y progreso para papás ---------- */
+.math-level-badge {
+  background: #eff6ff; border: 2.5px solid #93c5fd; border-radius: 999px;
+  padding: 4px 12px; font: 800 13px var(--font); color: #1d4ed8;
+}
+.math-level-up {
+  background: #fef9c3; border: 2.5px solid #facc15; border-radius: 999px;
+  padding: 4px 12px; font: 800 13px var(--font); color: #a16207;
+  animation: mathLevelPop 0.6s ease-out;
+}
+@keyframes mathLevelPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.math-parents { width: 100%; margin-top: 16px; }
+.math-parents-body { display: flex; flex-direction: column; gap: 10px; padding-top: 10px; }
+.math-progress-table-wrap { width: 100%; overflow-x: auto; }
+.math-progress-table {
+  width: 100%; border-collapse: collapse; font: 700 13px var(--font); color: #475569;
+  background: #ffffff; border-radius: 12px; overflow: hidden;
+}
+.math-progress-table th, .math-progress-table td {
+  padding: 6px 8px; text-align: left; border-bottom: 1px solid #e2ebf8; white-space: nowrap;
+}
+.math-progress-table th { background: #f1f5fb; color: #64748b; font-size: 12px; }
+.math-progress-table small { color: #94a3b8; font-weight: 700; }
+.math-parents-note { margin: 0; font: 600 12px var(--font); color: #8fa2c4; }
+.math-auto-toggle { display: flex; align-items: center; gap: 8px; font: 800 13px var(--font); color: #475569; cursor: pointer; }
+.math-auto-toggle input { width: 18px; height: 18px; accent-color: #3b82f6; }
+.math-reset-btn {
+  align-self: flex-start; background: #ffffff; border: 2px solid #fecaca; border-radius: 999px;
+  padding: 4px 12px; font: 800 12px var(--font); color: #dc2626; cursor: pointer;
+}
