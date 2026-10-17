@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
   </noscript>
   <link rel="stylesheet" href="styles.css?v=27" />
+  <link rel="stylesheet" href="visual.css?v=29" />
 </head>
 <body>
   <!-- PANTALLA DE CARGA INSTANTÁNEA (Splash Pastel) -->
@@ -32,7 +33,7 @@
       <span class="btn-icon">🏠</span>
       <span class="btn-text">Inicio</span>
     </button>
-    <div class="top-brand">Cinnamoroll Land 🌸</div>
+    <div class="top-brand"><img class="top-brand-img" src="cinnamoroll_sprite.png" alt="" width="44" height="24" />Cinnamoroll Land</div>
     <div class="top-right-actions">
       <div id="globalInputModeBadge" class="input-mode-badge mode-touch" title="Coordinador automático Touch vs Mando Inalámbrico">
         <span id="inputModeIcon">👆</span> <span id="inputModeText">Touch Activo</span>
@@ -63,6 +64,10 @@
   <main id="appContainer">
     <!-- PANTALLA 1: HUB CENTRAL (Selector visual de 9 juegos) -->
     <section id="screen-hub" class="screen active">
+      <div class="hub-sky" aria-hidden="true">
+        <span class="sky-cloud c1"></span><span class="sky-cloud c2"></span><span class="sky-cloud c3"></span><span class="sky-cloud c4"></span>
+        <span class="sky-spark s1">✦</span><span class="sky-spark s2">✧</span><span class="sky-spark s3">✦</span><span class="sky-spark s4">✧</span><span class="sky-spark s5">✦</span>
+      </div>
       <div class="hub-header">
         <div class="cinna-mascot-box">
           <img src="cinnamoroll_sprite.png" class="cinna-mascot-img" alt="Cinnamoroll" width="180" height="96" fetchpriority="high" loading="eager" />
@@ -76,6 +81,7 @@
         <article class="game-card card-avatar" data-game="avatar">
           <div class="card-badge">🏡 ¡NUEVO!</div>
           <div class="card-illustration">
+            <img class="card-hero-img" src="assets/mocha_hq.png" alt="Mocha" loading="lazy" decoding="async" />
             <span class="card-hero-emoji">👗</span>
             <span class="card-deco deco-star">👑</span>
             <span class="card-deco deco-flower">🛋️</span>
@@ -89,6 +95,7 @@
         <article class="game-card card-flight" data-game="flight">
           <div class="card-badge">✨ Vuelo</div>
           <div class="card-illustration">
+            <img class="card-hero-img" src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" loading="lazy" decoding="async" />
             <span class="card-hero-emoji">✈️</span>
             <span class="card-deco deco-star">⭐</span>
             <span class="card-deco deco-cloud">☁️</span>
@@ -102,6 +109,7 @@
         <article class="game-card card-math" data-game="math">
           <div class="card-badge">🧁 Números</div>
           <div class="card-illustration">
+            <img class="card-hero-img" src="assets/milk_teddy.png" alt="Milk" loading="lazy" decoding="async" />
             <span class="card-hero-emoji">🍥</span>
             <span class="card-deco deco-cookie">🍪</span>
             <span class="card-deco deco-milk">🍼</span>
@@ -115,6 +123,7 @@
         <article class="game-card card-coloring" data-game="coloring">
           <div class="card-badge">🎨 Dibujo</div>
           <div class="card-illustration">
+            <img class="card-hero-img" src="assets/chiffon.png" alt="Chiffon" loading="lazy" decoding="async" />
             <span class="card-hero-emoji">🎨</span>
             <span class="card-deco deco-sparkle">✨</span>
             <span class="card-deco deco-flower">🌸</span>
@@ -128,6 +137,7 @@
         <article class="game-card card-memory" data-game="memory">
           <div class="card-badge">🃏 Memoria</div>
           <div class="card-illustration">
+            <img class="card-hero-img" src="assets/pompompurin_hq.png" alt="Pompompurin" loading="lazy" decoding="async" />
             <span class="card-hero-emoji">🃏</span>
             <span class="card-deco deco-star">⭐</span>
             <span class="card-deco deco-flower">💖</span>
@@ -141,6 +151,7 @@
         <article class="game-card card-platformer" data-game="platformer">
           <div class="card-badge">🏃 Aventura</div>
           <div class="card-illustration">
+            <img class="card-hero-img" src="cinnamoroll_sprite.png" alt="Cinnamoroll" loading="lazy" decoding="async" />
             <span class="card-hero-emoji">🪽</span>
             <span class="card-deco deco-star">⭐</span>
             <span class="card-deco deco-cookie">🍓</span>
@@ -154,6 +165,7 @@
         <article class="game-card card-doom" data-game="doom">
           <div class="card-badge">🍥 Mágico 3D</div>
           <div class="card-illustration">
+            <img class="card-hero-img" src="assets/milk_sitting.png" alt="Milk" loading="lazy" decoding="async" />
             <span class="card-hero-emoji">🐾</span>
             <span class="card-deco deco-star">🍥</span>
             <span class="card-deco deco-cookie">🍭</span>
@@ -167,6 +179,7 @@
         <article class="game-card card-writing" data-game="writing">
           <div class="card-badge">✏️ Escribir</div>
           <div class="card-illustration">
+            <img class="card-hero-img" src="assets/mocha_hq.png" alt="Mocha" loading="lazy" decoding="async" />
             <span class="card-hero-emoji">✏️</span>
             <span class="card-deco deco-star">🔤</span>
             <span class="card-deco deco-cookie">🍪</span>
@@ -180,6 +193,7 @@
         <article class="game-card card-puzzle" data-game="puzzle">
           <div class="card-badge">🧩 Lógica</div>
           <div class="card-illustration">
+            <img class="card-hero-img" src="assets/pompompurin_hq.png" alt="Pompompurin" loading="lazy" decoding="async" />
             <span class="card-hero-emoji">🧩</span>
             <span class="card-deco deco-star">⭐</span>
             <span class="card-deco deco-flower">🌸</span>
@@ -332,15 +346,16 @@
   <script src="js/peerjs.min.js"></script>
   <script src="js/qrcode.min.js"></script>
   <script src="js/audio.js?v=27"></script>
+  <script src="js/fx.js?v=29"></script>
   <script src="js/input.js?v=27"></script>
   <script src="js/controller-bridge.js?v=27"></script>
   <script src="js/character.js?v=27"></script>
-  <script src="js/game.js?v=27"></script>
+  <script src="js/game.js?v=29"></script>
   <script src="js/math.js?v=27"></script>
   <script src="js/coloring.js?v=27"></script>
   <script src="js/memory.js?v=27"></script>
-  <script src="js/platformer.js?v=27"></script>
-  <script src="js/doom.js?v=27"></script>
+  <script src="js/platformer.js?v=29"></script>
+  <script src="js/doom.js?v=29"></script>
   <script src="js/writing.js?v=27"></script>
   <script src="js/puzzle.js?v=27"></script>
   <script src="js/avatar-world.js?v=27"></script>
