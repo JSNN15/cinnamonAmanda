@@ -180,7 +180,11 @@
     }
 
     broadcastGameContext(ctx) {
-      this.lastContext = { ...ctx, players: this.getActivePlayersSummary() };
+      // Mientras se escribe el nombre, el celular muestra su teclado A-Z; al terminar vuelve al juego
+      this.lastGameContext = ctx;
+      const pn = window.Cinnamo?.playerName;
+      const shown = pn?.isOpen?.() ? { screen: 'name' } : ctx;
+      this.lastContext = { ...shown, playerName: pn?.get?.() || '', players: this.getActivePlayersSummary() };
       const payload = { type: 'context', ...this.lastContext };
       this.connections.forEach(conn => {
         if (conn && conn.open) {
@@ -215,8 +219,8 @@
                 assignedSlot: slot,
                 players: this.getActivePlayersSummary()
               });
-              if (this.lastContext) {
-                this.broadcastGameContext(this.lastContext);
+              if (this.lastGameContext || this.lastContext) {
+                this.broadcastGameContext(this.lastGameContext || this.lastContext);
               } else if (window.Cinnamo?.hub?.currentScreen) {
                 this.broadcastGameContext({ screen: window.Cinnamo.hub.currentScreen });
               }
@@ -606,6 +610,10 @@
         }
         return;
       }
+      if (data.type === 'nameKey') {
+        window.Cinnamo?.playerName?.pressKey?.(data.char);
+        return;
+      }
       if (data.type === 'writingKey') {
         if (window.Cinnamo?.writingGame?.pressLetterKey) {
           window.Cinnamo.writingGame.pressLetterKey(data.char);
@@ -779,6 +787,12 @@
 
     handleRemoteInput(btn, pressed, playerSlot = 1) {
       const screen = window.Cinnamo?.hub?.currentScreen || 'platformer';
+
+      // Pantalla "¿Cómo te llamas?": flechas mueven, A elige letra, B borra
+      if (window.Cinnamo?.playerName?.isOpen?.()) {
+        window.Cinnamo.playerName.handlePad(btn, pressed);
+        return;
+      }
 
       // Si hay un modal de victoria abierto en cualquier juego, permitir avanzar con Saltar/Dulce
       if (pressed && (btn === 'jump' || btn === 'treat')) {

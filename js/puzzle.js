@@ -610,7 +610,7 @@
       A.bellChime(500 + count * 45);
       A.sparkleChime();
 
-      const cheers = ['¡Excelente!', '¡Genial!', '¡Qué bien!', '¡Perfecto!', '¡Bravo Amanda!'];
+      const cheers = ['¡Excelente!', '¡Genial!', '¡Qué bien!', '¡Perfecto!', `¡Bravo ${cinnaName()}!`];
       if (count < total && count % 2 === 0) {
         this.speak(cheers[count % cheers.length]);
       }
@@ -661,7 +661,7 @@
       // Más piezas, más estrellas: 6→3, 9→4, 12→5, 16→6
       const puzzleStars = { 6: 3, 9: 4, 12: 5, 16: 6 }[this.pieceCountMode] || 3;
       window.Cinnamo?.passport?.addStars?.(puzzleStars, 'puzzle');
-      this.speak(`¡Hurra Amanda! ¡Completaste el rompecabezas de ${this.pieceCountMode} piezas de ${char.name} en ${this.timerSeconds} segundos!`);
+      this.speak(`¡Hurra ${cinnaName()}! ¡Completaste el rompecabezas de ${this.pieceCountMode} piezas de ${char.name} en ${this.timerSeconds} segundos!`);
 
       const modal = document.createElement('div');
       modal.className = 'w-victory-modal-overlay';
@@ -672,7 +672,7 @@
           <div class="w-victory-img-box">
             <img src="${char.imgSrc}" alt="${char.name}" style="border-radius: 16px; border: 3px solid #fbcfe8;" />
           </div>
-          <p>¡Amanda, tiempo récord: <strong>${timeStr}</strong>! ¡Eres una experta de la lógica en Cinnamoroll Land! 💖 ⭐⭐⭐</p>
+          <p>¡${cinnaName()}, tiempo récord: <strong>${timeStr}</strong>! ¡Tienes mente de detective en Cinnamoroll Land! 💖 ⭐⭐⭐</p>
           <div class="w-victory-actions">
             <button class="btn-w-next" id="btnNextPuzzleModal">▶ Siguiente Rompecabezas</button>
             <button class="btn-w-repeat" id="btnRepeatPuzzleModal">🔄 Jugar de nuevo</button>

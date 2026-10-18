@@ -350,7 +350,7 @@
             <div class="plat-city-modal-box">
               <div class="plat-modal-header">
                 <span class="plat-modal-badge">🌍 Gira Mundial de Sanrio por Ciudades ✈️</span>
-                <h2>¿A qué ciudad quieres viajar hoy, Amanda?</h2>
+                <h2>¿A qué ciudad quieres viajar hoy, ${cinnaName()}?</h2>
                 <button class="btn-plat-modal-close" id="btnCloseCityModal" aria-label="Cerrar modal">✕ Cerrar</button>
               </div>
               <div class="plat-cities-grid">
@@ -373,7 +373,7 @@
             <div class="plat-char-modal-box">
               <div class="plat-modal-header">
                 <span class="plat-modal-badge">✨ Elige a tu Amigo de Sanrio ✨</span>
-                <h2>¿Con quién quieres correr hoy, Amanda?</h2>
+                <h2>¿Con quién quieres correr hoy, ${cinnaName()}?</h2>
                 <button class="btn-plat-modal-close" id="btnCloseCharModal" aria-label="Cerrar modal">✕ Cerrar</button>
               </div>
               <div class="plat-heroes-select-grid">
@@ -396,7 +396,7 @@
           <div class="plat-victory-screen hidden" id="platVictoryScreen">
             <div class="plat-victory-card">
               <div class="victory-ribbon" id="platVictoryRibbon">🎉 ¡LLEGASTE A LA META EN ${city.name.toUpperCase()}! 🎉</div>
-              <h2 id="platVictoryTitle">¡Amanda completó ${city.name} con ${this.score} ${city.itemName}!</h2>
+              <h2 id="platVictoryTitle">¡${cinnaName()} completó ${city.name} con ${this.score} ${city.itemName}!</h2>
               
               <!-- Estrellas de evaluación -->
               <div class="plat-victory-stars" id="platVictoryStars">⭐⭐⭐</div>
@@ -1472,14 +1472,14 @@
         const btnNext = victoryScreen.querySelector('#btnPlatNextCity');
 
         if (ribbon) ribbon.textContent = `🎉 ¡LLEGASTE A LA META EN ${city.name.toUpperCase()}! 🎉`;
-        if (title) title.textContent = `¡Amanda completó ${city.name} con ${this.score} de ${city.totalItems} ${city.itemName}!`;
+        if (title) title.textContent = `¡${cinnaName()} completó ${city.name} con ${this.score} de ${city.totalItems} ${city.itemName}!`;
         if (msg) msg.textContent = `¡Los amigos de Sanrio están felices de haber viajado contigo a ${city.name}, ${city.country}! 💖`;
 
         const pct = this.score / city.totalItems;
         window.Cinnamo?.passport?.addStars?.(pct >= 0.8 ? 3 : pct >= 0.5 ? 2 : 1, 'platformer');
         if (starsEl) {
           if (pct >= 0.8) starsEl.textContent = '⭐⭐⭐ ¡Puntaje Perfecto!';
-          else if (pct >= 0.5) starsEl.textContent = '⭐⭐ ¡Súper Exploradora!';
+          else if (pct >= 0.5) starsEl.textContent = '⭐⭐ ¡Súper Aventura!';
           else starsEl.textContent = '⭐ ¡Buen Viaje!';
         }
         if (stampEl) stampEl.textContent = `SELLO OFICIAL: ${city.name.toUpperCase()} ✈️`;
@@ -3106,7 +3106,7 @@
       ctx.fillStyle = '#ffffff';
       ctx.font = '800 16px "Baloo 2", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`🎉 ¡BIENVENIDA A ${city.name.toUpperCase()} AMANDA! 🎉`, goalX + 60, 242);
+      ctx.fillText(`🎉 ¡${cinnaName().toUpperCase()} LLEGÓ A ${city.name.toUpperCase()}! 🎉`, goalX + 60, 242);
 
       // Guirnalda de banderines festivos
       for (let b = 0; b < 10; b++) {

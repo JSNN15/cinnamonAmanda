@@ -100,7 +100,7 @@
     ['spin', ['vuelta', 'gir', 'gira', 'girar', 'rueda', 'rodar', 'pirueta', 'spin', 'trompo', 'voltereta']],
     ['up', ['arriba', 'sub', 'sube', 'subir', 'vuel', 'vol', 'vuela', 'volar', 'alto', 'cielo', 'salta', 'saltar', 'trepa', 'up', 'ariba', 'ariva', 'arriva']],
     ['down', ['abaj', 'abajo', 'baj', 'baja', 'bajar', 'suelo', 'piso', 'cae', 'down']],
-    ['hello', ['hola', 'cinna', 'canel', 'amanda', 'chau', 'chao', 'hello', 'lindo', 'bebe', 'amigo']],
+    ['hello', ['hola', 'cinna', 'canel', 'chau', 'chao', 'hello', 'lindo', 'bebe', 'amigo']],
   ];
   const strip = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
@@ -189,8 +189,11 @@
       const words = strip(text).split(/[^a-zñ]+/);
       for (const w of words) {
         if (!w) continue;
+        // Decir el nombre del jugador también saluda
+        const playerKey = strip(window.Cinnamo?.playerName?.get?.() || '');
         for (const [action, keys] of COMMANDS) {
-          if (keys.some(k => w.startsWith(k) || k.startsWith(w) && w.length >= 3)) {
+          const allKeys = action === 'hello' && playerKey ? keys.concat(playerKey) : keys;
+          if (allKeys.some(k => w.startsWith(k) || k.startsWith(w) && w.length >= 3)) {
             hits.push(action);
             break;
           }
