@@ -1,4 +1,4 @@
-/* Service Worker para Cinnamoroll Land (Amanda)
+/* Service Worker para Cinnamoroll Land
  * Estrategia NETWORK-FIRST: siempre intenta traer la versión más nueva desde GitHub Pages
  * y sólo usa la caché como respaldo cuando no hay conexión. Así un despliegue nuevo
  * nunca queda "atrapado" detrás de archivos viejos en caché.
@@ -44,7 +44,8 @@ const CORE_ASSETS = [
   './js/puzzle.js',
   './js/avatar-world.js',
   './js/hub.js',
-  './js/passport.js'
+  './js/passport.js',
+  './js/player-name.js'
 ];
 
 self.addEventListener('install', (event) => {

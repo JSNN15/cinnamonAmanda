@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#b3e5fc" />
-  <title>🌸 Mando Amanda · Cinnamoroll Land</title>
+  <title>🌸 Mando Cinnamoroll · Cinnamoroll Land</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
@@ -624,6 +624,10 @@
       background: #e0f2fe;
     }
 
+    /* Teclado grande para escribir el nombre del jugador */
+    .name-remote-title { font-size: 16px; font-weight: 900; color: #db2777; text-align: center; }
+    .name-az-grid .btn-az-key { height: 44px; font-size: 19px; border-radius: 10px; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -631,7 +635,7 @@
   <div class="controller-container">
     <!-- Header Universal -->
     <header class="controller-header">
-      <div class="brand-title">🌸 <span class="brand-long-name">Mando Amanda</span></div>
+      <div class="brand-title">🌸 <span class="brand-long-name">Mando Cinnamoroll</span></div>
       <div class="header-actions">
         <button id="btnRoomBadge" class="room-badge-btn" title="Toca para cambiar código">
           Sala: <strong id="headerRoomText">----</strong> ✎
@@ -823,6 +827,15 @@
       </div>
 
       <!-- 7. MODO PALABRAS MÁGICAS (Modos + Paso Mágico + Teclado A-Z + Touchpad de Trazo) -->
+      <div id="layoutName" class="layout-panel-actions hidden" style="gap: 8px;">
+        <div class="name-remote-title">✨ ¿Cómo te llamas? Toca tus letras</div>
+        <div class="remote-az-grid name-az-grid" id="nameAzGrid"></div>
+        <div class="panel-btn-row" style="max-width: 410px; gap: 6px;">
+          <button class="btn-panel-action btn-panel-secondary" id="btnNameBack">⌫ Borrar</button>
+          <button class="btn-panel-action btn-panel-primary" id="btnNameOk" style="flex: 1.8;">✅ ¡Listo!</button>
+        </div>
+      </div>
+
       <div id="layoutWriting" class="layout-panel-actions hidden" style="gap: 5px;">
         <div class="remote-mini-pills" id="writingModeStrip">
           <button class="btn-mini-pill active" data-wmode="words">🍪 Palabras</button>
@@ -867,7 +880,7 @@
     <div class="coop-power-bar" id="coopPowerBar">
       <button id="btnCoopStarRain" class="btn-coop-power btn-coop-stars" title="Lanzar Lluvia de Estrellas en la TV">🌟 Lluvia</button>
       <button id="btnCoopShield" class="btn-coop-power btn-coop-shield" title="Activar Escudo de Algodón de Azúcar (8s)">🛡️ Escudo</button>
-      <button id="btnCoopCheer" class="btn-coop-power btn-coop-cheer" title="Enviar Porra Mágica a Amanda">💖 Ánimo</button>
+      <button id="btnCoopCheer" class="btn-coop-power btn-coop-cheer" title="Enviar Porra Mágica">💖 Ánimo</button>
       <button id="btnCoopPassport" class="btn-coop-power btn-coop-passport" title="Ver Pasaporte de Stickers en TV">🏅 Stickers</button>
     </div>
 
@@ -1234,6 +1247,7 @@
       const layoutPuzzle = document.getElementById('layoutPuzzle');
       const layoutColoring = document.getElementById('layoutColoring');
       const layoutWriting = document.getElementById('layoutWriting');
+      const layoutName = document.getElementById('layoutName');
       const actionCityStrip = document.getElementById('actionCityStrip');
       const avatarActionStrip = document.getElementById('avatarActionStrip');
 
@@ -1291,18 +1305,53 @@
         });
       }
 
+      // Teclado A-Z + Ñ para escribir el nombre del jugador en la TV
+      const nameAzGrid = document.getElementById('nameAzGrid');
+      if (nameAzGrid) {
+        nameAzGrid.innerHTML = 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('').map(ch => `
+          <button class="btn-az-key" data-char="${ch}">${ch}</button>
+        `).join('');
+        nameAzGrid.querySelectorAll('.btn-az-key').forEach(btn => {
+          btn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            playHapticBeep(650);
+            sendData({ type: 'nameKey', char: btn.dataset.char });
+          });
+        });
+      }
+      [['btnNameBack', 'BACK', 420], ['btnNameOk', 'OK', 880]].forEach(([id, ch, hz]) => {
+        const b = document.getElementById(id);
+        if (b) b.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          playHapticBeep(hz);
+          sendData({ type: 'nameKey', char: ch });
+        });
+      });
+
       function handleGameContext(ctx) {
         if (!ctx) return;
         window.currentContext = ctx;
         const screen = ctx.screen || 'platformer';
         currentScreenMode = screen;
 
-        [layoutAction, layoutMath, layoutHub, layoutMemory, layoutPuzzle, layoutColoring, layoutWriting].forEach(el => {
+        if (ctx.playerName) {
+          const brandName = document.querySelector('.brand-long-name');
+          if (brandName) brandName.textContent = `Mando de ${ctx.playerName}`;
+          const cheerBtn = document.getElementById('btnCoopCheer');
+          if (cheerBtn) cheerBtn.title = `Enviar Porra Mágica a ${ctx.playerName}`;
+        }
+
+        [layoutAction, layoutMath, layoutHub, layoutMemory, layoutPuzzle, layoutColoring, layoutWriting, layoutName].forEach(el => {
           if (el) el.classList.add('hidden');
         });
 
+        // 0. PANTALLA "¿CÓMO TE LLAMAS?" (teclado grande de letras)
+        if (screen === 'name') {
+          layoutName.classList.remove('hidden');
+          footerLabel.textContent = '✨ Tu nombre';
+
         // 1. MODO MATEMÁTICAS / PASTELERÍA
-        if (screen === 'math') {
+        } else if (screen === 'math') {
           layoutMath.classList.remove('hidden');
           footerLabel.textContent = '🧁 Pastelería';
           if (ctx.question) mathRemoteQuestion.textContent = ctx.question;

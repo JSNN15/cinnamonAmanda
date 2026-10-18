@@ -18,6 +18,20 @@
   const { audio: A } = window.Cinnamo;
 
   const WORDS = [
+    // ⭐ PRIMERA PALABRA: el nombre de quien juega (lo escribió al entrar)
+    {
+      id: 'mi-nombre',
+      tier: '5-6',
+      catName: '⭐ Mi Nombre',
+      get word() { return (window.Cinnamo?.playerName?.upper?.() || 'PEQUE'); },
+      get letters() { return this.word.split(''); },
+      get phonetic() { return window.cinnaName ? cinnaName() : 'Peque'; },
+      icon: '⭐',
+      img: 'assets/cinnamoroll_fly.png',
+      get desc() { return `¡${window.cinnaName ? cinnaName() : 'Peque'}, así se escribe tu nombre!`; },
+      color: '#ec4899',
+      bgGrad: 'linear-gradient(135deg, #fdf2f8, #fbcfe8)'
+    },
     // 🎀 NIVEL 1 (5-6 años): Vocabulario Afectivo y Fonético Básico
     {
       id: 'mama',
@@ -112,19 +126,6 @@
     },
 
     // ⭐ NIVEL 2 (6-7 años): Palabras Medianas y Amigos de Sanrio
-    {
-      id: 'amanda',
-      tier: '6-7',
-      catName: '👑 Princesa',
-      word: 'AMANDA',
-      letters: ['A', 'M', 'A', 'N', 'D', 'A'],
-      phonetic: 'A - man - da',
-      icon: '👑',
-      img: 'assets/cinnamoroll_fly.png',
-      desc: '¡Amanda, la niña más alegre, dulce y brillante!',
-      color: '#ec4899',
-      bgGrad: 'linear-gradient(135deg, #fdf2f8, #fbcfe8)'
-    },
     {
       id: 'chiffon',
       tier: '6-7',
@@ -253,7 +254,7 @@
       phonetic: 'A - mis - tad',
       icon: '🤝',
       img: 'assets/cinnamoroll_fly.png',
-      desc: '¡El lazo más lindo entre Cinnamoroll, Amanda y sus amigos!',
+      desc: '¡El lazo más lindo entre Cinnamoroll, tú y tus amigos!',
       color: '#10b981',
       bgGrad: 'linear-gradient(135deg, #ecfdf5, #a7f3d0)'
     }
@@ -263,11 +264,11 @@
   const SENTENCES = [
     {
       id: 's1',
-      phrase: 'AMANDA VUELA CON CINNAMOROLL',
-      words: ['AMANDA', 'VUELA', 'CON', 'CINNAMOROLL'],
+      get phrase() { return this.words.join(' '); },
+      get words() { return [(window.Cinnamo?.playerName?.upper?.() || 'PEQUE'), 'VUELA', 'CON', 'CINNAMOROLL']; },
       icon: '🪽',
       img: 'assets/cinnamoroll_fly.png',
-      desc: '¡Amanda y Cinnamoroll planean juntos sobre las nubes!'
+      get desc() { return `¡${window.cinnaName ? cinnaName() : 'Peque'} y Cinnamoroll planean juntos sobre las nubes!`; }
     },
     {
       id: 's2',
@@ -1159,7 +1160,7 @@
               <canvas id="traceCanvas" width="460" height="340" class="trace-canvas"></canvas>
               <div id="traceCelebrationBanner" class="trace-celebration-banner hidden">
                 <div class="banner-text-box">
-                  <div class="banner-title" id="bannerTitleText">🎉 ¡Increíble Amanda! ⭐⭐⭐</div>
+                  <div class="banner-title" id="bannerTitleText">🎉 ¡Increíble ${cinnaName()}! ⭐⭐⭐</div>
                   <div class="banner-sub" id="bannerSubText">Letra trazada con éxito</div>
                 </div>
                 <button class="btn-banner-next" id="btnBannerNextTrace">Siguiente Letra 🌸</button>
@@ -1918,7 +1919,7 @@
       const list = this.getFilteredWords();
       const w = list[this.currentWordIdx] || WORDS[0];
       A.celebrate();
-      this.speak(`¡Excelente Amanda! ¡Completaste la palabra ${w.word}!`);
+      this.speak(`¡Excelente ${cinnaName()}! ¡Completaste la palabra ${w.word}!`);
 
       const modal = document.createElement('div');
       modal.className = 'w-victory-modal-overlay';
@@ -1929,7 +1930,7 @@
           <div class="w-victory-img-box">
             <img src="${w.img}" alt="${w.word}" />
           </div>
-          <p>¡Amanda, eres una campeona de las palabras en Cinnamoroll Land! ✨</p>
+          <p>¡${cinnaName()}, eres una estrella de las palabras en Cinnamoroll Land! ✨</p>
           <div class="w-victory-actions">
             <button class="btn-w-next" id="btnNextWordModal">▶ Siguiente Palabra</button>
             <button class="btn-w-repeat" id="btnRepeatWordModal">🔄 Repetir</button>
@@ -1959,7 +1960,7 @@
     triggerSentenceVictory() {
       const s = SENTENCES[this.currentSentenceIdx];
       A.celebrate();
-      this.speak(`¡Maravilloso Amanda! ¡Leíste y ordenaste la frase: ${s.phrase}!`);
+      this.speak(`¡Maravilloso ${cinnaName()}! ¡Leíste y ordenaste la frase: ${s.phrase}!`);
 
       const modal = document.createElement('div');
       modal.className = 'w-victory-modal-overlay';
@@ -1970,7 +1971,7 @@
           <div class="w-victory-img-box">
             <img src="${s.img}" alt="${s.phrase}" />
           </div>
-          <p>¡Amanda, qué gran lectora y escritora eres! 💖</p>
+          <p>¡${cinnaName()}, cómo lees y escribes de bien! 💖</p>
           <div class="w-victory-actions">
             <button class="btn-w-next" id="btnNextSentenceModal">▶ Siguiente Frase</button>
             <button class="btn-w-repeat" id="btnRepeatSentenceModal">🔄 Repetir</button>
@@ -2240,12 +2241,12 @@
           if (starsText) starsText.textContent = '⭐⭐⭐ ¡Completado!';
           if (btnNext) btnNext.classList.remove('hidden');
           if (banner) {
-            if (bannerTitle) bannerTitle.textContent = '🎉 ¡Increíble Amanda! ⭐⭐⭐';
+            if (bannerTitle) bannerTitle.textContent = `🎉 ¡Increíble ${cinnaName()}! ⭐⭐⭐`;
             if (bannerSub) bannerSub.innerHTML = `Trazaste la letra <strong>${char}</strong> con un <strong>${pct}%</strong> de acierto`;
             banner.classList.remove('hidden');
           }
-          if (guideHint) guideHint.innerHTML = '✨ ¡Excelente Amanda! Presiona Siguiente Letra 🌸';
-          this.speak(`¡Excelente Amanda! Trazaste la letra ${char}`);
+          if (guideHint) guideHint.innerHTML = `✨ ¡Excelente ${cinnaName()}! Presiona Siguiente Letra 🌸`;
+          this.speak(`¡Excelente ${cinnaName()}! Trazaste la letra ${char}`);
         } else if (!this.traceCompleted && guideHint) {
           // Si soltó el dedo pero no ha terminado la letra, dar pista clara y motivadora
           const unreachedPoints = pixelPoints.filter(pt => !pt.covered);
@@ -2258,7 +2259,7 @@
             guideHint.innerHTML = '✍️ ¡Casi listo! Falta trazar el tilde arriba 🌸';
           } else if (unreachedPoints.length > 0) {
             const nextPt = unreachedPoints[0];
-            guideHint.innerHTML = `✍️ ¡Vas muy bien Amanda! Continúa hacia el punto <strong>${nextPt.n}</strong> 💖`;
+            guideHint.innerHTML = `✍️ ¡Vas muy bien ${cinnaName()}! Continúa hacia el punto <strong>${nextPt.n}</strong> 💖`;
           } else {
             guideHint.innerHTML = '✍️ ¡Casi perfecto! Completa un poco más las líneas ⭐';
           }

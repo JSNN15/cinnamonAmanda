@@ -165,7 +165,7 @@
         <div class="doom-char-select-wrap">
           <div class="char-select-header">
             <span class="select-badge">✨ Elige a tu Repartidor Mágico ✨</span>
-            <h1>¿Con quién quieres jugar hoy, Amanda?</h1>
+            <h1>¿Con quién quieres jugar hoy, ${cinnaName()}?</h1>
             <p>¡Elige a tu personaje favorito para repartir dulces a todos sus amigos!</p>
           </div>
 
@@ -294,7 +294,7 @@
               <h2>¡Todos los amigos están felices y llenitos!</h2>
               <div class="victory-hero-celebrate">
                 <img src="${hero.imgSrc}" alt="${hero.name}" />
-                <h3>¡Gran trabajo, ${hero.name} y Amanda!</h3>
+                <h3>¡Gran trabajo, ${hero.name} y ${cinnaName()}!</h3>
               </div>
               <button class="btn-doom-replay" id="btnDoomReplay">▶ ¡Repartir dulces otra vez!</button>
             </div>
@@ -973,7 +973,7 @@
               }
 
               // C. BURBUJA 3D DE DIÁLOGO ADAPTADA
-              const bubbleText = fr.hungry ? fr.phrase : '¡Ñam ñam! ¡Gracias Amanda! 💖';
+              const bubbleText = fr.hungry ? fr.phrase : `¡Ñam ñam! ¡Gracias ${cinnaName()}! 💖`;
               const bubbleFontSize = Math.min(15, Math.max(11, Math.floor(spriteH * 0.085)));
               ctx.font = `800 ${bubbleFontSize}px "Baloo 2", sans-serif`;
               ctx.textAlign = 'center';

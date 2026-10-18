@@ -145,7 +145,7 @@
       case 'hello':
         setMood('happy', 1.4); S.p.wiggle = 1.4;
         burst(px, playToY(S.p.y) - size * 0.4, 8, ['#ff8fbf', '#ffb3d1'], 120, 'heart');
-        floatText(px, playToY(S.p.y) - size * 0.45, '¡Hola Amanda! 💖');
+        floatText(px, playToY(S.p.y) - size * 0.45, `¡Hola ${cinnaName()}! 💖`);
         A.kawaiiChirp('cheer');
         break;
     }
