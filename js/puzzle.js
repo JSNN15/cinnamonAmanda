@@ -658,6 +658,9 @@
       const timeStr = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 
       A.celebrate();
+      // Más piezas, más estrellas: 6→3, 9→4, 12→5, 16→6
+      const puzzleStars = { 6: 3, 9: 4, 12: 5, 16: 6 }[this.pieceCountMode] || 3;
+      window.Cinnamo?.passport?.addStars?.(puzzleStars, 'puzzle');
       this.speak(`¡Hurra Amanda! ¡Completaste el rompecabezas de ${this.pieceCountMode} piezas de ${char.name} en ${this.timerSeconds} segundos!`);
 
       const modal = document.createElement('div');

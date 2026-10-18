@@ -231,6 +231,7 @@
           second.el.classList.add('matched');
 
           this.matchedPairs++;
+          window.Cinnamo?.passport?.addStars?.(1, 'memory');
           const counter = this.container.querySelector('#matchedCount');
           if (counter) counter.textContent = this.matchedPairs;
 
@@ -258,6 +259,7 @@
 
     triggerVictory() {
       A.celebrate();
+      window.Cinnamo?.passport?.addStars?.(3, 'memory');
       const numPairs = this.difficulty / 2;
 
       const modal = document.createElement('div');

@@ -172,6 +172,7 @@
     for (let i = 0; i < 4; i++) burst(rand(W * 0.2, W * 0.8), rand(H * 0.1, H * 0.4), 40,
       ['#ff8fbf', '#9fd3ff', '#ffe066', '#b9a6ff', '#9be3c1', '#fff'], 380, 'confetti');
     A.celebrate();
+    window.Cinnamo?.passport?.addStars?.(2, 'flight');
     setMood('happy', 3); S.p.spinT = 0.8;
     const el = $('cheer');
     el.textContent = CHEERS[(Math.random() * CHEERS.length) | 0];
