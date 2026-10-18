@@ -12,11 +12,11 @@
   const STICKERS_CATALOG = [
     {
       id: 'welcome_amanda',
-      name: 'Bienvenida Amanda',
+      get name() { return `¡Hola, ${window.cinnaName ? cinnaName() : 'Peque'}!`; },
       game: 'hub',
       icon: '👑',
       img: 'assets/cinnamoroll_fly.png',
-      desc: '¡Exploradora Oficial de Cinnamoroll Land!',
+      desc: '¡Pase oficial de Cinnamoroll Land!',
       starsReq: 0
     },
     {
@@ -30,7 +30,7 @@
     },
     {
       id: 'master_baker',
-      name: 'Maestra Pastelera',
+      name: 'Pastelería Mágica',
       game: 'math',
       icon: '🧁',
       img: 'assets/milk_teddy.png',
@@ -48,7 +48,7 @@
     },
     {
       id: 'memory_queen',
-      name: 'Reina de la Memoria',
+      name: 'Memoria de Estrella',
       game: 'memory',
       icon: '🃏',
       img: 'assets/pompompurin_hq.png',
@@ -57,7 +57,7 @@
     },
     {
       id: 'world_runner',
-      name: 'Viajera del Mundo',
+      name: 'Vuelta al Mundo',
       game: 'platformer',
       icon: '🏃',
       img: 'assets/chiffon.png',
@@ -66,7 +66,7 @@
     },
     {
       id: 'castle_angel',
-      name: 'Embajadora Dulce 3D',
+      name: 'Reparto Dulce 3D',
       game: 'doom',
       icon: '🏰',
       img: 'assets/milk_sitting.png',
@@ -75,7 +75,7 @@
     },
     {
       id: 'magic_writer',
-      name: 'Escritora de Sueños',
+      name: 'Pluma de Sueños',
       game: 'writing',
       icon: '✍️',
       img: 'assets/puzzle_mocha.png',
@@ -84,7 +84,7 @@
     },
     {
       id: 'puzzle_genius',
-      name: 'Genia de los Puzzles',
+      name: 'Mente de los Puzzles',
       game: 'puzzle',
       icon: '🧩',
       img: 'assets/puzzle_purin.png',
@@ -346,7 +346,7 @@
           <button id="btnClosePassportModal" class="modal-close-btn" aria-label="Cerrar">✕</button>
           <div class="modal-header">
             <span class="modal-icon">🏅</span>
-            <h2>Pasaporte Mágico de Amanda</h2>
+            <h2>Pasaporte Mágico de ${cinnaName()}</h2>
           </div>
           <p class="modal-desc" style="margin-bottom:6px;">
             ¡Colecciona estrellas jugando o en modo Cooperativo con tu celular para desbloquear todos los Stickers brillantes!
@@ -556,7 +556,7 @@
             got: false
           });
         }
-        this.showCoopBanner('🌟 ¡Lluvia Cooperativa de Estrellas para Amanda! (+6 ⭐)', 2800);
+        this.showCoopBanner(`🌟 ¡Lluvia Cooperativa de Estrellas para ${cinnaName()}! (+6 ⭐)`, 2800);
       } else if (screen === 'platformer' && window.Cinnamo?.platformerGame) {
         const plat = window.Cinnamo.platformerGame;
         plat.coins = (plat.coins || 0) + 5;
@@ -581,7 +581,7 @@
         });
         this.showCoopBanner('🌟 ¡Ayuda Cooperativa contando los dulces! 🧁', 2800);
       } else {
-        this.showCoopBanner('🌟 ¡Lluvia Mágica de Estrellas! (+5 ⭐ al Pasaporte de Amanda)', 2800);
+        this.showCoopBanner(`🌟 ¡Lluvia Mágica de Estrellas! (+5 ⭐ al Pasaporte de ${cinnaName()})`, 2800);
       }
     }
 
@@ -628,7 +628,7 @@
         if (doom.shootTreat) doom.shootTreat();
         this.showCoopBanner('🛡️ ¡Aura de Dulzura Protectora en el Castillo 3D! 💖', 3200);
       } else {
-        this.showCoopBanner('🛡️ ¡Burbuja Mágica de Algodón de Azúcar para Amanda! ✨', 3200);
+        this.showCoopBanner(`🛡️ ¡Burbuja Mágica de Algodón de Azúcar para ${cinnaName()}! ✨`, 3200);
       }
     }
 
@@ -643,9 +643,9 @@
       this.spawnScreenStars(['💖', '🌸', '🎉', '👑', '⭐'], 14);
 
       const phrases = [
-        '💖 ¡Vamos Amanda, lo estás haciendo increíble! 🌟',
-        '🎉 ¡Súper Equipo Cinnamoroll y Amanda! 👑',
-        '🌸 ¡Brillas como una estrella, campeona Amanda! ✨'
+        `💖 ¡Vamos ${cinnaName()}, lo estás haciendo increíble! 🌟`,
+        `🎉 ¡Súper Equipo Cinnamoroll y ${cinnaName()}! 👑`,
+        `🌸 ¡Brillas como una estrella, ${cinnaName()}! ✨`
       ];
       const msg = phrases[this.state.coopUses % phrases.length];
       this.showCoopBanner(msg, 3200);
@@ -653,7 +653,7 @@
       if ('speechSynthesis' in window) {
         try {
           window.speechSynthesis.cancel();
-          const u = new SpeechSynthesisUtterance('¡Vamos Amanda, tú puedes campeona!');
+          const u = new SpeechSynthesisUtterance(`¡Vamos ${cinnaName()}, tú puedes!`);
           u.lang = 'es-ES';
           u.pitch = 1.28;
           window.speechSynthesis.speak(u);

@@ -271,7 +271,7 @@
           <div class="w-victory-img-box">
             <img src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" />
           </div>
-          <p>¡Amanda, tienes una memoria de campeona! 💖 ⭐⭐⭐</p>
+          <p>¡${cinnaName()}, tienes una memoria de estrella! 💖 ⭐⭐⭐</p>
           <div class="w-victory-actions">
             <button class="btn-w-next" id="btnPlayAgainMemory">▶ Jugar Otra Vez</button>
           </div>

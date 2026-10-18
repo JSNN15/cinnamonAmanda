@@ -326,7 +326,7 @@
 
       return `
         <details class="parents math-parents" id="mathParents" ${this.parentsOpen ? 'open' : ''}>
-          <summary>👨‍👩‍👧 Para papás: progreso de Amanda</summary>
+          <summary>👨‍👩‍👧 Para papás: progreso de ${cinnaName()}</summary>
           <div class="math-parents-body">
             <div class="math-progress-table-wrap">
               <table class="math-progress-table">
@@ -476,7 +476,7 @@
       if (autoToggle) autoToggle.addEventListener('change', (e) => this.setAuto(e.currentTarget.checked));
       const resetBtn = this.container.querySelector('#mathResetProgress');
       if (resetBtn) resetBtn.addEventListener('click', () => {
-        if (window.confirm('¿Borrar todo el progreso de matemáticas de Amanda?')) this.resetProgress();
+        if (window.confirm(`¿Borrar todo el progreso de matemáticas de ${cinnaName()}?`)) this.resetProgress();
       });
 
       // Cambio de modo
@@ -564,7 +564,7 @@
       if (cinna) cinna.classList.add('party-jump');
       if (milk) milk.classList.add('party-jump');
 
-      if (milkBubble) milkBubble.innerHTML = '¡Siii, contaste muy bien Amanda! 💖';
+      if (milkBubble) milkBubble.innerHTML = `¡Siii, contaste muy bien ${cinnaName()}! 💖`;
       if (cinnaBubble) cinnaBubble.innerHTML = '¡Eres una gran pastelera! 🌟';
 
       const activeTreats = this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)');
@@ -591,7 +591,7 @@
       const cinnaBubble = this.container.querySelector('#cinnaBubble');
       const tray = this.container.querySelector('#trayContainer');
 
-      if (cinnaBubble) cinnaBubble.innerHTML = '¿Estás segura Amanda? 🤔';
+      if (cinnaBubble) cinnaBubble.innerHTML = `¿Contamos otra vez, ${cinnaName()}? 🤔`;
       if (milkBubble) milkBubble.innerHTML = '¡Toquemos los dulces para contar juntas! 👆';
       if (tray) tray.classList.add('highlight-tray');
 
@@ -612,7 +612,7 @@
       const totalDelay = (allActive.length + 1) * 350 + 600;
       const tEnd = setTimeout(() => {
         if (cinnaBubble) cinnaBubble.innerHTML = `¡Hay <strong>${this.total}</strong> en total! 🌸`;
-        if (milkBubble) milkBubble.innerHTML = `¡Elige el número <strong>${this.total}</strong> Amanda! ✨`;
+        if (milkBubble) milkBubble.innerHTML = `¡Elige el número <strong>${this.total}</strong>, ${cinnaName()}! ✨`;
         if (tray) tray.classList.remove('highlight-tray');
         this.isCountingHelpActive = false;
         btnEl.classList.remove('wobble');
@@ -627,12 +627,12 @@
       modal.className = 'w-victory-modal-overlay';
       modal.innerHTML = `
         <div class="w-victory-card">
-          <div class="w-victory-badge">🧁 ¡MAESTRA PASTELERA DE SANRIO! 🧁</div>
+          <div class="w-victory-badge">🧁 ¡PASTELERÍA MAESTRA DE SANRIO! 🧁</div>
           <h2 style="color: #ea580c">¡Completaste tus 5 pedidos!</h2>
           <div class="w-victory-img-box">
             <img src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" />
           </div>
-          <p>¡Amanda, eres una campeona de los números en Cinnamoroll Land! 💖 ⭐⭐⭐</p>
+          <p>¡${cinnaName()}, eres una estrella de los números en Cinnamoroll Land! 💖 ⭐⭐⭐</p>
           <div class="w-victory-actions">
             <button class="btn-w-next" id="btnNextMathParty">▶ Seguir Horneando</button>
           </div>

@@ -548,10 +548,10 @@
       expCtx.fillStyle = '#7a523a';
       expCtx.font = 'bold 15px "Baloo 2", cursive, sans-serif';
       expCtx.textAlign = 'right';
-      expCtx.fillText('✨ Obra de Arte de Amanda • Cinnamoroll Land', exportCanvas.width - 20, exportCanvas.height - 16);
+      expCtx.fillText(`✨ Obra de Arte de ${cinnaName()} • Cinnamoroll Land`, exportCanvas.width - 20, exportCanvas.height - 16);
 
       const a = document.createElement('a');
-      a.download = `Dibujo_Amanda_${this.currentSheet.id}.png`;
+      a.download = `Dibujo_${cinnaName().replace(/[^A-Za-zÑñ]/g, '')}_${this.currentSheet.id}.png`;
       a.href = exportCanvas.toDataURL('image/png');
       a.click();
     }
