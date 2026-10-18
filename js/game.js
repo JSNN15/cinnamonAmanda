@@ -297,6 +297,24 @@
     }
     ctx.globalAlpha = 1;
 
+    // arcoíris suave de día
+    if (th.sun > 0.01) {
+      const rcx = W * 0.58, rcy = H * 1.02, rr = Math.max(W, H) * 0.62, band = Math.max(8, H * 0.018);
+      const RAINBOW = ['#ff9ec4', '#ffc58f', '#fff09a', '#a8f0c0', '#9fd0ff', '#c9b5ff'];
+      ctx.globalAlpha = th.sun * 0.32;
+      ctx.lineWidth = band;
+      RAINBOW.forEach((c, i) => {
+        ctx.strokeStyle = c;
+        ctx.beginPath(); ctx.arc(rcx, rcy, rr - i * band, Math.PI, Math.PI * 2); ctx.stroke();
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    // colinas lejanas con paralaje (dan profundidad al vuelo)
+    const speed = S.mode === 'play' ? 1 : 0.35;
+    hills(H * 0.8, H * 0.1, W * 0.55, S.t * 14 * speed, 'rgba(255,255,255,0.22)');
+    hills(H * 0.86, H * 0.08, W * 0.38, S.t * 26 * speed, 'rgba(255,255,255,0.3)');
+
     // nubes (lejanas → cercanas)
     for (const c of S.clouds) if (c.far) cloud(c.x, c.y, c.s, th.cloud, 0.6);
     for (const c of S.clouds) if (!c.far) cloud(c.x, c.y, c.s, th.cloud, 0.9);
@@ -338,6 +356,19 @@
 
     // partículas
     for (const q of S.parts) drawPart(q);
+  }
+
+  function hills(baseY, amp, wave, off, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, H);
+    for (let x = 0; x <= W + 20; x += 20) {
+      const k = (x + off) / wave * Math.PI * 2;
+      ctx.lineTo(x, baseY - amp * (0.6 + 0.4 * Math.sin(k)) - amp * 0.25 * Math.sin(k * 2.3));
+    }
+    ctx.lineTo(W, H);
+    ctx.closePath();
+    ctx.fill();
   }
 
   const PUFFS = [[0, 0, 1], [-0.95, 0.25, 0.7], [0.95, 0.25, 0.75], [-0.4, -0.4, 0.7], [0.45, -0.35, 0.65]];
