@@ -707,7 +707,8 @@
       // 1. Cielo pastel suave con nubes flotantes
       const skyGrad = ctx.createLinearGradient(0, 0, 0, VH / 2);
       skyGrad.addColorStop(0, '#7ec8f8');
-      skyGrad.addColorStop(1, '#e3f3ff');
+      skyGrad.addColorStop(0.7, '#d9eeff');
+      skyGrad.addColorStop(1, '#ffe2f0');
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, VW, VH / 2);
 
@@ -724,8 +725,9 @@
 
       // 2. Suelo con perspectiva y baldosas de pastelería
       const floorGrad = ctx.createLinearGradient(0, VH / 2, 0, VH);
-      floorGrad.addColorStop(0, '#ffd8ea');
-      floorGrad.addColorStop(1, '#ffbedc');
+      floorGrad.addColorStop(0, '#ffe2f0');
+      floorGrad.addColorStop(0.35, '#ffd3e7');
+      floorGrad.addColorStop(1, '#ffb9d9');
       ctx.fillStyle = floorGrad;
       ctx.fillRect(0, VH / 2, VW, VH / 2);
 
@@ -831,11 +833,6 @@
           mortarColor = '#60c993';
         }
 
-        // Sombreado direccional de caras 3D (Caras Norte/Sur con sombreado 0.72x)
-        const faceShade = (side === 1) ? 0.72 : 1.0;
-        const distShade = Math.max(0.35, 1 - (correctDist / 14));
-        const finalShade = faceShade * distShade;
-
         ctx.fillStyle = baseColor;
         ctx.fillRect(colX, topY, colW, wallH);
 
@@ -881,9 +878,15 @@
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(colX, topY, colW, crownH);
 
-        // Sombra de profundidad en muro
-        if (finalShade < 0.98) {
-          ctx.fillStyle = `rgba(30, 20, 45, ${1 - finalShade})`;
+        // Sombreado suave de la cara lateral (sin oscurecer los colores pastel)
+        if (side === 1) {
+          ctx.fillStyle = 'rgba(120, 60, 120, 0.14)';
+          ctx.fillRect(colX, topY, colW, wallH);
+        }
+        // Niebla mágica rosada a la distancia en lugar de oscuridad
+        const fog = Math.min(0.78, Math.max(0, (correctDist - 1.2) / 9));
+        if (fog > 0.01) {
+          ctx.fillStyle = `rgba(255, 226, 240, ${fog})`;
           ctx.fillRect(colX, topY, colW, wallH);
         }
       }

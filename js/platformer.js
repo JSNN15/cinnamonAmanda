@@ -2738,9 +2738,29 @@
           }
           ctx.fill();
 
-          // Base del suelo
+          // Base del suelo con volumen: luz arriba, sombra abajo y piedritas redondas
+          const baseTop = plat.y + 24;
           ctx.fillStyle = city.groundBase;
-          ctx.fillRect(plat.x, plat.y + 24, plat.w, plat.h);
+          ctx.fillRect(plat.x, baseTop, plat.w, plat.h);
+          const vol = ctx.createLinearGradient(0, baseTop, 0, baseTop + plat.h);
+          vol.addColorStop(0, 'rgba(255, 255, 255, 0.22)');
+          vol.addColorStop(0.45, 'rgba(255, 255, 255, 0)');
+          vol.addColorStop(1, 'rgba(40, 20, 50, 0.22)');
+          ctx.fillStyle = vol;
+          ctx.fillRect(plat.x, baseTop, plat.w, plat.h);
+
+          ctx.fillStyle = 'rgba(40, 20, 50, 0.14)';
+          ctx.fillRect(plat.x, baseTop, plat.w, 6);
+
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+          for (let row = 0; row * 30 + 26 < plat.h; row++) {
+            const py = baseTop + 22 + row * 30;
+            for (let bx = plat.x + 18 + (row % 2) * 26; bx < plat.x + plat.w - 10; bx += 52) {
+              ctx.beginPath();
+              ctx.ellipse(bx, py, 9 - (row % 3) * 2, 5 - (row % 3), 0, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
 
         } else if (plat.type === 'teleferico') {
           // Cabina del teleférico de Santiago como plataforma móvil
