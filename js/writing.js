@@ -261,6 +261,8 @@
   ];
 
   // 📖 FRASES MÁGICAS PARA 6 A 8 AÑOS
+  const ALPHABET = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','Ñ','O','P','Q','R','S','T','U','V','W','X','Y','Z','Á','É','Í','Ó','Ú'];
+
   const SENTENCES = [
     {
       id: 's1',
@@ -755,7 +757,7 @@
   class WritingWorkshopGame {
     constructor() {
       this.container = null;
-      this.currentTier = 'all'; // '5-6', '6-7', '7-8', 'all'
+      this.currentTier = '5-6'; // '5-6', '6-7', '7-8', 'all' (parte en kínder; se recuerda mientras la web esté abierta)
       this.currentWordIdx = 0;
       this.currentSentenceIdx = 0;
       this.currentMode = 'montessori'; // 'montessori', 'sentences', 'trace', 'free'
@@ -779,7 +781,6 @@
 
     init(containerEl) {
       this.container = containerEl;
-      this.currentTier = 'all';
       this.currentWordIdx = 0;
       this.currentSentenceIdx = 0;
       this.currentMode = 'montessori';
@@ -2396,11 +2397,11 @@
         try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
         A.unlock();
         drawing = true;
-        const p = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(p.x, p.y);
+        lastPt = getPos(e);
       };
 
+      // Cada movimiento dibuja solo su tramo: así la pizarra no se pone lenta con trazos largos
+      let lastPt = null;
       canvas.onpointermove = (e) => {
         if (!drawing) return;
         e.preventDefault();
@@ -2413,8 +2414,11 @@
         ctx.shadowColor = this.brushColor;
         ctx.shadowBlur = 6;
 
+        ctx.beginPath();
+        ctx.moveTo(lastPt ? lastPt.x : p.x, lastPt ? lastPt.y : p.y);
         ctx.lineTo(p.x, p.y);
         ctx.stroke();
+        lastPt = p;
       };
 
       const stop = (e) => {
@@ -2440,54 +2444,54 @@
           return;
         }
       }
-      if (this.mode === 'trace') {
-        const curChar = this.customTraceChar || (this.getFilteredWords()[this.currentWordIdx]?.word[0]) || 'A';
+      if (this.currentMode === 'trace') {
+        const curChar = this.getCurrentTraceChar ? this.getCurrentTraceChar() : (this.customTraceChar || 'A');
         const idx = Math.max(0, ALPHABET.indexOf(curChar));
         this.customTraceChar = ALPHABET[(idx + 1) % ALPHABET.length];
         this.traceProgress = 0;
         this.traceDone = false;
         this.render();
         this.speak(`Letra ${this.customTraceChar}`);
-      } else if (this.mode === 'sentences') {
-        const sents = SENTENCES_DATA[this.ageTier] || SENTENCES_DATA['5-6'];
+      } else if (this.currentMode === 'sentences') {
+        const sents = SENTENCES;
         this.loadSentence((this.currentSentenceIdx + 1) % sents.length);
         this.render();
         const sObj = sents[this.currentSentenceIdx];
-        if (sObj) this.speak(sObj.voicePrompt);
+        if (sObj) this.speak(sObj.phrase);
       } else {
         const list = this.getFilteredWords();
         if (list.length) {
           this.loadWord((this.currentWordIdx + 1) % list.length);
           this.render();
           const wObj = list[this.currentWordIdx];
-          if (wObj) this.speak(`${wObj.title}. ${wObj.hint}`);
+          if (wObj) this.speak(wObj.word);
         }
       }
     }
 
     prevLetter() {
       A.unlock();
-      if (this.mode === 'trace') {
-        const curChar = this.customTraceChar || (this.getFilteredWords()[this.currentWordIdx]?.word[0]) || 'A';
+      if (this.currentMode === 'trace') {
+        const curChar = this.getCurrentTraceChar ? this.getCurrentTraceChar() : (this.customTraceChar || 'A');
         const idx = Math.max(0, ALPHABET.indexOf(curChar));
         this.customTraceChar = ALPHABET[(idx - 1 + ALPHABET.length) % ALPHABET.length];
         this.traceProgress = 0;
         this.traceDone = false;
         this.render();
         this.speak(`Letra ${this.customTraceChar}`);
-      } else if (this.mode === 'sentences') {
-        const sents = SENTENCES_DATA[this.ageTier] || SENTENCES_DATA['5-6'];
+      } else if (this.currentMode === 'sentences') {
+        const sents = SENTENCES;
         this.loadSentence((this.currentSentenceIdx - 1 + sents.length) % sents.length);
         this.render();
         const sObj = sents[this.currentSentenceIdx];
-        if (sObj) this.speak(sObj.voicePrompt);
+        if (sObj) this.speak(sObj.phrase);
       } else {
         const list = this.getFilteredWords();
         if (list.length) {
           this.loadWord((this.currentWordIdx - 1 + list.length) % list.length);
           this.render();
           const wObj = list[this.currentWordIdx];
-          if (wObj) this.speak(`${wObj.title}. ${wObj.hint}`);
+          if (wObj) this.speak(wObj.word);
         }
       }
     }
@@ -2514,7 +2518,6 @@
       A.unlock();
       A.bubblePop(1);
       this.currentMode = mapped;
-      this.mode = mapped;
       this.render();
     }
 
@@ -2522,7 +2525,7 @@
       if (!['5-6', '6-7', '7-8'].includes(tier)) return;
       A.unlock();
       A.bubblePop(1);
-      this.ageTier = tier;
+      this.currentTier = tier;
       this.currentWordIdx = 0;
       this.currentSentenceIdx = 0;
       this.loadWord(0);

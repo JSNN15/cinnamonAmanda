@@ -25,9 +25,11 @@
 
   /* ---------------- Settings persistentes ---------------- */
   const SETTINGS_KEY = 'cinnamo.settings.v1';
-  const settings = Object.assign({ voice: false, mic: false, tilt: false, sound: true, invertTilt: false },
-    JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'));
-  const saveSettings = () => localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  const loadSettings = () => {
+    try { return JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') || {}; } catch (_) { return {}; }
+  };
+  const settings = Object.assign({ voice: false, mic: false, tilt: false, sound: true, invertTilt: false }, loadSettings());
+  const saveSettings = () => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (_) {} };
 
   /* ---------------- Estado ---------------- */
   let W = 0, H = 0, DPR = 1, size = 100, px = 0, top = 0, bottom = 0;
@@ -581,7 +583,7 @@
 
   async function toggle(k) {
     if (k === 'sound') {
-      settings.sound = !settings.sound; A.setMuted(!settings.sound);
+      settings.sound = !settings.sound; A.setSfxMuted(!settings.sound);
       if (!settings.sound && 'speechSynthesis' in window) speechSynthesis.cancel();
     } else if (k === 'invertTilt') {
       settings.invertTilt = !settings.invertTilt; IN.adapters.tilt.invert = settings.invertTilt;
@@ -592,7 +594,7 @@
       try {
         await enable(k, want);
         settings[k] = want;
-        setStatus(want ? ({ voice: 'Decí: “arriba”, “abajo”, “gira”, “hola”', mic: 'Soplá o cantá para subir', tilt: 'Inclinación activa (tocá de nuevo para recalibrar)' }[k]) : '');
+        setStatus(want ? ({ voice: 'Di: “arriba”, “abajo”, “gira”, “hola”', mic: 'Sopla o canta para subir', tilt: 'Inclinación activa (toca de nuevo para recalibrar)' }[k]) : '');
       } catch (e) {
         settings[k] = false;
         setStatus(e.message || String(e));
@@ -606,19 +608,37 @@
   document.querySelectorAll('.chip').forEach(ch => ch.addEventListener('click', () => { A.unlock(); toggle(ch.dataset.toggle); }));
 
   // restaurar settings: sonido/invertir directo; sensores requieren gesto del usuario → se re-activan al primer toque
-  A.setMuted(!settings.sound);
+  A.setSfxMuted(!settings.sound);
   IN.adapters.tilt.invert = settings.invertTilt;
   const pending = ['voice', 'mic', 'tilt'].filter(k => settings[k]);
   pending.forEach(k => { settings[k] = false; });
   refreshChips();
+  const inFlight = () => !window.Cinnamo?.hub || window.Cinnamo.hub.currentScreen === 'flight';
   if (pending.length) {
+    // solo se re-activan con un toque dentro de ¡A Volar!, nunca desde el menú u otro juego
     const resume = e => {
+      if (!inFlight()) return;
       window.removeEventListener('pointerdown', resume, true);
       if (e.target.closest && e.target.closest('.chip')) return; // el papá está tocando los controles a mano
       pending.forEach(k => toggle(k));
     };
     window.addEventListener('pointerdown', resume, true);
   }
+
+  // Micrófono, voz e inclinación se apagan al salir del vuelo y vuelven al entrar
+  window.Cinnamo.suspendFlightSensors = () => {
+    ['voice', 'mic', 'tilt'].forEach(k => {
+      const ad = IN.adapters[k];
+      if (ad && ad.active) ad.stop();
+    });
+    IN.setAxis?.(0);
+  };
+  window.Cinnamo.resumeFlightSensors = () => {
+    ['voice', 'mic', 'tilt'].forEach(k => {
+      const ad = IN.adapters[k];
+      if (settings[k] && ad && !ad.active) ad.start().catch(() => { settings[k] = false; refreshChips(); });
+    });
+  };
 
   /* ---------------- Loop ---------------- */
   let last = performance.now();

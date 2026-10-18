@@ -7,11 +7,14 @@
 (function () {
   const A = () => window.Cinnamo?.audio;
   const IN = () => window.Cinnamo?.input;
+  const cssEsc = (v) => (window.CSS?.escape ? CSS.escape(String(v ?? '')) : String(v ?? '').replace(/[^\w#-]/g, ''));
 
   class ControllerBridge {
     constructor() {
       this.roomCode = this.getOrGenerateRoomCode();
+      this.roomKey = this.getOrGenerateRoomKey();
       this.peer = null;
+      this.peerReconnectDelay = 1000;
       this.connections = [];
       this.broadcastChannel = null;
       this.isHost = true;
@@ -27,7 +30,8 @@
       };
 
       this.initBroadcast();
-      this.initPeerHost();
+      // El servidor de mando solo se abre cuando alguien abre "Mando" (o ya lo usó en esta sesión)
+      if (this.safeSession('get', 'cinna_peer_on') === '1') this.ensurePeerHost();
       this.initPhysicalGamepadLoop();
       this.initInputModeCoordinator();
     }
@@ -106,8 +110,8 @@
       const urlParams = new URLSearchParams(window.location.search);
       const urlRoom = urlParams.get('room');
       if (!forceNew && urlRoom) {
-        const clean = urlRoom.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-        if (clean.length >= 2) {
+        const clean = urlRoom.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+        if (clean.length >= 6) {
           sessionStorage.setItem('cinna_room_code', clean);
           localStorage.setItem('cinna_last_room', clean);
           return clean;
@@ -119,19 +123,47 @@
       if (!code) {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
         code = '';
-        for (let i = 0; i < 4; i++) {
-          code += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
+        code = this.randomCode(6, chars);
         sessionStorage.setItem('cinna_room_code', code);
       }
       localStorage.setItem('cinna_last_room', code);
       return code;
     }
 
+    randomCode(len, chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789') {
+      const out = [];
+      const rnd = new Uint32Array(len);
+      if (window.crypto?.getRandomValues) window.crypto.getRandomValues(rnd);
+      for (let i = 0; i < len; i++) {
+        const r = window.crypto?.getRandomValues ? rnd[i] : Math.floor(Math.random() * 1e9);
+        out.push(chars.charAt(r % chars.length));
+      }
+      return out.join('');
+    }
+
+    safeSession(op, key, val) {
+      try {
+        if (op === 'get') return sessionStorage.getItem(key);
+        sessionStorage.setItem(key, val);
+      } catch (_) {}
+      return null;
+    }
+
+    // Clave secreta que solo viaja dentro del QR: el celular que la trae entra directo,
+    // el que solo escribió el código necesita que alguien lo acepte en la TV.
+    getOrGenerateRoomKey(forceNew = false) {
+      let key = !forceNew ? this.safeSession('get', 'cinna_room_key') : null;
+      if (!key) {
+        key = this.randomCode(10);
+        this.safeSession('set', 'cinna_room_key', key);
+      }
+      return key;
+    }
+
     getControllerUrl() {
       const loc = window.location;
       const base = loc.origin + loc.pathname.substring(0, loc.pathname.lastIndexOf('/') + 1);
-      return `${base}controller.html?room=${this.roomCode}`;
+      return `${base}controller.html?room=${this.roomCode}&k=${this.roomKey}`;
     }
 
     getActivePlayersSummary() {
@@ -262,41 +294,29 @@
 
         this.peer.on('open', (id) => {
           console.log('🎮 Servidor de Mando iniciado con ID:', id);
+          this.peerReconnectDelay = 1000;
           this.notifyStatus();
         });
 
         this.peer.on('connection', (conn) => {
-          const assignedSlot = this.assignSlotForConnection(conn);
-          console.log(`📱 ¡Celular conectado al mando como Jugador ${assignedSlot}!`);
-          this.connections.push(conn);
-          this.connectedCount = this.connections.length;
-          this.setInputMode('remote');
-          this.notifyStatus();
-          const slotBadges = { 1: 'P1 🌸', 2: 'P2 🩵', 3: 'P3 💛' };
-          this.showToast(`📱 ¡Mando ${slotBadges[assignedSlot]} conectado! ✨`);
-
-          if (A()) {
-            A().unlock();
-            A().celebrate();
-          }
-
-          conn.on('open', () => {
-            try {
-              conn.send({
-                type: 'welcome',
-                room: this.roomCode,
-                assignedSlot,
-                players: this.getActivePlayersSummary()
-              });
-              const ctx = this.lastContext || { screen: window.Cinnamo?.hub?.currentScreen || 'hub' };
-              conn.send({ type: 'context', ...ctx, players: this.getActivePlayersSummary() });
-            } catch (_) {}
-          });
+          conn._authorized = false;
+          conn._askedTv = false;
 
           conn.on('data', (data) => {
             if (!data) return;
             if (data.type === 'ping') {
               try { conn.send({ type: 'pong' }); } catch (_) {}
+              return;
+            }
+            if (!conn._authorized) {
+              // Nada de lo que mande un celular se obedece hasta que esté autorizado
+              if (data.type !== 'hello') return;
+              if (data.key && data.key === this.roomKey) {
+                this.authorizeConnection(conn, data.player);
+              } else if (!conn._askedTv) {
+                conn._askedTv = true;
+                this.askTvToAccept(conn, data.player);
+              }
               return;
             }
             if (data.type === 'hello') {
@@ -305,31 +325,24 @@
                 this.players[conn._playerSlot].active = true;
               }
               this.setInputMode('remote');
-              try {
-                conn.send({
-                  type: 'welcome',
-                  room: this.roomCode,
-                  assignedSlot: conn._playerSlot || assignedSlot,
-                  players: this.getActivePlayersSummary()
-                });
-                const ctx = this.lastContext || { screen: window.Cinnamo?.hub?.currentScreen || 'hub' };
-                conn.send({ type: 'context', ...ctx, players: this.getActivePlayersSummary() });
-              } catch (_) {}
+              this.sendWelcome(conn);
               return;
             }
             this.handleRemoteData(data, conn);
           });
 
-          conn.on('close', () => {
-            this.connections = this.connections.filter(c => c !== conn);
-            for (const s of [1, 2, 3]) {
-              if (this.players[s].conn === conn) {
-                this.players[s].conn = null;
-              }
-            }
-            this.connectedCount = this.connections.length;
-            this.notifyStatus();
-          });
+          conn.on('close', () => this.handleConnectionClosed(conn));
+          conn.on('error', () => this.handleConnectionClosed(conn));
+        });
+
+        this.peer.on('disconnected', () => {
+          // La tablet se durmió o se cortó el Wi-Fi: volver a registrarse en el servidor
+          if (!this.peer || this.peer.destroyed) return;
+          clearTimeout(this.peerReconnectTimer);
+          this.peerReconnectTimer = setTimeout(() => {
+            try { this.peer.reconnect(); } catch (_) { this.initPeerHost(); }
+          }, this.peerReconnectDelay);
+          this.peerReconnectDelay = Math.min(this.peerReconnectDelay * 2, 30000);
         });
 
         this.peer.on('error', (err) => {
@@ -339,12 +352,137 @@
             const roomDisplay = document.getElementById('gamepadRoomDisplay');
             if (roomDisplay) roomDisplay.textContent = this.roomCode;
             setTimeout(() => this.initPeerHost(), 800);
+          } else if (['network', 'server-error', 'socket-error', 'socket-closed'].includes(err.type)) {
+            clearTimeout(this.peerReconnectTimer);
+            this.peerReconnectTimer = setTimeout(() => this.initPeerHost(), this.peerReconnectDelay);
+            this.peerReconnectDelay = Math.min(this.peerReconnectDelay * 2, 30000);
           } else {
             console.warn('Peer error:', err);
           }
         });
       } catch (e) {
         console.warn('Error inicializando PeerJS:', e);
+      }
+    }
+
+    ensurePeerHost() {
+      this.safeSession('set', 'cinna_peer_on', '1');
+      if (!this.peer || this.peer.destroyed) this.initPeerHost();
+    }
+
+    sendWelcome(conn) {
+      try {
+        conn.send({
+          type: 'welcome',
+          room: this.roomCode,
+          assignedSlot: conn._playerSlot || 1,
+          players: this.getActivePlayersSummary()
+        });
+        const ctx = this.lastContext || { screen: window.Cinnamo?.hub?.currentScreen || 'hub' };
+        conn.send({ type: 'context', ...ctx, players: this.getActivePlayersSummary() });
+      } catch (_) {}
+    }
+
+    authorizeConnection(conn, requestedPlayer) {
+      if (conn._authorized || !conn.open) return;
+      conn._authorized = true;
+      let slot = this.assignSlotForConnection(conn);
+      const req = parseInt(requestedPlayer, 10);
+      if (req >= 1 && req <= 3) {
+        slot = req;
+        conn._playerSlot = req;
+        this.players[req].active = true;
+      }
+      this.connections.push(conn);
+      this.connectedCount = this.connections.length;
+      this.setInputMode('remote');
+      this.notifyStatus();
+      const slotBadges = { 1: 'P1 🌸', 2: 'P2 🩵', 3: 'P3 💛' };
+      this.showToast(`📱 ¡Mando ${slotBadges[slot]} conectado! ✨`);
+      if (A()) {
+        A().unlock();
+        A().celebrate();
+      }
+      this.sendWelcome(conn);
+    }
+
+    // Celular que escribió el código a mano (sin la clave del QR): se pregunta en la TV
+    askTvToAccept(conn, requestedPlayer) {
+      const box = document.createElement('div');
+      box.className = 'cinna-accept-controller';
+      box.setAttribute('role', 'alertdialog');
+      box.innerHTML = `
+        <div class="cinna-accept-card">
+          <div class="cinna-accept-title">📱 Un celular quiere ser mando</div>
+          <div class="cinna-accept-desc">¿Es de tu familia? Pídele a un adulto que decida.</div>
+          <div class="cinna-accept-actions">
+            <button type="button" class="cinna-accept-yes">✅ Aceptar</button>
+            <button type="button" class="cinna-accept-no">✖ No</button>
+          </div>
+        </div>`;
+      const done = (ok) => {
+        clearTimeout(timer);
+        box.remove();
+        if (ok) {
+          this.authorizeConnection(conn, requestedPlayer);
+        } else {
+          try { conn.send({ type: 'rejected' }); } catch (_) {}
+          setTimeout(() => { try { conn.close(); } catch (_) {} }, 300);
+        }
+      };
+      const timer = setTimeout(() => done(false), 60000);
+      box.querySelector('.cinna-accept-yes').addEventListener('click', (e) => { e.stopPropagation(); done(true); });
+      box.querySelector('.cinna-accept-no').addEventListener('click', (e) => { e.stopPropagation(); done(false); });
+      conn.on('close', () => { clearTimeout(timer); box.remove(); });
+      document.body.appendChild(box);
+      if (A()) { A().unlock(); A().bubblePop?.(2); }
+    }
+
+    // Al desconectarse un celular se sueltan todos sus botones para que nadie camine solo
+    handleConnectionClosed(conn) {
+      if (conn._closedHandled) return;
+      conn._closedHandled = true;
+      const wasAuthorized = conn._authorized;
+      this.connections = this.connections.filter(c => c !== conn);
+      this.connectedCount = this.connections.length;
+      if (wasAuthorized) {
+        const slot = conn._playerSlot || 1;
+        this.releasePlayerInputs(slot);
+        for (const s of [1, 2, 3]) {
+          if (this.players[s].conn === conn) this.players[s].conn = null;
+        }
+        const stillUsed = this.connections.some(c => (c._playerSlot || 1) === slot);
+        if (!stillUsed && (slot === 2 || slot === 3)) {
+          this.players[slot].active = false;
+          const plat = window.Cinnamo?.platformerGame;
+          if (plat?.coPlayers?.[slot]) plat.coPlayers[slot].active = false;
+          const aw = window.Cinnamo?.avatarWorldGame;
+          if (aw?.players?.[slot]) {
+            aw.players[slot].active = false;
+            aw.syncPlayerBadgesUI?.();
+          }
+        }
+        if (this.connectedCount === 0 && !this.physicalGamepadActive) this.setInputMode('touch');
+      }
+      this.notifyStatus();
+    }
+
+    releasePlayerInputs(slot) {
+      try {
+        this.handleRemoteJoystick(0, 0, 0, 0, slot);
+        ['left', 'right', 'up', 'down', 'jump'].forEach(btn => this.handleRemoteInput(btn, false, slot));
+      } catch (_) {}
+      if (slot === 1) {
+        const plat = window.Cinnamo?.platformerGame;
+        if (plat?.keys) { plat.keys.left = plat.keys.right = plat.keys.jump = false; plat._jumpBtnHeld = false; }
+        const doom = window.Cinnamo?.doomGame;
+        if (doom?.keys) { doom.keys.left = doom.keys.right = doom.keys.forward = doom.keys.backward = false; }
+        const input = IN();
+        if (input) {
+          input.setAxis?.(0);
+          input.setKey?.('up', false);
+          input.setKey?.('down', false);
+        }
       }
     }
 
@@ -538,14 +676,14 @@
 
       // Acciones completas de Taller de Dibujo + Touchpad Remoto
       if (data.type === 'colorPick') {
-        const chip = document.querySelector(`.swatch-btn[data-color="${data.color}"]`) || 
-                     document.querySelector(`.palette-chip[data-color="${data.color}"]`);
+        const chip = document.querySelector(`.swatch-btn[data-color="${cssEsc(data.color)}"]`) || 
+                     document.querySelector(`.palette-chip[data-color="${cssEsc(data.color)}"]`);
         if (chip) chip.click();
-        else if (window.Cinnamo?.coloringGame) window.Cinnamo.coloringGame.selectedColor = data.color;
+        else if (window.Cinnamo?.coloringGame && /^#[0-9a-f]{3,8}$/i.test(String(data.color))) window.Cinnamo.coloringGame.selectedColor = data.color;
         return;
       }
       if (data.type === 'colorTool') {
-        const tBtn = document.querySelector(`.tool-btn[data-tool="${data.tool}"]`);
+        const tBtn = document.querySelector(`.tool-btn[data-tool="${cssEsc(data.tool)}"]`);
         if (tBtn) tBtn.click();
         return;
       }
@@ -673,7 +811,7 @@
         if (data.screen === 'hub') {
           const btnH = document.getElementById('globalBtnHome');
           if (btnH) btnH.click();
-        } else if (window.Cinnamo?.hub?.launchGame) {
+        } else if (window.Cinnamo?.hub?.launchGame && document.querySelector(`[data-game="${cssEsc(data.screen)}"]`)) {
           window.Cinnamo.hub.launchGame(data.screen);
         }
         return;
@@ -974,6 +1112,7 @@
 
       const openModal = () => {
         if (A()) { A().unlock(); A().bubblePop(2); }
+        this.ensurePeerHost();
         modal.classList.remove('hidden');
         modal.setAttribute('aria-hidden', 'false');
         if (roomDisplay) roomDisplay.textContent = this.roomCode;

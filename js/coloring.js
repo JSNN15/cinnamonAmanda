@@ -180,10 +180,13 @@
         const savedImg = new Image();
         savedImg.onload = () => {
           ctx.drawImage(savedImg, 0, 0);
-          this.history = [this.savedCanvases[this.currentSheet.id]];
         };
-        savedImg.src = this.savedCanvases[this.currentSheet.id];
+        // El dibujo restaurado es la base: Deshacer vuelve a él, nunca lo borra entero
+        this.historyBase = this.savedCanvases[this.currentSheet.id];
+        this.history = [];
+        savedImg.src = this.historyBase;
       } else {
+        this.historyBase = null;
         this.history = [];
       }
 
@@ -480,7 +483,15 @@
             A.softBoing();
             this.history.pop();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (this.savedCanvases) delete this.savedCanvases[this.currentSheet.id];
+            if (this.historyBase) {
+              const base = this.historyBase;
+              const img = new Image();
+              img.onload = () => ctx.drawImage(img, 0, 0);
+              img.src = base;
+              if (this.savedCanvases) this.savedCanvases[this.currentSheet.id] = base;
+            } else if (this.savedCanvases) {
+              delete this.savedCanvases[this.currentSheet.id];
+            }
           }
         });
       }
@@ -491,6 +502,7 @@
         A.softBoing();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         this.history = [];
+        this.historyBase = null;
         if (this.savedCanvases) delete this.savedCanvases[this.currentSheet.id];
       });
 
@@ -588,7 +600,7 @@
       if (this.container) {
         const toolBtn = this.container.querySelector('.tool-btn[data-tool="stamp"]');
         if (toolBtn) toolBtn.click();
-        const stBtn = this.container.querySelector(`.stamp-item-btn[data-stamp="${emoji}"]`);
+        const stBtn = this.container.querySelector(`.stamp-opt-btn[data-stamp="${window.CSS?.escape ? CSS.escape(emoji) : emoji}"]`);
         if (stBtn) stBtn.click();
       }
     }
