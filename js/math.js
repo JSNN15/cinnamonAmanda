@@ -5,9 +5,57 @@
  *  - 🍼 Kínder (5-6 años): Sumas y restas hasta 10 con conteo interactivo con el dedo.
  *  - 🎒 1° Básico (6-7 años): Sumas y restas hasta 20 con cálculo mental.
  *  - 🚀 2°-3° Básico (7-8 años): Operaciones hasta 40 y multiplicaciones dulces (2x, 3x, 4x, 5x).
+ *
+ * La dificultad se ajusta sola según los aciertos a la primera (ver js/math-progress.js).
  */
 (function () {
   const { audio: A } = window.Cinnamo;
+  const P = window.Cinnamo.mathProgress;
+  const store = (() => { try { return window.localStorage; } catch (e) { return null; } })();
+
+  const rnd = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+
+  // Rangos por nivel (2 pasos por tramo de edad: fácil y medio)
+  const ADD_LEVELS = [
+    { a: [1, 3], b: [1, 3] },    // 🍼 Kínder fácil (hasta 6)
+    { a: [1, 5], b: [1, 5] },    // 🍼 Kínder medio (hasta 10)
+    { a: [3, 10], b: [2, 8] },   // 🎒 1° Básico fácil
+    { a: [6, 12], b: [4, 9] },   // 🎒 1° Básico medio (hasta 21)
+    { a: [7, 20], b: [5, 16] },  // 🚀 2°-3° fácil
+    { a: [12, 25], b: [8, 15] }  // 🚀 2°-3° medio (hasta 40)
+  ];
+  const SUB_LEVELS = [
+    { a: [3, 5], bMin: 1, keep: 1 },
+    { a: [5, 10], bMin: 1, keep: 1 },
+    { a: [8, 18], bMin: 2, keep: 1 },
+    { a: [12, 20], bMin: 3, keep: 2 },
+    { a: [15, 32], bMin: 4, keep: 2 },
+    { a: [20, 40], bMin: 6, keep: 2 }
+  ];
+  const MULT_LEVELS = [
+    { a: [2, 3], b: [2, 5] },    // tablas del 2 y 3
+    { a: [2, 5], b: [2, 5] },    // tablas del 2 al 5
+    { a: [2, 5], b: [2, 6] }
+  ];
+
+  const TIER_LABEL = { '5-6': '🍼 Kínder', '6-7': '🎒 1° Básico', '7-8': '🚀 2°-3° Básico' };
+  const OP_LABEL = { add: '➕ Sumas', sub: '➖ Restas', mult: '✖️ Tablas' };
+  const OP_OF = { '+': 'add', '-': 'sub', 'x': 'mult' };
+
+  const levelName = (op, level) => {
+    if (op === 'mult') return ['Tablas 2 y 3', 'Tablas 2 al 5', 'Tablas hasta ×6'][level];
+    return `${TIER_LABEL[P.tierForLevel(level)]} · ${level % 2 === 0 ? 'fácil' : 'medio'}`;
+  };
+
+  const formatDay = (ts) => {
+    if (!ts) return 'aún no juega';
+    const d = new Date(ts);
+    const today = new Date();
+    const diff = Math.round((new Date(today.toDateString()) - new Date(d.toDateString())) / 86400000);
+    if (diff === 0) return 'hoy';
+    if (diff === 1) return 'ayer';
+    return d.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
+  };
 
   const TREAT_TYPES = [
     { name: 'rollito', emoji: '🍥', label: 'Rollitos de Canela' },
@@ -33,6 +81,14 @@
       this.answered = false;
       this.isCountingHelpActive = false;
       this.guideTimeouts = [];
+      this.progress = P.load(store);
+      this.missedThisRound = false;
+      this.parentsOpen = false;
+      this.levelMsg = null;
+    }
+
+    saveProgress() {
+      P.save(store, this.progress);
     }
 
     clearGuideTimeouts() {
@@ -56,7 +112,20 @@
 
     setTier(newTier) {
       this.clearGuideTimeouts();
-      this.ageTier = newTier;
+      if (!P.TIERS.includes(newTier)) return;
+      P.setStartTier(this.progress, newTier);
+      this.saveProgress();
+      this.nextRound();
+    }
+
+    setAuto(on) {
+      this.progress.auto = !!on;
+      this.saveProgress();
+    }
+
+    resetProgress() {
+      this.progress = P.freshState();
+      this.saveProgress();
       this.nextRound();
     }
 
@@ -71,6 +140,11 @@
       this.answered = false;
       this.isCountingHelpActive = false;
       this.countedItems.clear();
+
+      // El tramo de edad sale del nivel de sumas/restas (ajuste automático)
+      const sk = this.progress.skills;
+      this.ageTier = P.tierForLevel(Math.max(sk.add.level, sk.sub.level));
+      if (this.mode === 'mult' && this.ageTier !== '7-8') this.mode = 'add';
 
       // Determinar operador según modo y edad
       if (this.mode === 'mix') {
@@ -87,38 +161,24 @@
       this.treatType = TREAT_TYPES[Math.floor(Math.random() * TREAT_TYPES.length)];
 
       if (this.currentOp === '+') {
-        if (this.ageTier === '5-6') {
-          this.numA = 1 + Math.floor(Math.random() * 4); // 1..4
-          this.numB = 1 + Math.floor(Math.random() * 4); // 1..4
-        } else if (this.ageTier === '6-7') {
-          this.numA = 3 + Math.floor(Math.random() * 8); // 3..10
-          this.numB = 2 + Math.floor(Math.random() * 7); // 2..8
-        } else {
-          // 7-8 años: sumas hasta 35
-          this.numA = 7 + Math.floor(Math.random() * 14); // 7..20
-          this.numB = 5 + Math.floor(Math.random() * 12); // 5..16
-        }
+        const r = ADD_LEVELS[sk.add.level];
+        this.numA = rnd(r.a[0], r.a[1]);
+        this.numB = rnd(r.b[0], r.b[1]);
         this.total = this.numA + this.numB;
       } else if (this.currentOp === '-') {
-        if (this.ageTier === '5-6') {
-          this.numA = 3 + Math.floor(Math.random() * 5); // 3..7
-          this.numB = 1 + Math.floor(Math.random() * (this.numA - 1));
-        } else if (this.ageTier === '6-7') {
-          this.numA = 8 + Math.floor(Math.random() * 11); // 8..18
-          this.numB = 2 + Math.floor(Math.random() * (this.numA - 3));
-        } else {
-          // 7-8 años: restas de dos dígitos
-          this.numA = 15 + Math.floor(Math.random() * 18); // 15..32
-          this.numB = 4 + Math.floor(Math.random() * (this.numA - 5));
-        }
+        const r = SUB_LEVELS[sk.sub.level];
+        this.numA = rnd(r.a[0], r.a[1]);
+        this.numB = rnd(r.bMin, Math.max(r.bMin, this.numA - r.keep));
         this.total = this.numA - this.numB;
       } else {
-        // Multiplicación dulce (2x, 3x, 4x, 5x para 7-8 años)
-        this.numA = 2 + Math.floor(Math.random() * 4); // 2..5
-        this.numB = 2 + Math.floor(Math.random() * 4); // 2..5
+        // Multiplicación dulce: numA bandejas con numB dulces cada una
+        const r = MULT_LEVELS[sk.mult.level];
+        this.numA = rnd(r.a[0], r.a[1]);
+        this.numB = rnd(r.b[0], r.b[1]);
         this.total = this.numA * this.numB;
       }
 
+      this.missedThisRound = false;
       this.render();
     }
 
@@ -139,18 +199,12 @@
         <div class="math-wrap">
           <!-- Barra superior: Selector de Edad y Modos -->
           <div class="math-top-bar">
-            <!-- Selector de Edad para 5 a 8 años -->
+            <!-- Nivel actual (se ajusta solo según los aciertos) -->
             <div class="math-age-tier-row">
-              <span class="math-tier-title">🎯 Nivel:</span>
-              <button class="math-tier-btn ${this.ageTier === '5-6' ? 'active' : ''}" data-tier="5-6">
-                🍼 5-6 Años (Kínder)
-              </button>
-              <button class="math-tier-btn ${this.ageTier === '6-7' ? 'active' : ''}" data-tier="6-7">
-                🎒 6-7 Años (1° Básico)
-              </button>
-              <button class="math-tier-btn ${this.ageTier === '7-8' ? 'active' : ''}" data-tier="7-8">
-                🚀 7-8 Años (2°-3° Básico)
-              </button>
+              <span class="math-level-badge" title="Nivel actual">
+                ${this.progress.auto ? '✨' : '🔒'} ${levelName(OP_OF[this.currentOp], this.progress.skills[OP_OF[this.currentOp]].level)}
+              </span>
+              ${this.levelMsg ? `<span class="math-level-up">${this.levelMsg}</span>` : ''}
             </div>
 
             <!-- Selector de Operaciones -->
@@ -228,8 +282,11 @@
               `).join('')}
             </div>
           </div>
+
+          ${this.renderParentsPanel()}
         </div>
       `;
+      this.levelMsg = null;
 
       // Notificar al mando de celular el contexto actual de la pregunta
       if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
@@ -248,6 +305,65 @@
       }
 
       this.bindEvents();
+    }
+
+    renderParentsPanel() {
+      const sk = this.progress.skills;
+      const rows = ['add', 'sub', 'mult'].map(op => {
+        const s = sk[op];
+        const pct = s.total ? Math.round((s.firstTry / s.total) * 100) : null;
+        const recentHits = s.recent.filter(Boolean).length;
+        return `
+          <tr>
+            <td><strong>${OP_LABEL[op]}</strong></td>
+            <td>${levelName(op, s.level)}</td>
+            <td>${pct === null ? '—' : `${pct}% <small>(${s.firstTry}/${s.total})</small>`}</td>
+            <td>${s.recent.length ? `${recentHits}/${s.recent.length}` : '—'}</td>
+            <td>${s.masteredAt ? `✅ <small>${formatDay(s.masteredAt)}</small>` : (s.total ? 'practicando' : '—')}</td>
+            <td>${formatDay(s.lastPlayed)}</td>
+          </tr>`;
+      }).join('');
+
+      return `
+        <details class="parents math-parents" id="mathParents" ${this.parentsOpen ? 'open' : ''}>
+          <summary>👨‍👩‍👧 Para papás: progreso de Amanda</summary>
+          <div class="math-parents-body">
+            <div class="math-progress-table-wrap">
+              <table class="math-progress-table">
+                <thead>
+                  <tr><th>Operación</th><th>Nivel</th><th>A la primera</th><th>Últimas 10</th><th>Domina</th><th>Jugó</th></tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+            <p class="math-parents-note">
+              Sube de nivel con 4 aciertos a la primera de 5 y baja con 2 errores seguidos.
+              "Domina" = 8 de 10 a la primera en el nivel más alto.
+            </p>
+            <label class="math-auto-toggle">
+              <input type="checkbox" id="mathAutoToggle" ${this.progress.auto ? 'checked' : ''} />
+              ✨ Ajuste automático de dificultad
+            </label>
+            <div class="math-age-tier-row">
+              <span class="math-tier-title">🎯 Empezar desde:</span>
+              ${P.TIERS.map(t => `
+                <button class="math-tier-btn ${this.ageTier === t ? 'active' : ''}" data-tier="${t}">${TIER_LABEL[t]} (${t} años)</button>
+              `).join('')}
+            </div>
+            <button class="math-reset-btn" id="mathResetProgress">🗑️ Reiniciar progreso</button>
+          </div>
+        </details>`;
+    }
+
+    // Registra sólo la primera respuesta de cada pregunta
+    recordFirstAnswer(correct) {
+      if (this.missedThisRound) return;
+      if (!correct) this.missedThisRound = true;
+      const op = OP_OF[this.currentOp];
+      const event = P.record(this.progress, op, correct);
+      this.saveProgress();
+      if (event === 'up') this.levelMsg = '🌟 ¡Subiste de nivel!';
+      else if (event === 'mastered') this.levelMsg = `🏆 ¡Dominas ${OP_LABEL[op].slice(3)}!`;
     }
 
     countNextTreat() {
@@ -353,6 +469,16 @@
         });
       });
 
+      // Panel de papás
+      const parents = this.container.querySelector('#mathParents');
+      if (parents) parents.addEventListener('toggle', () => { this.parentsOpen = parents.open; });
+      const autoToggle = this.container.querySelector('#mathAutoToggle');
+      if (autoToggle) autoToggle.addEventListener('change', (e) => this.setAuto(e.currentTarget.checked));
+      const resetBtn = this.container.querySelector('#mathResetProgress');
+      if (resetBtn) resetBtn.addEventListener('click', () => {
+        if (window.confirm('¿Borrar todo el progreso de matemáticas de Amanda?')) this.resetProgress();
+      });
+
       // Cambio de modo
       this.container.querySelectorAll('.mode-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -423,6 +549,7 @@
 
     handleSuccess(btnEl) {
       this.answered = true;
+      this.recordFirstAnswer(true);
       this.score++;
       btnEl.classList.add('correct');
 
@@ -456,6 +583,7 @@
 
     handleDoubtAndGuide(btnEl) {
       this.isCountingHelpActive = true;
+      this.recordFirstAnswer(false);
       btnEl.classList.add('wobble');
       A.softBoing();
 

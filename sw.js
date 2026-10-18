@@ -35,6 +35,7 @@ const CORE_ASSETS = [
   './js/input.js',
   './js/character.js',
   './js/game.js',
+  './js/math-progress.js',
   './js/math.js',
   './js/coloring.js',
   './js/memory.js',
