@@ -583,6 +583,8 @@
         if (vic) vic.classList.add('hidden');
       }
       this.buildCityLevel(idx);
+      // Meta dicha en voz alta para quienes aún no leen
+      window.Cinnamo?.say?.(`¡Vamos a ${CITIES[idx].name}! Salta, junta pastelitos y llega a la meta.`);
     }
 
     nextHero(playerSlot = 1) {
@@ -2586,7 +2588,10 @@
     drawGroundDetails(ctx, city) {
       ctx.save();
       const step = 140;
-      for (let fx = 60; fx < this.levelWidth - 200; fx += step) {
+      // Solo lo que está cerca de la cámara (los niveles miden hasta 9200 px)
+      const firstK = Math.max(0, Math.floor((this.camX - 260) / step));
+      const endX = Math.min(this.levelWidth - 200, this.camX + VW + 200);
+      for (let fx = 60 + firstK * step; fx < endX; fx += step) {
         if (city.id === 'concepcion') {
           // Margaritas y flores silvestres vectoriales
           this.drawCuteFlower(ctx, fx, 436, '#ffffff', '#facc15');
@@ -2722,7 +2727,9 @@
        PLATAFORMAS ARTÍSTICAS TEMÁTICAS
        ------------------------------------------------------------- */
     drawPlatforms(ctx, city) {
+      const viewL = this.camX - 80, viewR = this.camX + VW + 80;
       for (const plat of this.platforms) {
+        if (plat.x + plat.w < viewL || plat.x > viewR) continue;
         if (plat.type === 'ground') {
           // Cubierta temática suave
           ctx.fillStyle = city.groundColor;

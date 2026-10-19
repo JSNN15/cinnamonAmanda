@@ -100,7 +100,7 @@
     },
     {
       id: 'milk',
-      tier: '5-6',
+      tier: 'bonus',
       catName: '🐶 Sanrio',
       word: 'MILK',
       letters: ['M', 'I', 'L', 'K'],
@@ -125,10 +125,51 @@
       bgGrad: 'linear-gradient(135deg, #fff1f2, #fecdd3)'
     },
 
+    // 🇨🇱 Palabras con Ñ (una por nivel)
+    {
+      id: 'pina',
+      tier: '5-6',
+      catName: '🍍 Frutas',
+      word: 'PIÑA',
+      letters: ['P', 'I', 'Ñ', 'A'],
+      phonetic: 'Pi - ña',
+      icon: '🍍',
+      img: 'assets/pompompurin_hq.png',
+      desc: '¡Una fruta dulce con corona de hojas!',
+      color: '#ca8a04',
+      bgGrad: 'linear-gradient(135deg, #fefce8, #fde68a)'
+    },
+    {
+      id: 'mono',
+      tier: '6-7',
+      catName: '🎀 Ropa',
+      word: 'MOÑO',
+      letters: ['M', 'O', 'Ñ', 'O'],
+      phonetic: 'Mo - ño',
+      icon: '🎀',
+      img: 'assets/mocha_hq.png',
+      desc: '¡Un lazo bonito para el pelo!',
+      color: '#db2777',
+      bgGrad: 'linear-gradient(135deg, #fdf2f8, #fbcfe8)'
+    },
+    {
+      id: 'sueno',
+      tier: '7-8',
+      catName: '🌙 Noche',
+      word: 'SUEÑO',
+      letters: ['S', 'U', 'E', 'Ñ', 'O'],
+      phonetic: 'Sue - ño',
+      icon: '🌙',
+      img: 'assets/cinnamoroll_fly.png',
+      desc: '¡Lo que vemos al dormir sobre las nubes!',
+      color: '#4f46e5',
+      bgGrad: 'linear-gradient(135deg, #eef2ff, #c7d2fe)'
+    },
+
     // ⭐ NIVEL 2 (6-7 años): Palabras Medianas y Amigos de Sanrio
     {
       id: 'chiffon',
-      tier: '6-7',
+      tier: 'bonus',
       catName: '🌸 Sanrio',
       word: 'CHIFFON',
       letters: ['C', 'H', 'I', 'F', 'F', 'O', 'N'],
@@ -174,7 +215,7 @@
       phonetic: 'Pas - tel',
       icon: '🧁',
       img: 'assets/milk_teddy.png',
-      desc: '¡Rico pastelito de vainilla con fresas frescas!',
+      desc: '¡Rico pastelito de vainilla con frutillas frescas!',
       color: '#f97316',
       bgGrad: 'linear-gradient(135deg, #fff7ed, #fed7aa)'
     },
@@ -195,7 +236,7 @@
     // 👑 NIVEL 3 (7-8 años): Desafíos Ortográficos y Palabras Complejas
     {
       id: 'cinna',
-      tier: '7-8',
+      tier: 'bonus',
       catName: '🪽 Sanrio Avanzado',
       word: 'CINNAMOROLL',
       letters: ['C', 'I', 'N', 'N', 'A', 'M', 'O', 'R', 'O', 'L', 'L'],
@@ -316,7 +357,9 @@
 
   function normalizeChar(c) {
     if (!c) return '';
-    return c.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    const up = String(c).toUpperCase();
+    // La Ñ es su propia letra: no debe confundirse con la N
+    return up.split('Ñ').map(part => part.normalize('NFD').replace(/[\u0300-\u036f]/g, '')).join('Ñ');
   }
 
   function lettersMatch(a, b) {
@@ -845,18 +888,24 @@
       const distractorCount = (w.tier === '7-8') ? 3 : (w.tier === '6-7' ? 2 : 0);
       const alphabet = ['A', 'E', 'O', 'L', 'S', 'R', 'M', 'T', 'N', 'P', 'C'];
       
-      for (let i = 0; i < distractorCount; i++) {
-        const randChar = alphabet[Math.floor(Math.random() * alphabet.length)];
-        pool.push(randChar);
+      // Distractores que enseñan: letras que se confunden (N/Ñ, b/d, m/n…) y luego al azar
+      const CONFUSABLE = { 'Ñ': 'N', 'N': 'Ñ', 'B': 'D', 'D': 'B', 'P': 'Q', 'M': 'N', 'V': 'B', 'LL': 'Y' };
+      const extras = [];
+      w.letters.forEach(l => {
+        const c = CONFUSABLE[normalizeChar(l)];
+        if (c && extras.length < distractorCount && !w.letters.includes(c)) extras.push(c);
+      });
+      while (extras.length < distractorCount) {
+        extras.push(alphabet[Math.floor(Math.random() * alphabet.length)]);
       }
+      pool.push(...extras);
 
-      this.availableCookies = pool
-        .map((letter, i) => ({
-          id: `c_${i}_${letter}`,
-          letter: letter,
-          used: false
-        }))
-        .sort(() => Math.random() - 0.5);
+      const cookies = pool.map((letter, i) => ({ id: `c_${i}_${letter}`, letter: letter, used: false }));
+      for (let i = cookies.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cookies[i], cookies[j]] = [cookies[j], cookies[i]];
+      }
+      this.availableCookies = cookies;
 
       this.selectedTraceLetterIdx = 0;
       this.customTraceChar = null;
@@ -869,8 +918,11 @@
       this.placedSentenceWords = new Array(s.words.length).fill(null);
       this.sentenceMistakes = 0;
       this.availableSentencePills = s.words
-        .map((w, i) => ({ id: `w_${i}_${w}`, word: w, used: false }))
-        .sort(() => Math.random() - 0.5);
+        .map((w, i) => ({ id: `w_${i}_${w}`, word: w, used: false }));
+      for (let i = this.availableSentencePills.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.availableSentencePills[i], this.availableSentencePills[j]] = [this.availableSentencePills[j], this.availableSentencePills[i]];
+      }
     }
 
     speak(text) {
@@ -909,6 +961,9 @@
               </button>
               <button class="tier-chip-btn ${this.currentTier === '7-8' ? 'active' : ''}" data-tier="7-8">
                 👑 7-8 Años (2°-3° Básico)
+              </button>
+              <button class="tier-chip-btn ${this.currentTier === 'bonus' ? 'active' : ''}" data-tier="bonus">
+                🐶 Nombres Sanrio
               </button>
             </div>
 
@@ -1260,7 +1315,9 @@
           A.bellChime(660);
           const list = this.getFilteredWords();
           const w = list[this.currentWordIdx] || WORDS[0];
-          this.speak(w.word);
+          // Palabra completa y luego por sílabas: "mamá… ma… má"
+          const syl = String(w.phonetic || '').split('-').map(x => x.trim()).filter(Boolean);
+          this.speak(syl.length > 1 ? `${w.word}. ${syl.join('... ')}... ${w.word}` : w.word);
         });
       }
 
