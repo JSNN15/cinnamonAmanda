@@ -13,8 +13,8 @@
   <noscript>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
   </noscript>
-  <link rel="stylesheet" href="styles.css?v=32" />
-  <link rel="stylesheet" href="visual.css?v=32" />
+  <link rel="stylesheet" href="styles.css?v=33" />
+  <link rel="stylesheet" href="visual.css?v=33" />
 </head>
 <body>
   <!-- PANTALLA DE CARGA INSTANTÁNEA (Splash Pastel) -->
@@ -27,7 +27,7 @@
     </div>
   </div>
   <!-- Nombre del jugador: se pide una vez por visita y lo usan todos los juegos -->
-  <script src="js/player-name.js?v=32"></script>
+  <script src="js/player-name.js?v=33"></script>
 
   <!-- BARRA DE NAVEGACIÓN UNIVERSAL -->
   <header id="globalTopBar">
@@ -75,12 +75,12 @@
           <img src="cinnamoroll_sprite.png" class="cinna-mascot-img" alt="Cinnamoroll" width="180" height="96" fetchpriority="high" loading="eager" />
         </div>
         <h1>¡El Mundo de Cinnamoroll!</h1>
-        <p class="subtitle">¡9 juegos mágicos para crear, aprender y jugar con Cinnamoroll y sus amigos (1 a 3 Jugadores)!</p>
+        <p class="subtitle">¡Toca un juego para empezar!</p>
       </div>
 
       <div class="game-cards-grid">
-        <!-- Tarjeta Destacada: Cinnamoroll World (Estilo Avatar World) -->
-        <article class="game-card card-avatar" data-game="avatar">
+        <!-- Tarjeta Destacada: Cinnamoroll World -->
+        <article role="button" tabindex="0" class="game-card card-avatar" data-game="avatar">
           <div class="card-badge">🏡 ¡NUEVO!</div>
           <div class="card-illustration">
             <img class="card-hero-img" src="assets/mocha_hq.png" alt="Mocha" loading="lazy" decoding="async" />
@@ -89,12 +89,12 @@
             <span class="card-deco deco-flower">🛋️</span>
           </div>
           <h2>Cinnamoroll World</h2>
-          <p>Casa de Sueños estilo Avatar World: viste a tus personajes, decora 3 habitaciones e interactúa (1 a 3 Players).</p>
+          <p>Viste a tus amigos y decora la casa. ¡Hasta 3 jugadores!</p>
           <div class="card-play-tag">▶ ¡Crear y Vivir!</div>
         </article>
 
         <!-- Tarjeta 1: A Volar -->
-        <article class="game-card card-flight" data-game="flight">
+        <article role="button" tabindex="0" class="game-card card-flight" data-game="flight">
           <div class="card-badge">✨ Vuelo</div>
           <div class="card-illustration">
             <img class="card-hero-img" src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" loading="lazy" decoding="async" />
@@ -103,12 +103,12 @@
             <span class="card-deco deco-cloud">☁️</span>
           </div>
           <h2>¡A Volar!</h2>
-          <p>Vuela con Cinnamoroll por las nubes usando voz, giroscopio o teclas.</p>
+          <p>Vuela por las nubes y junta estrellas.</p>
           <div class="card-play-tag">▶ ¡Jugar!</div>
         </article>
 
         <!-- Tarjeta 2: Sumas y Pastelería -->
-        <article class="game-card card-math" data-game="math">
+        <article role="button" tabindex="0" class="game-card card-math" data-game="math">
           <div class="card-badge">🧁 Números</div>
           <div class="card-illustration">
             <img class="card-hero-img" src="assets/milk_teddy.png" alt="Milk" loading="lazy" decoding="async" />
@@ -117,12 +117,12 @@
             <span class="card-deco deco-milk">🍼</span>
           </div>
           <h2>Pastelería de Números</h2>
-          <p>Sumas, restas y tablas de multiplicar con Milk y deliciosos rollitos (5 a 8 años).</p>
+          <p>Cuenta, suma y resta con dulces.</p>
           <div class="card-play-tag">▶ ¡Contar!</div>
         </article>
 
         <!-- Tarjeta 3: Pintura y Colorear -->
-        <article class="game-card card-coloring" data-game="coloring">
+        <article role="button" tabindex="0" class="game-card card-coloring" data-game="coloring">
           <div class="card-badge">🎨 Dibujo</div>
           <div class="card-illustration">
             <img class="card-hero-img" src="assets/chiffon.png" alt="Chiffon" loading="lazy" decoding="async" />
@@ -131,12 +131,12 @@
             <span class="card-deco deco-flower">🌸</span>
           </div>
           <h2>Taller de Dibujo</h2>
-          <p>Láminas en blanco y negro para rayar con crayones, pintar y estampar.</p>
+          <p>Pinta dibujos con crayones y stickers.</p>
           <div class="card-play-tag">▶ ¡Pintar!</div>
         </article>
 
         <!-- Tarjeta 4: Memorice de Sanrio -->
-        <article class="game-card card-memory" data-game="memory">
+        <article role="button" tabindex="0" class="game-card card-memory" data-game="memory">
           <div class="card-badge">🃏 Memoria</div>
           <div class="card-illustration">
             <img class="card-hero-img" src="assets/pompompurin_hq.png" alt="Pompompurin" loading="lazy" decoding="async" />
@@ -145,12 +145,12 @@
             <span class="card-deco deco-flower">💖</span>
           </div>
           <h2>Memorice de Sanrio</h2>
-          <p>Encuentra las parejas de cartas 3D de Cinnamoroll, Milk, Purin y Mocha.</p>
+          <p>Encuentra las parejas de amigos.</p>
           <div class="card-play-tag">▶ ¡Emparejar!</div>
         </article>
 
         <!-- Tarjeta 5: Super Cinnamoroll Run -->
-        <article class="game-card card-platformer" data-game="platformer">
+        <article role="button" tabindex="0" class="game-card card-platformer" data-game="platformer">
           <div class="card-badge">🏃 Aventura</div>
           <div class="card-illustration">
             <img class="card-hero-img" src="cinnamoroll_sprite.png" alt="Cinnamoroll" loading="lazy" decoding="async" />
@@ -159,12 +159,12 @@
             <span class="card-deco deco-cookie">🍓</span>
           </div>
           <h2>Super Cinnamoroll Run</h2>
-          <p>Gira mundial cooperativa (1 a 3 Players): Concepción, La Serena, Río, Santiago y China.</p>
+          <p>Corre, salta y viaja por el mundo.</p>
           <div class="card-play-tag">▶ ¡Viajar y Correr!</div>
         </article>
 
         <!-- Tarjeta 6: Cinnamon Treat-Shooter 2.5D -->
-        <article class="game-card card-doom" data-game="doom">
+        <article role="button" tabindex="0" class="game-card card-doom" data-game="doom">
           <div class="card-badge">🍥 Mágico 3D</div>
           <div class="card-illustration">
             <img class="card-hero-img" src="assets/milk_sitting.png" alt="Milk" loading="lazy" decoding="async" />
@@ -173,12 +173,12 @@
             <span class="card-deco deco-cookie">🍭</span>
           </div>
           <h2>Repartidor de Rollitos 3D</h2>
-          <p>Laberinto estilo DOOM: reparte rollitos y paletas para que nadie tenga hambre.</p>
+          <p>Lleva un dulce a cada amigo con hambre.</p>
           <div class="card-play-tag">▶ ¡Repartir!</div>
         </article>
 
         <!-- Tarjeta 7: Palabras Mágicas Montessori & Waldorf -->
-        <article class="game-card card-writing" data-game="writing">
+        <article role="button" tabindex="0" class="game-card card-writing" data-game="writing">
           <div class="card-badge">✏️ Escribir</div>
           <div class="card-illustration">
             <img class="card-hero-img" src="assets/mocha_hq.png" alt="Mocha" loading="lazy" decoding="async" />
@@ -187,12 +187,12 @@
             <span class="card-deco deco-cookie">🍪</span>
           </div>
           <h2>Palabras Mágicas</h2>
-          <p>Lectoescritura interactiva: deletrea palabras y forma frases mágicas con galletitas de letras (5 a 8 años).</p>
+          <p>Arma palabras y frases con letras.</p>
           <div class="card-play-tag">▶ ¡Escribir!</div>
         </article>
 
         <!-- Tarjeta 8: Puzzles de Lógica y Rompecabezas Visual -->
-        <article class="game-card card-puzzle" data-game="puzzle">
+        <article role="button" tabindex="0" class="game-card card-puzzle" data-game="puzzle">
           <div class="card-badge">🧩 Lógica</div>
           <div class="card-illustration">
             <img class="card-hero-img" src="assets/pompompurin_hq.png" alt="Pompompurin" loading="lazy" decoding="async" />
@@ -201,7 +201,7 @@
             <span class="card-deco deco-flower">🌸</span>
           </div>
           <h2>Puzzles de Lógica</h2>
-          <p>Rompecabezas de Madera de 6 a 16 piezas: encaja a Cinnamoroll, Milk y Chiffon con silueta guía o a ciegas.</p>
+          <p>Arma la imagen pieza por pieza.</p>
           <div class="card-play-tag">▶ ¡Encajar!</div>
         </article>
       </div>
@@ -297,7 +297,7 @@
       <div id="platformer-mount"></div>
     </section>
 
-    <!-- PANTALLA 7: REPARTIDOR DE ROLLITOS 3D (DOOM) -->
+    <!-- PANTALLA 7: REPARTIDOR DE ROLLITOS 3D -->
     <section id="screen-doom" class="screen">
       <div id="doom-mount"></div>
     </section>
@@ -347,22 +347,22 @@
   <!-- MÓDULOS DE LA SUITE -->
   <script src="js/peerjs.min.js"></script>
   <script src="js/qrcode.min.js"></script>
-  <script src="js/audio.js?v=32"></script>
-  <script src="js/fx.js?v=32"></script>
-  <script src="js/input.js?v=32"></script>
-  <script src="js/controller-bridge.js?v=32"></script>
-  <script src="js/character.js?v=32"></script>
-  <script src="js/game.js?v=32"></script>
-  <script src="js/math-progress.js?v=32"></script>
-  <script src="js/math.js?v=32"></script>
-  <script src="js/coloring.js?v=32"></script>
-  <script src="js/memory.js?v=32"></script>
-  <script src="js/platformer.js?v=32"></script>
-  <script src="js/doom.js?v=32"></script>
-  <script src="js/writing.js?v=32"></script>
-  <script src="js/puzzle.js?v=32"></script>
-  <script src="js/avatar-world.js?v=32"></script>
-  <script src="js/hub.js?v=32"></script>
-  <script src="js/passport.js?v=32"></script>
+  <script src="js/audio.js?v=33"></script>
+  <script src="js/fx.js?v=33"></script>
+  <script src="js/input.js?v=33"></script>
+  <script src="js/controller-bridge.js?v=33"></script>
+  <script src="js/character.js?v=33"></script>
+  <script src="js/game.js?v=33"></script>
+  <script src="js/math-progress.js?v=33"></script>
+  <script src="js/math.js?v=33"></script>
+  <script src="js/coloring.js?v=33"></script>
+  <script src="js/memory.js?v=33"></script>
+  <script src="js/platformer.js?v=33"></script>
+  <script src="js/doom.js?v=33"></script>
+  <script src="js/writing.js?v=33"></script>
+  <script src="js/puzzle.js?v=33"></script>
+  <script src="js/avatar-world.js?v=33"></script>
+  <script src="js/hub.js?v=33"></script>
+  <script src="js/passport.js?v=33"></script>
 </body>
 </html>

@@ -837,6 +837,7 @@
       this.currentWordIdx = Math.max(0, Math.min(idx, list.length - 1));
       const w = list[this.currentWordIdx];
       this.placedLetters = new Array(w.letters.length).fill(null);
+      this.wordMistakes = 0;
 
       // Preparación de letras en bandeja:
       // Si la palabra es de nivel 6-7 o 7-8, agregamos letras distractoras para enriquecer el reto
@@ -866,6 +867,7 @@
       this.currentSentenceIdx = idx % SENTENCES.length;
       const s = SENTENCES[this.currentSentenceIdx];
       this.placedSentenceWords = new Array(s.words.length).fill(null);
+      this.sentenceMistakes = 0;
       this.availableSentencePills = s.words
         .map((w, i) => ({ id: `w_${i}_${w}`, word: w, used: false }))
         .sort(() => Math.random() - 0.5);
@@ -876,7 +878,7 @@
         try {
           window.speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance(text);
-          u.lang = 'es-ES';
+          if (!window.Cinnamo?.applyVoice?.(u)) u.lang = 'es-CL';
           u.rate = 0.88;
           u.pitch = 1.2;
           window.speechSynthesis.speak(u);
@@ -1035,7 +1037,7 @@
                 const placed = this.placedSentenceWords[slotIdx];
                 return `
                   <div class="sentence-slot ${placed ? 'filled' : 'empty'}" data-sslot="${slotIdx}">
-                    <span class="slot-word-preview">${placed ? placed.word : targetWord}</span>
+                    <span class="slot-word-preview">${placed ? placed.word : ((this.sentenceMistakes || 0) >= 2 ? targetWord : '')}</span>
                     <span class="slot-dash"></span>
                   </div>
                 `;
@@ -1085,7 +1087,7 @@
                 const placed = this.placedLetters[slotIdx];
                 return `
                   <div class="letter-slot ${placed ? 'filled' : 'empty'}" data-slot="${slotIdx}" title="${placed ? 'Toca para devolver a la bandeja' : 'Arrastra una galleta aquí'}">
-                    <span class="slot-letter-preview">${placed ? placed.letter : char}</span>
+                    <span class="slot-letter-preview">${placed ? placed.letter : (this.showWordGhost(w) ? char : '')}</span>
                     <span class="slot-dash"></span>
                     ${placed ? `<span class="slot-placed-sparkle">✨</span>` : ''}
                   </div>
@@ -1573,6 +1575,7 @@
                 return;
               } else {
                 A.softBoing();
+                this.wordMistakes = (this.wordMistakes || 0) + 1;
                 cur.hoveredSlot.classList.add('wobble-friendly');
                 setTimeout(() => {
                   if (cur.hoveredSlot) cur.hoveredSlot.classList.remove('wobble-friendly');
@@ -1606,6 +1609,34 @@
       });
     }
 
+    showWordGhost(w) {
+      return w.tier === '5-6' || (this.wordMistakes || 0) >= 2;
+    }
+
+    registerWordMistake(w, nextSlotIdx) {
+      this.wordMistakes = (this.wordMistakes || 0) + 1;
+      const expected = w.letters[nextSlotIdx];
+      if (expected) this.speak(`Busca la ${expected.toLowerCase()}`);
+      // Tras dos errores aparece la letra guía como ayuda
+      if (this.wordMistakes === 2 && w.tier !== '5-6') this.render();
+    }
+
+    registerSentenceMistake() {
+      this.sentenceMistakes = (this.sentenceMistakes || 0) + 1;
+      const s = SENTENCES[this.currentSentenceIdx];
+      const next = s.words[this.placedSentenceWords.findIndex(x => !x)];
+      if (next) this.speak(`Busca: ${next.toLowerCase()}`);
+      if (this.sentenceMistakes === 2) this.render();
+    }
+
+    // Estrellas: una sola vez por palabra o frase en la sesión, y completas solo sin errores
+    rewardOnce(key, mistakes) {
+      this.rewardedItems = this.rewardedItems || new Set();
+      if (this.rewardedItems.has(key)) return;
+      this.rewardedItems.add(key);
+      window.Cinnamo?.passport?.addStars?.(mistakes ? 1 : 3, 'writing');
+    }
+
     handleCookieTap(cookieIdx) {
       this.cleanupActiveDrag();
       const cookie = this.availableCookies[cookieIdx];
@@ -1613,18 +1644,13 @@
 
       const list = this.getFilteredWords();
       const w = list[this.currentWordIdx] || WORDS[0];
-      let targetSlotIdx = -1;
-      for (let i = 0; i < w.letters.length; i++) {
-        if (!this.placedLetters[i] && lettersMatch(cookie.letter, w.letters[i])) {
-          targetSlotIdx = i;
-          break;
-        }
-      }
-
-      if (targetSlotIdx !== -1) {
-        this.placeLetterSuccess(cookieIdx, targetSlotIdx);
+      // Tocar solo llena el SIGUIENTE molde vacío: hay que buscar las letras en orden
+      const nextSlotIdx = this.placedLetters.findIndex(l => !l);
+      if (nextSlotIdx !== -1 && lettersMatch(cookie.letter, w.letters[nextSlotIdx])) {
+        this.placeLetterSuccess(cookieIdx, nextSlotIdx);
       } else {
         A.softBoing();
+        this.registerWordMistake(w, nextSlotIdx);
         const btn = this.container.querySelector(`.letter-cookie-btn[data-cookie="${cookieIdx}"]`);
         if (btn) {
           btn.classList.add('wobble-friendly');
@@ -1811,6 +1837,7 @@
                 return;
               } else {
                 A.softBoing();
+                this.sentenceMistakes = (this.sentenceMistakes || 0) + 1;
                 cur.hoveredSlot.classList.add('wobble-friendly');
                 setTimeout(() => {
                   if (cur.hoveredSlot) cur.hoveredSlot.classList.remove('wobble-friendly');
@@ -1849,18 +1876,13 @@
       if (!pill || pill.used) return;
 
       const s = SENTENCES[this.currentSentenceIdx];
-      let targetSlotIdx = -1;
-      for (let i = 0; i < s.words.length; i++) {
-        if (!this.placedSentenceWords[i] && pill.word === s.words[i]) {
-          targetSlotIdx = i;
-          break;
-        }
-      }
-
-      if (targetSlotIdx !== -1) {
-        this.placeSentenceWordSuccess(pillIdx, targetSlotIdx);
+      // Tocar solo llena el SIGUIENTE espacio: la frase se arma en orden
+      const nextSlotIdx = this.placedSentenceWords.findIndex(x => !x);
+      if (nextSlotIdx !== -1 && pill.word === s.words[nextSlotIdx]) {
+        this.placeSentenceWordSuccess(pillIdx, nextSlotIdx);
       } else {
         A.softBoing();
+        this.registerSentenceMistake();
         const btn = this.container.querySelector(`.sentence-pill-btn[data-pill="${pillIdx}"]`);
         if (btn) {
           btn.classList.add('wobble-friendly');
@@ -1920,7 +1942,7 @@
       const list = this.getFilteredWords();
       const w = list[this.currentWordIdx] || WORDS[0];
       A.celebrate();
-      window.Cinnamo?.passport?.addStars?.(3, 'writing');
+      this.rewardOnce(`w:${w.id || w.word}`, this.wordMistakes);
       this.speak(`¡Excelente ${cinnaName()}! ¡Completaste la palabra ${w.word}!`);
 
       const modal = document.createElement('div');
@@ -1962,7 +1984,7 @@
     triggerSentenceVictory() {
       const s = SENTENCES[this.currentSentenceIdx];
       A.celebrate();
-      window.Cinnamo?.passport?.addStars?.(3, 'writing');
+      this.rewardOnce(`s:${s.id || s.phrase}`, this.sentenceMistakes);
       this.speak(`¡Maravilloso ${cinnaName()}! ¡Leíste y ordenaste la frase: ${s.phrase}!`);
 
       const modal = document.createElement('div');

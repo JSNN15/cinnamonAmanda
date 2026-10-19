@@ -2,6 +2,18 @@
  * Permite cambiar sin problemas entre los 6 juegos y controla la música relajante global.
  */
 (function () {
+  const GAME_INTROS = {
+    avatar: 'Casa de sueños. Viste a tus amigos y decora la casa.',
+    flight: '¡A volar! Junta estrellas en el cielo.',
+    math: 'Pastelería de números. Cuenta y suma dulces.',
+    coloring: 'Taller de dibujo. Pinta con muchos colores.',
+    memory: 'Memorice. Encuentra las parejas.',
+    platformer: 'Súper carrera. Salta y junta pastelitos.',
+    doom: 'Repartidor de dulces. Lleva un dulce a cada amigo.',
+    writing: 'Palabras mágicas. Arma palabras con letras.',
+    puzzle: 'Puzzles. Arma la imagen pieza por pieza.'
+  };
+
   const { audio: A } = window.Cinnamo;
 
   class SuiteHub {
@@ -153,7 +165,12 @@
           }
 
           const targetGame = e.currentTarget.dataset.game;
+          // Decir de qué se trata el juego: muchos jugadores aún no leen
+          window.Cinnamo?.say?.(GAME_INTROS[targetGame]);
           this.launchGame(targetGame);
+        });
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
         });
       });
 

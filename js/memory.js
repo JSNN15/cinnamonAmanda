@@ -24,14 +24,14 @@
     {
       id: 'purin',
       name: 'Pompompurin',
-      emoji: '🍮',
+      emoji: '🧢',
       color: '#fff3b0',
       imgSrc: 'assets/pompompurin_hq.png'
     },
     {
       id: 'mocha',
       name: 'Mocha',
-      emoji: '🎀',
+      emoji: '🍫',
       color: '#faebd7',
       imgSrc: 'assets/mocha_hq.png'
     },
@@ -59,7 +59,7 @@
     {
       id: 'mocha_tea',
       name: 'Té de Mocha',
-      emoji: '🎀',
+      emoji: '🍵',
       color: '#fbcfe8',
       imgSrc: 'assets/puzzle_mocha.png'
     }
@@ -111,7 +111,11 @@
         deck.push({ ...ch, uid: `card-${idx}-b`, matchKey: ch.id });
       });
 
-      deck.sort(() => Math.random() - 0.5);
+      // Barajar con Fisher-Yates (sort con random deja parejas casi juntas)
+      for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+      }
       this.cards = deck;
 
       this.render();
@@ -211,6 +215,8 @@
 
       slotEl.classList.add('flipped');
       this.flippedCards.push({ index, card, el: slotEl });
+      // Decir el nombre ayuda a recordar a quienes aún no leen
+      if (!window.Cinnamo?.hub || window.Cinnamo.hub.currentScreen === 'memory') window.Cinnamo?.say?.(card.name, { rate: 1 });
 
       if (this.flippedCards.length === 2) {
         this.moves++;
@@ -232,6 +238,7 @@
 
           this.matchedPairs++;
           window.Cinnamo?.passport?.addStars?.(1, 'memory');
+          window.Cinnamo?.say?.(`¡Pareja de ${first.card.name}!`);
           const counter = this.container.querySelector('#matchedCount');
           if (counter) counter.textContent = this.matchedPairs;
 
