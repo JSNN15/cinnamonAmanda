@@ -74,6 +74,10 @@
   .pn-btn-back { background: #9fb6dd; }
   .pn-btn-ok { background: linear-gradient(#5fd38d, #2fb36b); min-width: 200px; }
   .pn-btn-ok:disabled { opacity: .45; cursor: default; }
+  .pn-gamepad-btn { display: inline-flex; align-items: center; gap: 8px; border: 2px solid #bae6fd; border-radius: 999px;
+    background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); color: #0369a1; font: 800 15px var(--font, "Baloo 2", sans-serif);
+    padding: 6px 16px; cursor: pointer; box-shadow: 0 3px 0 #7dd3fc; transition: transform .12s; }
+  .pn-gamepad-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #7dd3fc; }
   .pn-focus { outline: 5px solid #f5a623; outline-offset: 3px; transform: scale(1.08); }
   .pn-hint { margin: 0; font-size: clamp(12px, 1.7vw, 15px); opacity: .8; text-align: center; }
   .pn-ghost { position: fixed; z-index: 99999; pointer-events: none; width: 64px; height: 64px; border-radius: 16px;
@@ -106,20 +110,32 @@
     get() { return pretty(this.name); }
     upper() { return this.name; }
     has() { return !!this.name; }
-    isOpen() { return this.open_; }
+    isOpen() { return this.open_ && !this.greeting_; }
     onChange(fn) { this.listeners.push(fn); }
 
     open(forceNew = false) {
       this.build();
+      clearTimeout(this.closeTimer);
       this.draft = forceNew ? '' : this.name;
       this.focusIdx = 0;
       this.navMode = false;
+      this.greeting_ = false;
       this.open_ = true;
       this.overlay.classList.remove('pn-hidden');
       this.overlay.setAttribute('aria-hidden', 'false');
       this.renderAsk();
       this.syncController();
       speak('¡Hola! ¿Cómo te llamas? Arma tu nombre con las letras.');
+    }
+
+    dismissIfOpen() {
+      if (!this.open_) return;
+      if (this.draft && !this.greeting_) {
+        this.name = this.draft;
+        storageSet(this.name);
+        this.updateHubChip();
+      }
+      this.close();
     }
 
     /* ---------- Construcción del DOM ---------- */
@@ -138,7 +154,7 @@
       this.card = this.overlay.firstElementChild;
 
       window.addEventListener('keydown', (e) => this.onKey(e), true);
-      window.addEventListener('keyup', (e) => { if (this.open_) { e.stopImmediatePropagation(); } }, true);
+      window.addEventListener('keyup', (e) => { if (this.open_ && !this.greeting_) { e.stopImmediatePropagation(); } }, true);
     }
 
     renderAsk() {
@@ -158,8 +174,10 @@
           <button class="pn-btn pn-btn-back" data-act="back">⌫ Borrar</button>
           <button class="pn-btn pn-btn-ok" data-act="ok">✅ ¡Listo!</button>
         </div>
+        <button type="button" class="pn-gamepad-btn" id="pnBtnGamepad"><i class="ci" data-icon="gamepad"></i> Conectar celular como mando</button>
         <p class="pn-hint">⌨️ También puedes escribir con el teclado · 🎮 Con el mando: flechas para moverte, A para elegir, B para borrar</p>
       `;
+      window.CinnaIcons?.hydrate?.(this.card);
       this.slotsEl = this.card.querySelector('.pn-slots');
       this.okBtn = this.card.querySelector('[data-act="ok"]');
       this.focusables = Array.from(this.card.querySelectorAll('.pn-key, .pn-btn'));
@@ -167,6 +185,12 @@
       this.card.querySelectorAll('.pn-key').forEach(btn => this.bindDrag(btn));
       this.card.querySelector('[data-act="back"]').addEventListener('click', () => this.backspace());
       this.okBtn.addEventListener('click', () => this.confirm());
+      const gpBtn = this.card.querySelector('#pnBtnGamepad');
+      if (gpBtn) {
+        gpBtn.addEventListener('click', () => {
+          document.getElementById('globalBtnGamepad')?.click();
+        });
+      }
       this.renderSlots();
       this.renderFocus();
     }
@@ -234,7 +258,7 @@
 
     /* ---------- Edición ---------- */
     addLetter(ch) {
-      if (!this.open_ || !LETTERS.includes(ch)) return;
+      if (!this.open_ || this.greeting_ || !LETTERS.includes(ch)) return;
       if (this.draft.length >= MAX_LEN) { sfx('back'); return; }
       this.draft += ch;
       this.justAdded = true;
@@ -244,16 +268,17 @@
     }
 
     backspace() {
-      if (!this.open_ || !this.draft) return;
+      if (!this.open_ || this.greeting_ || !this.draft) return;
       this.draft = this.draft.slice(0, -1);
       sfx('back');
       this.renderSlots();
     }
 
     confirm() {
-      if (!this.open_ || !this.draft) return;
+      if (!this.open_ || this.greeting_ || !this.draft) return;
       this.name = this.draft;
       storageSet(this.name);
+      this.greeting_ = true;
       const nice = this.get();
       sfx('cheer');
       speak(`¡Hola, ${nice}! ¡Vamos a jugar!`);
@@ -264,19 +289,50 @@
       this.focusables = null;
       this.listeners.forEach(fn => { try { fn(nice); } catch (_) {} });
       this.updateHubChip();
-      setTimeout(() => this.close(), 1600);
+      if (window.Cinnamo?.passport?.renderPassportGrid) {
+        window.Cinnamo.passport.renderPassportGrid();
+      }
+      const mathSum = document.querySelector('#mathParents summary');
+      if (mathSum) mathSum.textContent = `👨‍👩‍👧 Progreso de ${nice} (para papás)`;
+      const wg = window.Cinnamo?.writingGame;
+      if (wg && wg.container && !document.getElementById('screen-writing')?.classList.contains('hidden')) {
+        if (wg.currentWordIdx === 0) wg.loadWord(0);
+        if (wg.currentSentenceIdx === 0) wg.loadSentence(0);
+        wg.render();
+      }
+      this.syncController();
+      clearTimeout(this.closeTimer);
+      this.closeTimer = setTimeout(() => this.close(), 1400);
     }
 
     close() {
+      clearTimeout(this.closeTimer);
       this.open_ = false;
-      this.overlay.classList.add('pn-hidden');
-      this.overlay.setAttribute('aria-hidden', 'true');
+      this.greeting_ = false;
+      if (this.overlay) {
+        this.overlay.classList.add('pn-hidden');
+        this.overlay.setAttribute('aria-hidden', 'true');
+      }
       this.syncController();
     }
 
     /* ---------- Teclado físico ---------- */
     onKey(e) {
       if (!this.open_) return;
+      const acceptYes = document.querySelector('.cinna-accept-yes');
+      if (acceptYes && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        acceptYes.click();
+        return;
+      }
+      const gpModal = document.getElementById('gamepadModal');
+      if (gpModal && !gpModal.classList.contains('hidden') && e.key === 'Escape') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        document.getElementById('btnCloseGamepadModal')?.click();
+        return;
+      }
       e.stopImmediatePropagation();
       if (!this.focusables) { e.preventDefault(); return; } // pantalla de saludo
       const k = e.key || '';

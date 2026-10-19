@@ -661,14 +661,14 @@
       };
     }
 
-    spawnDecorItem(decorType) {
+    spawnDecorItem(decorType, slot = 1) {
       const type = DECOR_ALIASES[decorType] || decorType;
       const template = CATALOG_DECOR.find(d => d.type === type) || CATALOG_DECOR[0];
       const list = this.getRoomItems();
-      const p1 = this.avatars[1];
-      // Aparece cerca de la niña o niño, cayendo desde arriba con rebote
-      const x = Math.max(110, Math.min(this.logicalW - 110, p1.x + (p1.facing || 1) * (90 + Math.random() * 60)));
-      const y = Math.max(this.floorY + 30, Math.min(this.logicalH - 30, p1.y + (Math.random() - 0.5) * 40));
+      const av = this.avatars[slot] || this.avatars[1];
+      // Aparece cerca de quien lo pide, cayendo desde arriba con rebote
+      const x = Math.max(110, Math.min(this.logicalW - 110, av.x + (av.facing || 1) * (90 + Math.random() * 60)));
+      const y = Math.max(this.floorY + 30, Math.min(this.logicalH - 30, av.y + (Math.random() - 0.5) * 40));
       const obj = this.makeDecor(template, x, y);
       obj.drop = 1;
       const customs = list.filter(o => o.custom);

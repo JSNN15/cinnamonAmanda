@@ -23,7 +23,7 @@
       id: 'mi-nombre',
       tier: '5-6',
       catName: '⭐ Mi Nombre',
-      get word() { return (window.Cinnamo?.playerName?.upper?.() || 'PEQUE'); },
+      get word() { return (window.Cinnamo?.playerName?.upper?.() || 'PEQUE').replace(/[^A-ZÁÉÍÓÚÜÑ]/g, '') || 'PEQUE'; },
       get letters() { return this.word.split(''); },
       get phonetic() { return window.cinnaName ? cinnaName() : 'Peque'; },
       icon: '⭐',
@@ -858,6 +858,10 @@
     }
 
     cleanupActiveDrag() {
+      if (this.victoryTimer) {
+        clearTimeout(this.victoryTimer);
+        this.victoryTimer = null;
+      }
       if (this.currentDragCleanup) {
         try { this.currentDragCleanup(); } catch (_) {}
         this.currentDragCleanup = null;
@@ -1738,8 +1742,12 @@
 
       const allFilled = this.placedLetters.every(l => l !== null);
       if (allFilled) {
-        setTimeout(() => {
-          this.triggerWordVictory();
+        if (this.victoryTimer) clearTimeout(this.victoryTimer);
+        this.victoryTimer = setTimeout(() => {
+          this.victoryTimer = null;
+          if (this.currentMode === 'montessori') {
+            this.triggerWordVictory();
+          }
         }, 400);
       }
     }
@@ -1968,8 +1976,12 @@
 
       const allFilled = this.placedSentenceWords.every(w => w !== null);
       if (allFilled) {
-        setTimeout(() => {
-          this.triggerSentenceVictory();
+        if (this.victoryTimer) clearTimeout(this.victoryTimer);
+        this.victoryTimer = setTimeout(() => {
+          this.victoryTimer = null;
+          if (this.currentMode === 'sentences') {
+            this.triggerSentenceVictory();
+          }
         }, 400);
       }
     }
@@ -2517,8 +2529,9 @@
     nextLetter() {
       A.unlock();
       if (this.container) {
-        const modalBtn = this.container.querySelector('#btnNextWordModal') || this.container.querySelector('#btnNextSentenceModal');
-        if (modalBtn) {
+        const modalBtn = this.container.querySelector('#btnNextWordModal') || this.container.querySelector('#btnNextSentenceModal') || this.container.querySelector('#btnBannerNextTrace:not(.hidden)');
+        const banner = this.container.querySelector('#traceCelebrationBanner');
+        if (modalBtn && (!modalBtn.id.includes('Banner') || (banner && !banner.classList.contains('hidden')))) {
           modalBtn.click();
           return;
         }
@@ -2649,6 +2662,12 @@
           modalBtn.click();
           return;
         }
+        const banner = this.container.querySelector('#traceCelebrationBanner');
+        const bannerNext = this.container.querySelector('#btnBannerNextTrace');
+        if (banner && !banner.classList.contains('hidden') && bannerNext) {
+          bannerNext.click();
+          return;
+        }
       }
       const mode = this.currentMode || 'montessori';
       if (mode === 'montessori') {
@@ -2676,25 +2695,25 @@
         const canvas = this.container ? this.container.querySelector('#traceCanvas') : null;
         if (!canvas || !canvas.onpointerdown) return;
         const char = this.getCurrentTraceChar();
-        const conf = LETTER_STROKES[char] || LETTER_STROKES['A'];
+        const conf = getLetterConfig(char);
         const rect = canvas.getBoundingClientRect();
-        const boxSize = Math.min(canvas.width, canvas.height) * 0.78;
+        const boxSize = Math.min(canvas.width * 0.72, canvas.height * 0.76);
         const originX = (canvas.width - boxSize) / 2;
-        const originY = (canvas.height - boxSize) / 2;
+        const originY = (canvas.height - boxSize) / 2 + 10;
         const toClient = (nx, ny) => ({
           clientX: rect.left + ((originX + nx * boxSize) / canvas.width) * rect.width,
           clientY: rect.top + ((originY + ny * boxSize) / canvas.height) * rect.height
         });
         conf.strokes.forEach(stroke => {
-          if (!stroke.length) return;
-          const p0 = toClient(stroke[0][0], stroke[0][1]);
+          if (!stroke || !stroke.length) return;
+          const p0 = toClient(stroke[0].x, stroke[0].y);
           canvas.onpointerdown({ preventDefault() {}, clientX: p0.clientX, clientY: p0.clientY });
           for (let i = 1; i < stroke.length; i++) {
             const pA = stroke[i - 1];
             const pB = stroke[i];
             for (let s = 1; s <= 12; s++) {
               const t = s / 12;
-              const pt = toClient(pA[0] + (pB[0] - pA[0]) * t, pA[1] + (pB[1] - pA[1]) * t);
+              const pt = toClient(pA.x + (pB.x - pA.x) * t, pA.y + (pB.y - pA.y) * t);
               canvas.onpointermove({ preventDefault() {}, clientX: pt.clientX, clientY: pt.clientY });
             }
           }

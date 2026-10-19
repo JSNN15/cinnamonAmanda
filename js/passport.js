@@ -419,6 +419,8 @@
     }
 
     renderPassportGrid() {
+      const titleEl = document.querySelector('#passportModal .modal-header h2');
+      if (titleEl) titleEl.textContent = `Pasaporte Mágico de ${cinnaName()}`;
       const starEl = document.getElementById('passportStarCount');
       const countEl = document.getElementById('passportStickerCount');
       const grid = document.getElementById('passportStickersGrid');

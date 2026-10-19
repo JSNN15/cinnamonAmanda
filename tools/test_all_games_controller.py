@@ -190,6 +190,19 @@ try:
         sys.exit(1)
 
     # -------------------------------------------------------------
+    # PRUEBA 0: Pantalla "¿Cómo te llamas?" (Teclado A-Z desde el Mando)
+    # -------------------------------------------------------------
+    print("\n--- TEST 0: PANTALLA '¿CÓMO TE LLAMAS?' DESDE EL CELULAR ---")
+    for ch in ['S', 'O', 'F', 'I', 'A']:
+        ws_phone.eval(f"sendData({{ type: 'nameKey', char: '{ch}' }})")
+        time.sleep(0.08)
+    ws_phone.eval("sendData({ type: 'nameKey', char: 'OK' })")
+    time.sleep(0.4)
+    player_name = ws_host.eval("window.cinnaName && window.cinnaName()")
+    assert player_name == "Sofia", f"Player name should be Sofia, got {player_name}"
+    print(f"✅ Nombre armado desde el celular: '{player_name}'")
+
+    # -------------------------------------------------------------
     # PRUEBA 1: Navegación desde el Mando (Hub -> A Volar)
     # -------------------------------------------------------------
     print("\n--- TEST 1: ¡A VOLAR! (VUELO VERTICAL: ARRIBA Y ABAJO) ---")

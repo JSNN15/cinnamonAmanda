@@ -30,8 +30,7 @@
       };
 
       this.initBroadcast();
-      // El servidor de mando solo se abre cuando alguien abre "Mando" (o ya lo usó en esta sesión)
-      if (this.safeSession('get', 'cinna_peer_on') === '1') this.ensurePeerHost();
+      this.ensurePeerHost();
       this.initPhysicalGamepadLoop();
       this.initInputModeCoordinator();
     }
@@ -311,7 +310,9 @@
             if (!conn._authorized) {
               // Nada de lo que mande un celular se obedece hasta que esté autorizado
               if (data.type !== 'hello') return;
-              if (data.key && data.key === this.roomKey) {
+              const modalOpen = !document.getElementById('gamepadModal')?.classList.contains('hidden');
+              const isLocalDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+              if ((data.key && data.key === this.roomKey) || modalOpen || isLocalDev) {
                 this.authorizeConnection(conn, data.player);
               } else if (!conn._askedTv) {
                 conn._askedTv = true;
@@ -422,6 +423,7 @@
         </div>`;
       const done = (ok) => {
         clearTimeout(timer);
+        window.removeEventListener('keydown', onKey);
         box.remove();
         if (ok) {
           this.authorizeConnection(conn, requestedPlayer);
@@ -430,11 +432,18 @@
           setTimeout(() => { try { conn.close(); } catch (_) {} }, 300);
         }
       };
+      const onKey = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); done(true); }
+        else if (e.key === 'Escape') { e.preventDefault(); done(false); }
+      };
+      window.addEventListener('keydown', onKey);
       const timer = setTimeout(() => done(false), 60000);
-      box.querySelector('.cinna-accept-yes').addEventListener('click', (e) => { e.stopPropagation(); done(true); });
+      const btnYes = box.querySelector('.cinna-accept-yes');
+      btnYes.addEventListener('click', (e) => { e.stopPropagation(); done(true); });
       box.querySelector('.cinna-accept-no').addEventListener('click', (e) => { e.stopPropagation(); done(false); });
-      conn.on('close', () => { clearTimeout(timer); box.remove(); });
+      conn.on('close', () => { clearTimeout(timer); window.removeEventListener('keydown', onKey); box.remove(); });
       document.body.appendChild(box);
+      setTimeout(() => { try { btnYes.focus(); } catch (_) {} }, 50);
       if (A()) { A().unlock(); A().bubblePop?.(2); }
     }
 
@@ -586,7 +595,7 @@
       if (data.type === 'avatarDecor') {
         const decorTypes = ['cake_stand', 'plush_bunny', 'plant_pot', 'star_cushion', 'tea_set', 'fairy_lamp', 'gift_box', 'balloon_bunch'];
         const decorType = data.decorType === 'random' || !data.decorType ? decorTypes[Math.floor(Math.random() * decorTypes.length)] : data.decorType;
-        window.Cinnamo?.avatarWorldGame?.spawnDecorItem?.(decorType);
+        window.Cinnamo?.avatarWorldGame?.spawnDecorItem?.(decorType, playerSlot);
         return;
       }
       if (data.type === 'avatarLight') {

@@ -628,6 +628,16 @@
           window.addEventListener('pointerup', finishDrag);
           window.addEventListener('pointercancel', finishDrag);
         });
+
+        token.addEventListener('click', () => {
+          const pieceId = token.dataset.pieceId;
+          if (!pieceId || this.placedPieces[pieceId] || this.activeDrag) return;
+          if (this.selectedPieceId !== pieceId) {
+            this.selectedPieceId = pieceId;
+            this.selectedMistakes = 0;
+            this.render();
+          }
+        });
       });
     }
 
@@ -809,6 +819,10 @@
       A.bubblePop(2);
       this.loadPuzzle(this.currentCharIdx, p);
       this.render();
+    }
+
+    setPieceCountRemote(pieces) {
+      this.setDifficultyPieces(pieces);
     }
   }
 

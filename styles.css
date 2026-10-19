@@ -2469,7 +2469,7 @@ canvas#game { display: block; position: fixed; inset: 60px 0 0 0; }
 }
 
 .cinna-modal-overlay {
-  position: fixed; inset: 0; z-index: 9999;
+  position: fixed; inset: 0; z-index: 100010;
   background: rgba(45, 20, 40, 0.6);
   backdrop-filter: blur(8px);
   display: flex; justify-content: center; align-items: center;
@@ -3035,7 +3035,7 @@ body.touch-input-active .flight-touch-controls {
 
 /* ---------- Aceptar mando nuevo (celular que escribió el código a mano) ---------- */
 .cinna-accept-controller {
-  position: fixed; inset: 0; z-index: 30000;
+  position: fixed; inset: 0; z-index: 100020;
   display: flex; align-items: center; justify-content: center;
   background: rgba(40, 30, 60, .45); padding: 16px;
 }

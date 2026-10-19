@@ -233,8 +233,15 @@
     }
 
     launchGame(gameKey) {
+      window.Cinnamo?.playerName?.dismissIfOpen?.();
       this.stopActiveGames();
       this.showScreen(gameKey);
+
+      // Emitir pantalla base al mando antes de init(); los juegos con contexto enriquecido
+      // (math, memory, coloring, writing, puzzle, avatar) lo actualizarán dentro de su init()
+      if (window.Cinnamo?.controllerBridge?.broadcastGameContext) {
+        window.Cinnamo.controllerBridge.broadcastGameContext({ screen: gameKey });
+      }
 
       if (gameKey === 'flight') {
         if (window.Cinnamo.startFlightGame) {
@@ -281,12 +288,6 @@
         if (window.Cinnamo.avatarWorldGame) {
           window.Cinnamo.avatarWorldGame.init(avatarMount);
         }
-      }
-
-      // Reconfirmar sincronización de contexto con el mando tras montar el juego
-      // (math y memory ya emiten su contexto enriquecido con opciones/cartas dentro de init)
-      if (gameKey !== 'math' && gameKey !== 'memory' && window.Cinnamo?.controllerBridge?.broadcastGameContext) {
-        window.Cinnamo.controllerBridge.broadcastGameContext({ screen: gameKey });
       }
     }
   }

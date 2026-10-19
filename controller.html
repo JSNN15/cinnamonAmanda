@@ -707,12 +707,16 @@
           <button class="btn-mini-pill" data-city="4">🏮 China</button>
         </div>
 
-        <!-- Controles remotos de Cinnamoroll World: Casa de Sueños (Habitaciones + Vestidor + Decoración) -->
+        <!-- Controles remotos de Cinnamoroll World: Casa de Sueños (Habitaciones + Vestidor + Decoración + Luz) -->
         <div class="remote-mini-pills hidden aw-remote-strip" id="avatarActionStrip">
           <button class="aw-remote-btn" data-av-step="-1" aria-label="Cuarto anterior"><i class="ci" data-icon="arrow-left"></i></button>
           <button class="aw-remote-btn" data-av-custom="outfit" aria-label="Cambiar ropa"><i class="ci" data-icon="hanger"></i></button>
           <button class="aw-remote-btn" data-av-custom="hat" aria-label="Cambiar gorro"><i class="ci" data-icon="star"></i></button>
+          <button class="aw-remote-btn" data-av-custom="glasses" aria-label="Cambiar lentes"><i class="ci" data-icon="eye"></i></button>
+          <button class="aw-remote-btn" data-av-custom="prop" aria-label="Cambiar accesorio"><i class="ci" data-icon="wand"></i></button>
+          <button class="aw-remote-btn" data-av-custom="expr" aria-label="Cambiar carita"><i class="ci" data-icon="heart"></i></button>
           <button class="aw-remote-btn" data-av-decor="random" aria-label="Sacar un juguete"><i class="ci" data-icon="toybox"></i></button>
+          <button class="aw-remote-btn" id="btnRemoteAvatarLight" aria-label="Cambiar luz del día"><i class="ci" data-icon="spark"></i></button>
           <button class="aw-remote-btn" data-av-step="1" aria-label="Cuarto siguiente"><i class="ci" data-icon="arrow-right"></i></button>
         </div>
 
@@ -916,8 +920,8 @@
     </footer>
   </div>
 
-  <script src="js/icons.js?v=35"></script>
-  <script src="js/avatar-world.js?v=35"></script>
+  <script src="js/icons.js?v=36"></script>
+  <script src="js/avatar-world.js?v=36"></script>
   <script src="js/peerjs.min.js"></script>
   <script>
     (function () {
@@ -948,8 +952,11 @@
       let roomKey = '';
       try {
         const urlKey = (urlParams.get('k') || '').replace(/[^A-Z0-9]/gi, '');
-        if (urlKey) sessionStorage.setItem('cinna_ctrl_key_' + roomCode, urlKey);
-        roomKey = urlKey || sessionStorage.getItem('cinna_ctrl_key_' + roomCode) || '';
+        if (urlKey) {
+          sessionStorage.setItem('cinna_ctrl_key_' + roomCode, urlKey);
+          localStorage.setItem('cinna_ctrl_key_' + roomCode, urlKey);
+        }
+        roomKey = urlKey || sessionStorage.getItem('cinna_ctrl_key_' + roomCode) || localStorage.getItem('cinna_ctrl_key_' + roomCode) || '';
       } catch (_) {}
       let rejectedByTv = false;
       const headerRoomText = document.getElementById('headerRoomText');
@@ -1269,7 +1276,7 @@
           if (val && val.length >= 4) {
             playHapticBeep(640);
             rejectedByTv = false;
-            try { roomKey = sessionStorage.getItem('cinna_ctrl_key_' + val) || ''; } catch (_) { roomKey = ''; }
+            try { roomKey = sessionStorage.getItem('cinna_ctrl_key_' + val) || localStorage.getItem('cinna_ctrl_key_' + val) || ''; } catch (_) { roomKey = ''; }
             roomCode = val;
             window.roomCode = val;
             sessionStorage.setItem('cinna_ctrl_room', val);
@@ -1546,7 +1553,9 @@
       if (btnFullscreen) {
         const updateCtrlFsUI = () => {
           const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
-          btnFullscreen.textContent = isFs ? '🗗' : '📺';
+          const ic = btnFullscreen.querySelector('.ci');
+          if (ic && window.CinnaIcons) window.CinnaIcons.set(ic, isFs ? 'compress' : 'expand');
+          else btnFullscreen.textContent = isFs ? '🗗' : '📺';
           btnFullscreen.classList.toggle('active-fullscreen', isFs);
         };
 
