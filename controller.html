@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="theme-color" content="#b3e5fc" />
-  <title>🌸 Mando Cinnamoroll · Cinnamoroll Land</title>
+  <title>Mando Cinnamoroll · Cinnamoroll Land</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
@@ -272,8 +272,39 @@
     .btn-hub-remote:active {
       transform: translateY(2px); box-shadow: 0 1px 0 #94a3b8;
     }
-    .btn-hub-remote .hub-ico { font-size: 24px; }
-    .btn-hub-remote .hub-lbl { font-size: 11px; font-weight: 800; color: #334155; }
+    .btn-hub-remote { padding: 6px 6px 8px; border: 3px solid #ffffff; border-radius: 20px; box-shadow: 0 4px 0 rgba(107,143,199,0.35), 0 8px 16px rgba(75,95,143,0.12); }
+    .btn-hub-remote:active { box-shadow: 0 1px 0 rgba(107,143,199,0.35); }
+    .hub-pic {
+      position: relative; width: 100%; aspect-ratio: 16 / 10; border-radius: 14px;
+      background: radial-gradient(rgba(255,255,255,0.45) 2px, transparent 2.5px) 0 0 / 14px 14px, var(--g);
+      display: flex; align-items: flex-end; justify-content: center; overflow: hidden;
+    }
+    .hub-art { height: 86%; width: auto; max-width: 92%; object-fit: contain; filter: drop-shadow(0 4px 5px rgba(75,95,143,0.22)); }
+    .hub-art-photo { height: 78%; margin-bottom: 8%; border-radius: 8px; border: 3px solid #fff; transform: rotate(-4deg); }
+    .hub-badge {
+      position: absolute; top: 5px; left: 5px; font-size: 18px; color: #5c3d2e;
+      background: rgba(255,255,255,0.92); border-radius: 50%; padding: 4px; box-sizing: content-box;
+    }
+    .btn-hub-remote .hub-lbl { font-size: 15px; font-weight: 800; color: #47689e; line-height: 1.1; }
+    .aw-remote-strip { gap: 10px !important; justify-content: center; }
+    .aw-remote-btn {
+      width: 58px; height: 58px; border-radius: 50%;
+      border: 4px solid #ffffff; background: radial-gradient(circle at 35% 30%, #ffffff, #e0f2fe);
+      color: #5c3d2e; font-size: 30px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 0 rgba(107,143,199,0.4); cursor: pointer;
+    }
+    .aw-remote-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(107,143,199,0.4); }
+    .aw-remote-btn[data-av-custom] { background: radial-gradient(circle at 35% 30%, #ffffff, #ffd0e6); }
+    .aw-remote-btn[data-av-decor] { background: radial-gradient(circle at 35% 30%, #ffffff, #ffe7a8); }
+    .hero-pick-img { height: 22px; width: 34px; object-fit: contain; vertical-align: middle; }
+    .slot-dot { display: block; width: 14px; height: 14px; border-radius: 50%; margin: 3px auto 0; border: 2px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.08); }
+    .btn-player-slot[data-slot="1"] .slot-dot { background: #ec4899; }
+    .btn-player-slot[data-slot="2"] .slot-dot { background: #0ea5e9; }
+    .btn-player-slot[data-slot="3"] .slot-dot { background: #eab308; }
+    .layout-hub { padding: 0 12px; }
+    .brand-mascot { width: 36px; height: 20px; object-fit: contain; vertical-align: middle; }
+    .btn-action-hero .ci { font-size: 1.15em; }
+    .btn-nav-home .ci, .btn-nav-fullscreen .ci { font-size: 20px; vertical-align: -3px; }
 
     /* 4. MODO MEMORICE */
     .layout-memory {
@@ -635,14 +666,14 @@
   <div class="controller-container">
     <!-- Header Universal -->
     <header class="controller-header">
-      <div class="brand-title">🌸 <span class="brand-long-name">Mando Cinnamoroll</span></div>
+      <div class="brand-title"><img class="brand-mascot" src="cinnamoroll_sprite.png" alt="" width="36" height="20" /> <span class="brand-long-name">Mando Cinnamoroll</span></div>
       <div class="header-actions">
         <button id="btnRoomBadge" class="room-badge-btn" title="Toca para cambiar código">
           Sala: <strong id="headerRoomText">----</strong> ✎
         </button>
-        <button id="btnRemoteHome" class="btn-nav-home" aria-label="Ir al Menú">🏠 Menú</button>
-        <button id="btnRemoteMusic" class="btn-nav-fullscreen" title="Música Sí/No" aria-label="Música">🎵</button>
-        <button id="btnRemoteFullscreen" class="btn-nav-fullscreen" title="Pantalla Completa" aria-label="Pantalla Completa">📺</button>
+        <button id="btnRemoteHome" class="btn-nav-home" aria-label="Ir al Menú"><i class="ci" data-icon="home"></i> Menú</button>
+        <button id="btnRemoteMusic" class="btn-nav-fullscreen" title="Música Sí/No" aria-label="Música"><i class="ci" data-icon="music"></i></button>
+        <button id="btnRemoteFullscreen" class="btn-nav-fullscreen" title="Pantalla Completa" aria-label="Pantalla Completa"><i class="ci" data-icon="expand"></i></button>
         <div id="connStatus" class="status-badge connecting" title="Toca para reconectar">🟡 Conectando...</div>
       </div>
     </header>
@@ -650,16 +681,16 @@
     <!-- Barra Universal de Jugador (Hasta 3 Players Simultáneos) y Personaje Sanrio -->
     <div class="multiplayer-top-strip" id="playerHeroTopBar">
       <div class="player-slot-group" title="Elige qué jugador eres (1 a 3 Jugadores)">
-        <button class="btn-player-slot active" data-slot="1">P1 🌸</button>
-        <button class="btn-player-slot" data-slot="2">P2 🩵</button>
-        <button class="btn-player-slot" data-slot="3">P3 💛</button>
+        <button class="btn-player-slot active" data-slot="1">P1<i class="slot-dot"></i></button>
+        <button class="btn-player-slot" data-slot="2">P2<i class="slot-dot"></i></button>
+        <button class="btn-player-slot" data-slot="3">P3<i class="slot-dot"></i></button>
       </div>
       <div class="hero-quick-group" id="globalHeroPickerGroup" title="Elige tu personaje en la Tele">
-        <button class="btn-hero-pick active" data-hero="cinna">🐶<span>Cinna</span></button>
-        <button class="btn-hero-pick" data-hero="milk">🍼<span>Milk</span></button>
-        <button class="btn-hero-pick" data-hero="purin">🍮<span>Purin</span></button>
-        <button class="btn-hero-pick" data-hero="chiffon">🌸<span>Chiffon</span></button>
-        <button class="btn-hero-pick" data-hero="mocha">🎀<span>Mocha</span></button>
+        <button class="btn-hero-pick active" data-hero="cinna"><img class="hero-pick-img" src="cinnamoroll_sprite.png" alt="" /><span>Cinna</span></button>
+        <button class="btn-hero-pick" data-hero="milk"><img class="hero-pick-img" src="assets/milk_teddy.png" alt="" /><span>Milk</span></button>
+        <button class="btn-hero-pick" data-hero="purin"><img class="hero-pick-img" src="assets/pompompurin.png" alt="" /><span>Purin</span></button>
+        <button class="btn-hero-pick" data-hero="chiffon"><img class="hero-pick-img" src="assets/chiffon.png" alt="" /><span>Chiffon</span></button>
+        <button class="btn-hero-pick" data-hero="mocha"><img class="hero-pick-img" src="assets/mocha.png" alt="" /><span>Mocha</span></button>
       </div>
     </div>
 
@@ -677,18 +708,12 @@
         </div>
 
         <!-- Controles remotos de Cinnamoroll World: Casa de Sueños (Habitaciones + Vestidor + Decoración) -->
-        <div class="remote-mini-pills hidden" id="avatarActionStrip" style="max-width: 480px; gap: 4px;">
-          <button class="btn-mini-pill active" data-av-room="0">🧁 Café</button>
-          <button class="btn-mini-pill" data-av-room="1">🛏️ Cuarto</button>
-          <button class="btn-mini-pill" data-av-room="2">🌸 Jardín</button>
-          <button class="btn-mini-pill" data-av-custom="outfit" style="background: #fdf2f8; color: #be185d;">👗 Ropa</button>
-          <button class="btn-mini-pill" data-av-custom="hat" style="background: #fdf2f8; color: #be185d;">👑 Gorro</button>
-          <button class="btn-mini-pill" data-av-custom="glasses" style="background: #fdf2f8; color: #be185d;">🕶️ Lentes</button>
-          <button class="btn-mini-pill" data-av-custom="prop" style="background: #fdf2f8; color: #be185d;">🪄 Mano</button>
-          <button class="btn-mini-pill" data-av-custom="expr" style="background: #fdf2f8; color: #be185d;">😊 Cara</button>
-          <button class="btn-mini-pill" data-av-decor="cake" style="background: #fef9c3; color: #854d0e;">🎂 Pastel</button>
-          <button class="btn-mini-pill" data-av-decor="plush" style="background: #fef9c3; color: #854d0e;">🧸 Peluche</button>
-          <button class="btn-mini-pill" id="btnRemoteAvatarLight" style="background: #e0f2fe; color: #0369a1;">☀️ Luz</button>
+        <div class="remote-mini-pills hidden aw-remote-strip" id="avatarActionStrip">
+          <button class="aw-remote-btn" data-av-step="-1" aria-label="Cuarto anterior"><i class="ci" data-icon="arrow-left"></i></button>
+          <button class="aw-remote-btn" data-av-custom="outfit" aria-label="Cambiar ropa"><i class="ci" data-icon="hanger"></i></button>
+          <button class="aw-remote-btn" data-av-custom="hat" aria-label="Cambiar gorro"><i class="ci" data-icon="star"></i></button>
+          <button class="aw-remote-btn" data-av-decor="random" aria-label="Sacar un juguete"><i class="ci" data-icon="toybox"></i></button>
+          <button class="aw-remote-btn" data-av-step="1" aria-label="Cuarto siguiente"><i class="ci" data-icon="arrow-right"></i></button>
         </div>
 
         <!-- Controles rápidos de altitud para ¡A Volar! (visible en pantalla de vuelo) -->
@@ -710,13 +735,13 @@
 
           <div class="action-buttons-cluster">
             <button class="btn-action-hero btn-jump-action" id="btnJumpAction" data-btn="jump" aria-label="Saltar">
-              <span>🪽</span> <span id="labelJump">¡SALTAR!</span>
+              <i class="ci" data-icon="wing"></i> <span id="labelJump">¡SALTAR!</span>
             </button>
             <button class="btn-action-hero btn-treat-action" id="btnTreatAction" data-btn="treat" aria-label="Dulce">
-              <span>🧁</span> <span id="labelTreat">DULCE</span>
+              <i class="ci" data-icon="cupcake"></i> <span id="labelTreat">DULCE</span>
             </button>
             <button class="btn-action-hero btn-switch-hero-action" id="btnSwitchHeroAction" aria-label="Cambiar Amigo">
-              <span>🔄</span> <span>AMIGO</span>
+              <i class="ci" data-icon="refresh"></i> <span>AMIGO</span>
             </button>
           </div>
         </div>
@@ -745,17 +770,17 @@
 
       <!-- 3. MODO HUB (Selector de Juegos a Distancia) -->
       <div id="layoutHub" class="layout-hub hidden">
-        <div class="hub-companion-title">✨ Elige un juego para jugar en la tele: ✨</div>
+        <div class="hub-companion-title">Elige un juego para la tele</div>
         <div class="hub-companion-grid" style="grid-template-columns: repeat(3, 1fr);">
-          <button class="btn-hub-remote" data-screen="avatar" style="border-color: #f472b6; background: #fdf2f8;"><span class="hub-ico">🏡</span><span class="hub-lbl">Casa Avatar</span></button>
-          <button class="btn-hub-remote" data-screen="platformer"><span class="hub-ico">🏃</span><span class="hub-lbl">Super Run</span></button>
-          <button class="btn-hub-remote" data-screen="flight"><span class="hub-ico">🛫</span><span class="hub-lbl">Volar</span></button>
-          <button class="btn-hub-remote" data-screen="math"><span class="hub-ico">🧁</span><span class="hub-lbl">Sumas</span></button>
-          <button class="btn-hub-remote" data-screen="coloring"><span class="hub-ico">🎨</span><span class="hub-lbl">Dibujo</span></button>
-          <button class="btn-hub-remote" data-screen="memory"><span class="hub-ico">🃏</span><span class="hub-lbl">Memoria</span></button>
-          <button class="btn-hub-remote" data-screen="doom"><span class="hub-ico">🎮</span><span class="hub-lbl">Repartidor 3D</span></button>
-          <button class="btn-hub-remote" data-screen="writing"><span class="hub-ico">✏️</span><span class="hub-lbl">Palabras</span></button>
-          <button class="btn-hub-remote" data-screen="puzzle"><span class="hub-ico">🧩</span><span class="hub-lbl">Puzzles</span></button>
+          <button class="btn-hub-remote" data-screen="avatar" style="--g:linear-gradient(135deg,#ffe4f1,#e9d5ff)"><span class="hub-pic"><canvas class="hub-art" id="remoteAvatarCard" width="360" height="180"></canvas><i class="ci hub-badge" data-icon="house"></i></span><span class="hub-lbl">Casa</span></button>
+          <button class="btn-hub-remote" data-screen="platformer" style="--g:linear-gradient(135deg,#e0fbe9,#8be6ae)"><span class="hub-pic"><img class="hub-art" src="cinnamoroll_sprite.png" alt="" loading="lazy" /><i class="ci hub-badge" data-icon="flag"></i></span><span class="hub-lbl">Run</span></button>
+          <button class="btn-hub-remote" data-screen="flight" style="--g:linear-gradient(135deg,#d6ecff,#8ec2ff)"><span class="hub-pic"><img class="hub-art" src="assets/cinnamoroll_fly.png" alt="" loading="lazy" /><i class="ci hub-badge" data-icon="wing"></i></span><span class="hub-lbl">Volar</span></button>
+          <button class="btn-hub-remote" data-screen="math" style="--g:linear-gradient(135deg,#ffe9f2,#ffb8d6)"><span class="hub-pic"><img class="hub-art" src="assets/milk_teddy.png" alt="" loading="lazy" /><i class="ci hub-badge" data-icon="cupcake"></i></span><span class="hub-lbl">Números</span></button>
+          <button class="btn-hub-remote" data-screen="coloring" style="--g:linear-gradient(135deg,#fff6d1,#ffd76a)"><span class="hub-pic"><img class="hub-art" src="assets/chiffon.png" alt="" loading="lazy" /><i class="ci hub-badge" data-icon="brush"></i></span><span class="hub-lbl">Dibujo</span></button>
+          <button class="btn-hub-remote" data-screen="memory" style="--g:linear-gradient(135deg,#ece4ff,#bfa9ff)"><span class="hub-pic"><img class="hub-art" src="assets/pompompurin_hq.png" alt="" loading="lazy" /><i class="ci hub-badge" data-icon="cards"></i></span><span class="hub-lbl">Memoria</span></button>
+          <button class="btn-hub-remote" data-screen="doom" style="--g:linear-gradient(135deg,#ffe7d1,#ffb27a)"><span class="hub-pic"><img class="hub-art" src="assets/milk_sitting.png" alt="" loading="lazy" /><i class="ci hub-badge" data-icon="gift"></i></span><span class="hub-lbl">Repartir</span></button>
+          <button class="btn-hub-remote" data-screen="writing" style="--g:linear-gradient(135deg,#ffe0ef,#f79ac8)"><span class="hub-pic"><img class="hub-art" src="assets/mocha_hq.png" alt="" loading="lazy" /><i class="ci hub-badge" data-icon="pencil"></i></span><span class="hub-lbl">Palabras</span></button>
+          <button class="btn-hub-remote" data-screen="puzzle" style="--g:linear-gradient(135deg,#dcf2ff,#7fcdf5)"><span class="hub-pic"><img class="hub-art hub-art-photo" src="assets/puzzle_milk.png" alt="" loading="lazy" /><i class="ci hub-badge" data-icon="puzzle"></i></span><span class="hub-lbl">Puzzles</span></button>
         </div>
       </div>
 
@@ -886,11 +911,13 @@
 
     <!-- Footer -->
     <footer class="controller-footer">
-      <span id="footerPlayerLabel">✨ Jugador 1 (P1 🌸)</span>
+      <span id="footerPlayerLabel">Jugador 1</span>
       <span class="footer-game-label" id="footerGameLabel">🏃 Super Run</span>
     </footer>
   </div>
 
+  <script src="js/icons.js?v=35"></script>
+  <script src="js/avatar-world.js?v=35"></script>
   <script src="js/peerjs.min.js"></script>
   <script>
     (function () {
@@ -948,7 +975,7 @@
         document.querySelectorAll('.btn-player-slot').forEach(btn => {
           btn.classList.toggle('active', parseInt(btn.dataset.slot, 10) === playerSlot);
         });
-        const names = { 1: '✨ Jugador 1 (P1 🌸)', 2: '✨ Jugador 2 (P2 🩵)', 3: '✨ Jugador 3 (P3 💛)' };
+        const names = { 1: 'Jugador 1', 2: 'Jugador 2', 3: 'Jugador 3' };
         if (footerPlayerLabel) footerPlayerLabel.textContent = names[playerSlot];
       }
       updatePlayerSlotUI(playerSlot);
@@ -1183,11 +1210,10 @@
       });
 
       // Controles Remotos de Cinnamoroll World: Casa de Sueños (Habitaciones, Vestidor, Muebles y Luz)
-      document.querySelectorAll('#avatarActionStrip [data-av-room]').forEach(btn => {
+      document.querySelectorAll('#avatarActionStrip [data-av-step]').forEach(btn => {
         btn.addEventListener('click', () => {
           playHapticBeep(610);
-          document.querySelectorAll('#avatarActionStrip [data-av-room]').forEach(b => b.classList.toggle('active', b === btn));
-          sendData({ type: 'avatarRoom', roomIdx: parseInt(btn.dataset.avRoom, 10) });
+          sendData({ type: 'avatarRoomStep', dir: parseInt(btn.dataset.avStep, 10), player: playerSlot });
         });
       });
       document.querySelectorAll('#avatarActionStrip [data-av-custom]').forEach(btn => {
@@ -1477,14 +1503,9 @@
             flightActionStrip.classList.toggle('hidden', screen !== 'flight');
           }
           if (screen === 'avatar') {
-            footerLabel.textContent = '🏡 Casa Avatar';
-            labelJump.textContent = '✨ USAR';
-            labelTreat.textContent = '💃 BAILAR';
-            if (typeof ctx.roomIdx === 'number') {
-              document.querySelectorAll('#avatarActionStrip [data-av-room]').forEach(b => {
-                b.classList.toggle('active', parseInt(b.dataset.avRoom, 10) === ctx.roomIdx);
-              });
-            }
+            footerLabel.textContent = 'Cinnamoroll World';
+            labelJump.textContent = 'USAR';
+            labelTreat.textContent = 'BAILAR';
           } else if (screen === 'flight') {
             footerLabel.textContent = '🛫 ¡A Volar!';
             labelJump.textContent = '✨ GIRO';

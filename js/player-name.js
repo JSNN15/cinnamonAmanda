@@ -259,7 +259,7 @@
       speak(`¡Hola, ${nice}! ¡Vamos a jugar!`);
       this.card.innerHTML = `
         <div class="pn-head"><img src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" /></div>
-        <div class="pn-hello">¡Hola, ${nice}! 💖</div>
+        <div class="pn-hello">¡Hola, ${nice}!</div>
         <p class="pn-hint" style="font-size:20px">¡Vamos a jugar con Cinnamoroll!</p>`;
       this.focusables = null;
       this.listeners.forEach(fn => { try { fn(nice); } catch (_) {} });
@@ -367,7 +367,8 @@
         if (h1 && h1.nextSibling) header.insertBefore(chip, h1.nextSibling);
         else header.appendChild(chip);
       }
-      chip.innerHTML = this.name ? `👋 ¡Hola, ${this.get()}! <small>· cambiar</small>` : '✏️ Escribe tu nombre';
+      const ic = (n) => (window.CinnaIcons ? `<i class="ci pn-chip-ic">${window.CinnaIcons.svg(n)}</i> ` : '');
+      chip.innerHTML = this.name ? `${ic('hand')}¡Hola, ${this.get()}! <small>· cambiar</small>` : `${ic('pencil')}Escribe tu nombre`;
     }
 
     init() {

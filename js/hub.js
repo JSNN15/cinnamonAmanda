@@ -74,7 +74,8 @@
       if (!this.trackIcon || !this.trackName) return;
       const t = A.getCurrentTrack();
       if (t) {
-        this.trackIcon.textContent = t.icon;
+        const trackIcons = { '🌸': 'flower', '🌙': 'moon', '☕': 'cup', '🪽': 'wing' };
+        window.CinnaIcons?.set(this.trackIcon, trackIcons[t.icon] || 'music');
         this.trackName.textContent = t.name.split(' ')[0];
       }
     }
@@ -93,7 +94,7 @@
         const updateFullscreenUI = () => {
           const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
           if (this.fullscreenIcon) {
-            this.fullscreenIcon.textContent = isFs ? '🗗' : '📺';
+            window.CinnaIcons?.set(this.fullscreenIcon, isFs ? 'compress' : 'expand');
           }
           if (this.fullscreenText) {
             this.fullscreenText.textContent = isFs ? 'Salir' : 'Pantalla';
@@ -130,7 +131,7 @@
       this.btnMusic.addEventListener('click', () => {
         A.unlock();
         this.musicEnabled = A.toggleMusic();
-        this.musicIcon.textContent = this.musicEnabled ? '🎵' : '🔇';
+        window.CinnaIcons?.set(this.musicIcon, this.musicEnabled ? 'music' : 'music-off');
         this.btnMusic.classList.toggle('playing', this.musicEnabled);
         if (this.btnTrack) {
           this.btnTrack.classList.toggle('hidden', !this.musicEnabled);
@@ -156,7 +157,7 @@
           if (!this.musicEnabled) {
             this.musicEnabled = true;
             A.startMusic();
-            this.musicIcon.textContent = '🎵';
+            window.CinnaIcons?.set(this.musicIcon, 'music');
             this.btnMusic.classList.add('playing');
             if (this.btnTrack) {
               this.btnTrack.classList.remove('hidden');
