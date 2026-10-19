@@ -13,51 +13,52 @@
   <noscript>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" />
   </noscript>
-  <link rel="stylesheet" href="styles.css?v=34" />
-  <link rel="stylesheet" href="visual.css?v=34" />
+  <link rel="stylesheet" href="styles.css?v=35" />
+  <link rel="stylesheet" href="visual.css?v=35" />
 </head>
 <body>
   <!-- PANTALLA DE CARGA INSTANTÁNEA (Splash Pastel) -->
   <div id="appPreloader" class="app-preloader" aria-hidden="true">
     <div class="preloader-content">
-      <div class="preloader-mascot">🌸</div>
+      <img class="preloader-mascot" src="cinnamoroll_sprite.png" alt="" width="150" height="80" />
       <div class="preloader-title">Cinnamoroll Land</div>
       <div class="preloader-bar"><div class="preloader-bar-fill"></div></div>
-      <div class="preloader-sub">¡Preparando dulces para ti! ✨</div>
+      <div class="preloader-sub">¡Preparando dulces para ti!</div>
     </div>
   </div>
   <!-- Nombre del jugador: se pide una vez por visita y lo usan todos los juegos -->
-  <script src="js/player-name.js?v=34"></script>
+  <script src="js/icons.js?v=35"></script>
+  <script src="js/player-name.js?v=35"></script>
 
   <!-- BARRA DE NAVEGACIÓN UNIVERSAL -->
   <header id="globalTopBar">
     <button id="globalBtnHome" class="top-nav-btn hidden" title="Volver al Menú Principal" aria-label="Inicio">
-      <span class="btn-icon">🏠</span>
+      <span class="btn-icon ci" data-icon="home"></span>
       <span class="btn-text">Inicio</span>
     </button>
     <div class="top-brand"><img class="top-brand-img" src="cinnamoroll_sprite.png" alt="" width="44" height="24" />Cinnamoroll Land</div>
     <div class="top-right-actions">
       <div id="globalInputModeBadge" class="input-mode-badge mode-touch" title="Coordinador automático Touch vs Mando Inalámbrico">
-        <span id="inputModeIcon">👆</span> <span id="inputModeText">Touch Activo</span>
+        <span id="inputModeIcon" class="ci" data-icon="touch"></span> <span id="inputModeText">Touch Activo</span>
       </div>
       <button id="globalBtnPassport" class="top-nav-btn passport-btn" title="Pasaporte Mágico y Álbum de Stickers" aria-label="Pasaporte de Stickers">
-        <span class="btn-icon">🏅</span>
+        <span class="btn-icon ci" data-icon="medal"></span>
         <span id="passportBadgeText" class="btn-text">Stickers</span>
       </button>
       <button id="globalBtnFullscreen" class="top-nav-btn fullscreen-btn" title="Pantalla Completa" aria-label="Pantalla Completa">
-        <span id="fullscreenIcon" class="btn-icon">📺</span>
+        <span id="fullscreenIcon" class="btn-icon ci" data-icon="expand"></span>
         <span class="btn-text">Pantalla</span>
       </button>
       <button id="globalBtnGamepad" class="top-nav-btn gamepad-btn" title="Conectar Celular o Mando" aria-label="Mando Inalámbrico">
-        <span class="btn-icon">🎮</span>
+        <span class="btn-icon ci" data-icon="gamepad"></span>
         <span class="btn-text">Mando</span>
       </button>
       <button id="globalBtnTrack" class="top-nav-btn track-btn hidden" title="Cambiar Melodía" aria-label="Cambiar Melodía">
-        <span id="trackIcon" class="btn-icon">🌸</span>
+        <span id="trackIcon" class="btn-icon ci" data-icon="flower"></span>
         <span id="trackName" class="btn-text">Nubes</span>
       </button>
       <button id="globalBtnMusic" class="top-nav-btn music-btn" title="Música relajante de caja de música" aria-label="Música">
-        <span id="musicIcon" class="btn-icon">🔇</span>
+        <span id="musicIcon" class="btn-icon ci" data-icon="music-off"></span>
         <span class="btn-text">Música</span>
       </button>
     </div>
@@ -68,7 +69,7 @@
     <section id="screen-hub" class="screen active">
       <div class="hub-sky" aria-hidden="true">
         <span class="sky-cloud c1"></span><span class="sky-cloud c2"></span><span class="sky-cloud c3"></span><span class="sky-cloud c4"></span>
-        <span class="sky-spark s1">✦</span><span class="sky-spark s2">✧</span><span class="sky-spark s3">✦</span><span class="sky-spark s4">✧</span><span class="sky-spark s5">✦</span>
+        <span class="sky-spark s1 ci" data-icon="sparkle" data-fill="#ffffff"></span><span class="sky-spark s2 ci" data-icon="star" data-fill="#fff6b0"></span><span class="sky-spark s3 ci" data-icon="sparkle" data-fill="#ffffff"></span><span class="sky-spark s4 ci" data-icon="star" data-fill="#fff6b0"></span><span class="sky-spark s5 ci" data-icon="sparkle" data-fill="#ffffff"></span>
       </div>
       <div class="hub-header">
         <div class="cinna-mascot-box">
@@ -79,130 +80,94 @@
       </div>
 
       <div class="game-cards-grid">
-        <!-- Tarjeta Destacada: Cinnamoroll World -->
         <article role="button" tabindex="0" class="game-card card-avatar" data-game="avatar">
-          <div class="card-badge">🏡 ¡NUEVO!</div>
-          <div class="card-illustration">
-            <img class="card-hero-img" src="assets/mocha_hq.png" alt="Mocha" loading="lazy" decoding="async" />
-            <span class="card-hero-emoji">👗</span>
-            <span class="card-deco deco-star">👑</span>
-            <span class="card-deco deco-flower">🛋️</span>
+          <div class="card-illustration" data-scene="avatar">
+            <canvas class="card-hero-canvas" id="awCardPortrait" width="440" height="220" aria-label="Amigos vestidos"></canvas>
           </div>
+          <div class="card-badge"><i class="ci" data-icon="house"></i>Casa</div>
           <h2>Cinnamoroll World</h2>
-          <p>Viste a tus amigos y decora la casa. ¡Hasta 3 jugadores!</p>
-          <div class="card-play-tag">▶ ¡Crear y Vivir!</div>
+          <p>Viste a tus amigos y juega en su casita.</p>
+          <div class="card-play-tag"><i class="ci" data-icon="play"></i>¡A jugar!</div>
         </article>
 
-        <!-- Tarjeta 1: A Volar -->
         <article role="button" tabindex="0" class="game-card card-flight" data-game="flight">
-          <div class="card-badge">✨ Vuelo</div>
-          <div class="card-illustration">
+          <div class="card-illustration" data-scene="flight">
             <img class="card-hero-img" src="assets/cinnamoroll_fly.png" alt="Cinnamoroll" loading="lazy" decoding="async" />
-            <span class="card-hero-emoji">✈️</span>
-            <span class="card-deco deco-star">⭐</span>
-            <span class="card-deco deco-cloud">☁️</span>
           </div>
+          <div class="card-badge"><i class="ci" data-icon="wing"></i>Vuelo</div>
           <h2>¡A Volar!</h2>
           <p>Vuela por las nubes y junta estrellas.</p>
-          <div class="card-play-tag">▶ ¡Jugar!</div>
+          <div class="card-play-tag"><i class="ci" data-icon="play"></i>¡Jugar!</div>
         </article>
 
-        <!-- Tarjeta 2: Sumas y Pastelería -->
         <article role="button" tabindex="0" class="game-card card-math" data-game="math">
-          <div class="card-badge">🧁 Números</div>
-          <div class="card-illustration">
+          <div class="card-illustration" data-scene="math">
             <img class="card-hero-img" src="assets/milk_teddy.png" alt="Milk" loading="lazy" decoding="async" />
-            <span class="card-hero-emoji">🍥</span>
-            <span class="card-deco deco-cookie">🍪</span>
-            <span class="card-deco deco-milk">🍼</span>
           </div>
+          <div class="card-badge"><i class="ci" data-icon="cupcake"></i>Números</div>
           <h2>Pastelería de Números</h2>
           <p>Cuenta, suma y resta con dulces.</p>
-          <div class="card-play-tag">▶ ¡Contar!</div>
+          <div class="card-play-tag"><i class="ci" data-icon="play"></i>¡Contar!</div>
         </article>
 
-        <!-- Tarjeta 3: Pintura y Colorear -->
         <article role="button" tabindex="0" class="game-card card-coloring" data-game="coloring">
-          <div class="card-badge">🎨 Dibujo</div>
-          <div class="card-illustration">
+          <div class="card-illustration" data-scene="coloring">
             <img class="card-hero-img" src="assets/chiffon.png" alt="Chiffon" loading="lazy" decoding="async" />
-            <span class="card-hero-emoji">🎨</span>
-            <span class="card-deco deco-sparkle">✨</span>
-            <span class="card-deco deco-flower">🌸</span>
           </div>
+          <div class="card-badge"><i class="ci" data-icon="brush"></i>Dibujo</div>
           <h2>Taller de Dibujo</h2>
           <p>Pinta dibujos con crayones y stickers.</p>
-          <div class="card-play-tag">▶ ¡Pintar!</div>
+          <div class="card-play-tag"><i class="ci" data-icon="play"></i>¡Pintar!</div>
         </article>
 
-        <!-- Tarjeta 4: Memorice de Sanrio -->
         <article role="button" tabindex="0" class="game-card card-memory" data-game="memory">
-          <div class="card-badge">🃏 Memoria</div>
-          <div class="card-illustration">
+          <div class="card-illustration" data-scene="memory">
             <img class="card-hero-img" src="assets/pompompurin_hq.png" alt="Pompompurin" loading="lazy" decoding="async" />
-            <span class="card-hero-emoji">🃏</span>
-            <span class="card-deco deco-star">⭐</span>
-            <span class="card-deco deco-flower">💖</span>
           </div>
+          <div class="card-badge"><i class="ci" data-icon="cards"></i>Memoria</div>
           <h2>Memorice de Sanrio</h2>
           <p>Encuentra las parejas de amigos.</p>
-          <div class="card-play-tag">▶ ¡Emparejar!</div>
+          <div class="card-play-tag"><i class="ci" data-icon="play"></i>¡Emparejar!</div>
         </article>
 
-        <!-- Tarjeta 5: Super Cinnamoroll Run -->
         <article role="button" tabindex="0" class="game-card card-platformer" data-game="platformer">
-          <div class="card-badge">🏃 Aventura</div>
-          <div class="card-illustration">
+          <div class="card-illustration" data-scene="platformer">
             <img class="card-hero-img" src="cinnamoroll_sprite.png" alt="Cinnamoroll" loading="lazy" decoding="async" />
-            <span class="card-hero-emoji">🪽</span>
-            <span class="card-deco deco-star">⭐</span>
-            <span class="card-deco deco-cookie">🍓</span>
           </div>
+          <div class="card-badge"><i class="ci" data-icon="flag"></i>Aventura</div>
           <h2>Super Cinnamoroll Run</h2>
           <p>Corre, salta y viaja por el mundo.</p>
-          <div class="card-play-tag">▶ ¡Viajar y Correr!</div>
+          <div class="card-play-tag"><i class="ci" data-icon="play"></i>¡Correr!</div>
         </article>
 
-        <!-- Tarjeta 6: Cinnamon Treat-Shooter 2.5D -->
         <article role="button" tabindex="0" class="game-card card-doom" data-game="doom">
-          <div class="card-badge">🍥 Mágico 3D</div>
-          <div class="card-illustration">
+          <div class="card-illustration" data-scene="doom">
             <img class="card-hero-img" src="assets/milk_sitting.png" alt="Milk" loading="lazy" decoding="async" />
-            <span class="card-hero-emoji">🐾</span>
-            <span class="card-deco deco-star">🍥</span>
-            <span class="card-deco deco-cookie">🍭</span>
           </div>
+          <div class="card-badge"><i class="ci" data-icon="gift"></i>3D</div>
           <h2>Repartidor de Rollitos 3D</h2>
           <p>Lleva un dulce a cada amigo con hambre.</p>
-          <div class="card-play-tag">▶ ¡Repartir!</div>
+          <div class="card-play-tag"><i class="ci" data-icon="play"></i>¡Repartir!</div>
         </article>
 
-        <!-- Tarjeta 7: Palabras Mágicas Montessori & Waldorf -->
         <article role="button" tabindex="0" class="game-card card-writing" data-game="writing">
-          <div class="card-badge">✏️ Escribir</div>
-          <div class="card-illustration">
+          <div class="card-illustration" data-scene="writing">
             <img class="card-hero-img" src="assets/mocha_hq.png" alt="Mocha" loading="lazy" decoding="async" />
-            <span class="card-hero-emoji">✏️</span>
-            <span class="card-deco deco-star">🔤</span>
-            <span class="card-deco deco-cookie">🍪</span>
           </div>
+          <div class="card-badge"><i class="ci" data-icon="pencil"></i>Escribir</div>
           <h2>Palabras Mágicas</h2>
           <p>Arma palabras y frases con letras.</p>
-          <div class="card-play-tag">▶ ¡Escribir!</div>
+          <div class="card-play-tag"><i class="ci" data-icon="play"></i>¡Escribir!</div>
         </article>
 
-        <!-- Tarjeta 8: Puzzles de Lógica y Rompecabezas Visual -->
         <article role="button" tabindex="0" class="game-card card-puzzle" data-game="puzzle">
-          <div class="card-badge">🧩 Lógica</div>
-          <div class="card-illustration">
-            <img class="card-hero-img" src="assets/pompompurin_hq.png" alt="Pompompurin" loading="lazy" decoding="async" />
-            <span class="card-hero-emoji">🧩</span>
-            <span class="card-deco deco-star">⭐</span>
-            <span class="card-deco deco-flower">🌸</span>
+          <div class="card-illustration" data-scene="puzzle">
+            <div class="card-puzzle-frame"><img src="assets/puzzle_milk.png" alt="Milk" loading="lazy" decoding="async" /><span class="card-puzzle-gap"></span></div>
           </div>
+          <div class="card-badge"><i class="ci" data-icon="puzzle"></i>Lógica</div>
           <h2>Puzzles de Lógica</h2>
           <p>Arma la imagen pieza por pieza.</p>
-          <div class="card-play-tag">▶ ¡Encajar!</div>
+          <div class="card-play-tag"><i class="ci" data-icon="play"></i>¡Encajar!</div>
         </article>
       </div>
     </section>
@@ -228,21 +193,21 @@
       <div id="flightTouchControls" class="flight-touch-controls hidden">
         <div class="flight-dpad-col">
           <button id="btnFlightUp" class="flight-touch-btn btn-flight-up" aria-label="Subir">
-            <span class="flight-btn-icon">▲</span>
+            <span class="flight-btn-icon ci" data-icon="up"></span>
             <span class="flight-btn-text">Subir</span>
           </button>
           <button id="btnFlightDown" class="flight-touch-btn btn-flight-down" aria-label="Bajar">
-            <span class="flight-btn-icon">▼</span>
+            <span class="flight-btn-icon ci" data-icon="down"></span>
             <span class="flight-btn-text">Bajar</span>
           </button>
         </div>
         <div class="flight-actions-col">
           <button id="btnFlightSpin" class="flight-touch-btn btn-flight-spin" aria-label="Pirueta">
-            <span class="flight-btn-icon">✨</span>
+            <span class="flight-btn-icon ci" data-icon="sparkle"></span>
             <span class="flight-btn-text">Giro</span>
           </button>
           <button id="btnFlightHello" class="flight-touch-btn btn-flight-hello" aria-label="Saludo">
-            <span class="flight-btn-icon">💖</span>
+            <span class="flight-btn-icon ci" data-icon="heart"></span>
             <span class="flight-btn-text">Hola</span>
           </button>
         </div>
@@ -323,7 +288,7 @@
     <div class="cinna-modal-card">
       <button id="btnCloseGamepadModal" class="modal-close-btn" aria-label="Cerrar">✕</button>
       <div class="modal-header">
-        <span class="modal-icon">📱</span>
+        <span class="modal-icon ci" data-icon="phone"></span>
         <h2>¡Conecta tu Celular como Mando!</h2>
       </div>
       <p class="modal-desc">
@@ -336,10 +301,10 @@
         </div>
       </div>
       <div id="gamepadConnStatus" class="gamepad-status-pill">
-        🟡 Esperando celular (Soporta 1 a 3 Jugadores)...
+        Esperando celular (de 1 a 3 jugadores)...
       </div>
       <div class="physical-gamepad-hint">
-        💡 <strong>¡Hasta 3 Jugadores Simultáneos (P1 🌸, P2 🩵, P3 💛)!</strong> Conecta hasta 3 celulares escaneando el QR o hasta 3 mandos Bluetooth (Joy-Con, Xbox, PlayStation, 8BitDo).
+        <strong>¡Hasta 3 jugadores a la vez!</strong> Conecta hasta 3 celulares escaneando el QR o hasta 3 mandos Bluetooth (Joy-Con, Xbox, PlayStation, 8BitDo).
       </div>
     </div>
   </div>
@@ -347,22 +312,23 @@
   <!-- MÓDULOS DE LA SUITE -->
   <script src="js/peerjs.min.js"></script>
   <script src="js/qrcode.min.js"></script>
-  <script src="js/audio.js?v=34"></script>
-  <script src="js/fx.js?v=34"></script>
-  <script src="js/input.js?v=34"></script>
-  <script src="js/controller-bridge.js?v=34"></script>
-  <script src="js/character.js?v=34"></script>
-  <script src="js/game.js?v=34"></script>
-  <script src="js/math-progress.js?v=34"></script>
-  <script src="js/math.js?v=34"></script>
-  <script src="js/coloring.js?v=34"></script>
-  <script src="js/memory.js?v=34"></script>
-  <script src="js/platformer.js?v=34"></script>
-  <script src="js/doom.js?v=34"></script>
-  <script src="js/writing.js?v=34"></script>
-  <script src="js/puzzle.js?v=34"></script>
-  <script src="js/avatar-world.js?v=34"></script>
-  <script src="js/hub.js?v=34"></script>
-  <script src="js/passport.js?v=34"></script>
+  <script src="js/audio.js?v=35"></script>
+  <script src="js/fx.js?v=35"></script>
+  <script src="js/input.js?v=35"></script>
+  <script src="js/controller-bridge.js?v=35"></script>
+  <script src="js/character.js?v=35"></script>
+  <script src="js/game.js?v=35"></script>
+  <script src="js/math-progress.js?v=35"></script>
+  <script src="js/math.js?v=35"></script>
+  <script src="js/coloring.js?v=35"></script>
+  <script src="js/memory.js?v=35"></script>
+  <script src="js/platformer.js?v=35"></script>
+  <script src="js/doom.js?v=35"></script>
+  <script src="js/writing.js?v=35"></script>
+  <script src="js/puzzle.js?v=35"></script>
+  <script src="js/avatar-world.js?v=35"></script>
+  <script src="js/hub-art.js?v=35"></script>
+  <script src="js/hub.js?v=35"></script>
+  <script src="js/passport.js?v=35"></script>
 </body>
 </html>

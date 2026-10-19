@@ -95,11 +95,11 @@
 
       if (this.inputMode === 'remote') {
         badge.className = 'input-mode-badge mode-remote';
-        iconEl.textContent = '📱';
+        window.CinnaIcons?.set(iconEl, 'phone');
         textEl.textContent = `Mando TV · ${playersStr}`;
       } else {
         badge.className = 'input-mode-badge mode-touch';
-        iconEl.textContent = '👆';
+        window.CinnaIcons?.set(iconEl, 'touch');
         textEl.textContent = (this.connectedCount > 0 || this.physicalGamepadActive || this.players[2]?.active || this.players[3]?.active)
           ? `Touch + 📱 ${playersStr}`
           : 'Touch Activo';
@@ -575,12 +575,18 @@
         window.Cinnamo?.avatarWorldGame?.selectRoom?.(parseInt(data.roomIdx, 10) || 0);
         return;
       }
+      if (data.type === 'avatarRoomStep') {
+        window.Cinnamo?.avatarWorldGame?.changeRoom?.(parseInt(data.dir, 10) < 0 ? -1 : 1);
+        return;
+      }
       if (data.type === 'avatarCustom') {
         window.Cinnamo?.avatarWorldGame?.cycleCustomForPlayer?.(playerSlot, data.category || 'outfit');
         return;
       }
       if (data.type === 'avatarDecor') {
-        window.Cinnamo?.avatarWorldGame?.spawnDecorItem?.(data.decorType || 'cake');
+        const decorTypes = ['cake_stand', 'plush_bunny', 'plant_pot', 'star_cushion', 'tea_set', 'fairy_lamp', 'gift_box', 'balloon_bunch'];
+        const decorType = data.decorType === 'random' || !data.decorType ? decorTypes[Math.floor(Math.random() * decorTypes.length)] : data.decorType;
+        window.Cinnamo?.avatarWorldGame?.spawnDecorItem?.(decorType);
         return;
       }
       if (data.type === 'avatarLight') {
