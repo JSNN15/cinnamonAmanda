@@ -17,6 +17,41 @@
   };
 })();
 
+/* Voz común para todos los juegos: español latino (Chile primero) para niños que aún no leen */
+(function () {
+  window.Cinnamo = window.Cinnamo || {};
+  const PREF = ['es-cl', 'es-419', 'es-us', 'es-mx', 'es-ar', 'es-co', 'es'];
+  let cached = null;
+  const pick = () => {
+    if (cached || !('speechSynthesis' in window)) return cached;
+    const voices = window.speechSynthesis.getVoices() || [];
+    for (const pref of PREF) {
+      const v = voices.find(v => (v.lang || '').toLowerCase().replace('_', '-').startsWith(pref));
+      if (v) { cached = v; break; }
+    }
+    return cached;
+  };
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.addEventListener('voiceschanged', () => { cached = null; pick(); }); } catch (_) {}
+  }
+  window.Cinnamo.applyVoice = (u) => {
+    const v = pick();
+    if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = 'es-CL'; }
+    return true;
+  };
+  window.Cinnamo.say = (text, opts = {}) => {
+    if (!text || !('speechSynthesis' in window)) return;
+    try {
+      if (opts.queue !== true) window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(text));
+      window.Cinnamo.applyVoice(u);
+      u.rate = opts.rate || 0.9;
+      u.pitch = opts.pitch || 1.2;
+      window.speechSynthesis.speak(u);
+    } catch (_) {}
+  };
+})();
+
 /* Audio Engine 100% sintetizado con Web Audio API:
  *  - Sistema de Música Relajante de Alta Calidad (Lofi Lullaby, Celesta Aterciopelada y Warm Pads)
  *  - ARQUITECTURA ROBUSTA ANTI-SUPERPOSICIÓN:

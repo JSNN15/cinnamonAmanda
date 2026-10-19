@@ -3052,3 +3052,18 @@ body.touch-input-active .flight-touch-controls {
 }
 .cinna-accept-yes { background: #34d399; color: #064e3b; }
 .cinna-accept-no { background: #fecdd3; color: #881337; }
+
+/* Botón para volver a escuchar la pregunta (niños que aún no leen) */
+.math-hear-btn {
+  vertical-align: middle; margin-right: 8px;
+  min-width: 48px; min-height: 48px; border-radius: 50%;
+  border: 3px solid #bae6fd; background: #f0f9ff; font-size: 22px; cursor: pointer;
+  box-shadow: 0 3px 0 #bae6fd;
+}
+.math-hear-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #bae6fd; }
+
+/* Puzzle: pieza elegida con un toque (luego se toca su lugar) */
+.puzzle-tray-piece-token.tray-token-selected {
+  outline: 4px solid #f472b6; outline-offset: 3px;
+  transform: scale(1.08); box-shadow: 0 0 0 6px rgba(244, 114, 182, .25);
+}

@@ -167,7 +167,14 @@
         }
       }
 
-      this.trayPieces = [...pieces].sort(() => Math.random() - 0.5);
+      // Barajar con Fisher-Yates
+      this.trayPieces = [...pieces];
+      for (let i = this.trayPieces.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.trayPieces[i], this.trayPieces[j]] = [this.trayPieces[j], this.trayPieces[i]];
+      }
+      this.selectedPieceId = null;
+      this.selectedMistakes = 0;
 
       // Reiniciar temporizador amistoso
       this.timerSeconds = 0;
@@ -188,7 +195,7 @@
         try {
           window.speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance(text);
-          u.lang = 'es-ES';
+          if (!window.Cinnamo?.applyVoice?.(u)) u.lang = 'es-CL';
           u.rate = 0.88;
           u.pitch = 1.25;
           window.speechSynthesis.speak(u);
@@ -250,10 +257,10 @@
               <div class="puzzle-title-box">
                 <div class="puzzle-badges-top-line">
                   <span class="puzzle-badge-pill">${char.badge} · ${this.pieceCountMode} piezas</span>
-                  <span class="puzzle-timer-pill">⏱️ <span id="puzzleTimerText">${timeStr}</span></span>
+                  ${this.pieceCountMode >= 12 ? `<span class="puzzle-timer-pill">⏱️ <span id="puzzleTimerText">${timeStr}</span></span>` : ''}
                 </div>
                 <h1 style="color: ${char.themeColor}">${char.title}</h1>
-                <p>👇 Arrastra las piezas de madera a su lugar en el cuadro:</p>
+                <p>👇 Arrastra una pieza a su lugar, o tócala y luego toca dónde va:</p>
               </div>
 
               <!-- Interruptor Marca de Agua (Silueta Sutil ON/OFF) -->
@@ -327,8 +334,9 @@
           const left = c * slotW;
           const top = r * slotH;
 
+          const hintSlot = !isPlaced && this.selectedPieceId === id && (this.selectedMistakes || 0) >= 2;
           html += `
-            <div class="puzzle-board-slot ${isPlaced ? 'placed' : 'empty'}"
+            <div class="puzzle-board-slot ${isPlaced ? 'placed' : 'empty'} ${hintSlot ? 'slot-magnet-match' : ''}"
                  id="slot_${id}"
                  data-piece-id="${id}"
                  data-col="${c}"
@@ -367,7 +375,7 @@
       const bgTotalH = Math.round(this.boardHeight * scale);
 
       return `
-        <div class="puzzle-tray-piece-token"
+        <div class="puzzle-tray-piece-token ${this.selectedPieceId === piece.id ? 'tray-token-selected' : ''}"
              id="token_${piece.id}"
              data-piece-id="${piece.id}"
              data-col="${piece.col}"
@@ -420,14 +428,31 @@
         });
       }
 
-      // 4. Toque directo en slot vacío del tablero
+      // 4. Toque en el tablero: solo encaja la pieza elegida en SU lugar (hay que pensar dónde va)
       this.container.querySelectorAll('.puzzle-board-slot.empty').forEach(slot => {
         slot.addEventListener('click', (e) => {
           const targetPieceId = e.currentTarget.dataset.pieceId;
           if (this.placedPieces[targetPieceId]) return;
-
           A.unlock();
-          this.placePieceSuccess(targetPieceId);
+          if (!this.selectedPieceId) {
+            A.softBoing();
+            this.speak('Primero elige una pieza de abajo.');
+            return;
+          }
+          if (targetPieceId === this.selectedPieceId) {
+            this.placePieceSuccess(targetPieceId);
+            return;
+          }
+          A.softBoing();
+          this.selectedMistakes = (this.selectedMistakes || 0) + 1;
+          const slotEl = e.currentTarget;
+          slotEl.classList.add('wobble-friendly');
+          setTimeout(() => slotEl.classList.remove('wobble-friendly'), 450);
+          if (this.selectedMistakes === 2) {
+            // Tras dos intentos, el lugar correcto brilla como ayuda
+            this.speak('Mira, su lugar está brillando.');
+            this.render();
+          }
         });
       });
 
@@ -548,10 +573,16 @@
             cur.token.classList.remove('tray-token-dragging');
             if (cur.targetSlot) cur.targetSlot.classList.remove('slot-magnet-match');
 
-            // Tap rápido sin arrastre -> asistencia de toque para niñas de 5 a 8 años
+            // Tap rápido sin arrastre -> elige la pieza; luego se toca su lugar en el tablero
             if (!cur.moved) {
               cur.clone.remove();
-              this.placePieceSuccess(cur.pieceId);
+              if (this.selectedPieceId !== cur.pieceId) {
+                this.selectedPieceId = cur.pieceId;
+                this.selectedMistakes = 0;
+              }
+              A.bubblePop(1);
+              this.speak('Ahora toca su lugar.');
+              this.render();
               return;
             }
 
@@ -602,6 +633,10 @@
 
     placePieceSuccess(pieceId) {
       if (this.placedPieces[pieceId]) return;
+      if (this.selectedPieceId === pieceId) {
+        this.selectedPieceId = null;
+        this.selectedMistakes = 0;
+      }
 
       this.placedPieces[pieceId] = true;
       const count = Object.keys(this.placedPieces).length;
@@ -661,7 +696,13 @@
       // Más piezas, más estrellas: 6→3, 9→4, 12→5, 16→6
       const puzzleStars = { 6: 3, 9: 4, 12: 5, 16: 6 }[this.pieceCountMode] || 3;
       window.Cinnamo?.passport?.addStars?.(puzzleStars, 'puzzle');
-      this.speak(`¡Hurra ${cinnaName()}! ¡Completaste el rompecabezas de ${this.pieceCountMode} piezas de ${char.name} en ${this.timerSeconds} segundos!`);
+      // "Récord" solo si de verdad mejoró su mejor tiempo (y el reloj solo se muestra desde 12 piezas)
+      const bestKey = `cinna_puzzle_best_${char.name}_${this.pieceCountMode}`;
+      let best = null;
+      try { best = parseInt(localStorage.getItem(bestKey) || '', 10) || null; } catch (_) {}
+      const isRecord = this.pieceCountMode >= 12 && (best === null || this.timerSeconds < best);
+      if (isRecord) { try { localStorage.setItem(bestKey, String(this.timerSeconds)); } catch (_) {} }
+      this.speak(`¡Hurra ${cinnaName()}! ¡Armaste a ${char.name}!${isRecord && best !== null ? ' ¡Y es tu nuevo récord!' : ''}`);
 
       const modal = document.createElement('div');
       modal.className = 'w-victory-modal-overlay';
@@ -672,7 +713,7 @@
           <div class="w-victory-img-box">
             <img src="${char.imgSrc}" alt="${char.name}" style="border-radius: 16px; border: 3px solid #fbcfe8;" />
           </div>
-          <p>¡${cinnaName()}, tiempo récord: <strong>${timeStr}</strong>! ¡Tienes mente de detective en Cinnamoroll Land! 💖 ⭐⭐⭐</p>
+          <p>¡${cinnaName()}, ${isRecord && best !== null ? `¡nuevo récord: <strong>${timeStr}</strong>!` : (this.pieceCountMode >= 12 ? `lo lograste en <strong>${timeStr}</strong>.` : '¡lo lograste!')} ¡Tienes mente de detective! 💖 ⭐⭐⭐</p>
           <div class="w-victory-actions">
             <button class="btn-w-next" id="btnNextPuzzleModal">▶ Siguiente Rompecabezas</button>
             <button class="btn-w-repeat" id="btnRepeatPuzzleModal">🔄 Jugar de nuevo</button>

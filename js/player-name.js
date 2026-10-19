@@ -25,7 +25,7 @@
     try {
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'es-ES';
+      if (!window.Cinnamo?.applyVoice?.(u)) u.lang = 'es-CL';
       u.rate = rate;
       u.pitch = 1.2;
       window.speechSynthesis.speak(u);

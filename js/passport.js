@@ -456,7 +456,7 @@
               try {
                 window.speechSynthesis.cancel();
                 const u = new SpeechSynthesisUtterance(`Sticker ${st.name}. ${st.desc}`);
-                u.lang = 'es-ES';
+                if (!window.Cinnamo?.applyVoice?.(u)) u.lang = 'es-CL';
                 u.pitch = 1.25;
                 window.speechSynthesis.speak(u);
               } catch (_) {}
@@ -654,7 +654,7 @@
         try {
           window.speechSynthesis.cancel();
           const u = new SpeechSynthesisUtterance(`¡Vamos ${cinnaName()}, tú puedes!`);
-          u.lang = 'es-ES';
+          if (!window.Cinnamo?.applyVoice?.(u)) u.lang = 'es-CL';
           u.pitch = 1.28;
           window.speechSynthesis.speak(u);
         } catch (_) {}

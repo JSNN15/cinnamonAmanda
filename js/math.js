@@ -14,6 +14,12 @@
   const store = (() => { try { return window.localStorage; } catch (e) { return null; } })();
 
   const rnd = (min, max) => min + Math.floor(Math.random() * (max - min + 1));
+  // Voz para niños que aún no leen (solo si Matemáticas está en pantalla)
+  const say = (text, opts) => {
+    if (window.Cinnamo?.hub?.currentScreen && window.Cinnamo.hub.currentScreen !== 'math') return;
+    window.Cinnamo?.say?.(text, opts);
+  };
+  const OP_WORD = { '+': 'más', '-': 'menos', 'x': 'por' };
 
   // Rangos por nivel (2 pasos por tramo de edad: fácil y medio)
   const ADD_LEVELS = [
@@ -105,6 +111,7 @@
 
     init(containerEl) {
       this.clearGuideTimeouts();
+      this.queueNextQuestion = true;
       this.container = containerEl;
       this.score = 0;
       this.nextRound();
@@ -267,6 +274,7 @@
           <!-- Pregunta pedagógica y opciones de respuesta -->
           <div class="math-question-panel">
             <h2 id="mathQuestionText">
+              <button type="button" class="math-hear-btn" id="btnMathHear" aria-label="Escuchar la pregunta">🔊</button>
               ${this.currentOp === '+' 
                 ? `¿Cuánto es ${this.numA} + ${this.numB}?` 
                 : (this.currentOp === '-'
@@ -305,6 +313,17 @@
       }
 
       this.bindEvents();
+      if (!this.answered && !this.isCountingHelpActive) this.speakQuestion();
+    }
+
+    questionSpeech() {
+      return `¿Cuánto es ${this.numA} ${OP_WORD[this.currentOp]} ${this.numB}?`;
+    }
+
+    speakQuestion() {
+      // La primera pregunta espera a que termine la presentación del juego
+      say(this.questionSpeech(), { queue: !!this.queueNextQuestion });
+      this.queueNextQuestion = false;
     }
 
     renderParentsPanel() {
@@ -488,6 +507,9 @@
         });
       });
 
+      const hearBtn = this.container.querySelector('#btnMathHear');
+      if (hearBtn) hearBtn.addEventListener('click', () => { A.unlock(); this.speakQuestion(); });
+
       // Conteo táctil de dulces
       this.container.querySelectorAll('.treat-btn:not(.eaten-item)').forEach(btn => {
         btn.addEventListener('click', (e) => {
@@ -496,10 +518,12 @@
           const idx = target.dataset.idx;
           if (!idx) return;
 
+          const isNew = !this.countedItems.has(idx);
           this.countedItems.add(idx);
           const currentCount = this.countedItems.size;
 
           A.bubblePop(currentCount);
+          if (isNew) say(String(currentCount), { rate: 1 });
 
           target.classList.add('pop-counted');
           const badge = target.querySelector('.treat-count');
@@ -554,7 +578,9 @@
       btnEl.classList.add('correct');
 
       A.celebrate();
-      window.Cinnamo?.passport?.addStars?.(1, 'math');
+      // La estrella se gana solo acertando a la primera (no después de la ayuda)
+      if (!this.missedThisRound) window.Cinnamo?.passport?.addStars?.(1, 'math');
+      say(`¡Sí! ${this.numA} ${OP_WORD[this.currentOp]} ${this.numB} es ${this.total}.`);
 
       const cinna = this.container.querySelector('#cinnaBaker');
       const milk = this.container.querySelector('#milkBaker');
@@ -565,7 +591,7 @@
       if (milk) milk.classList.add('party-jump');
 
       if (milkBubble) milkBubble.innerHTML = `¡Siii, contaste muy bien ${cinnaName()}! 💖`;
-      if (cinnaBubble) cinnaBubble.innerHTML = '¡Eres una gran pastelera! 🌟';
+      if (cinnaBubble) cinnaBubble.innerHTML = '¡Eres genial horneando! 🌟';
 
       const activeTreats = this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)');
       activeTreats.forEach((item, i) => {
@@ -593,12 +619,16 @@
       const tray = this.container.querySelector('#trayContainer');
 
       if (cinnaBubble) cinnaBubble.innerHTML = `¿Contamos otra vez, ${cinnaName()}? 🤔`;
-      if (milkBubble) milkBubble.innerHTML = '¡Toquemos los dulces para contar juntas! 👆';
+      if (milkBubble) milkBubble.innerHTML = '¡Contemos juntos! 👆';
       if (tray) tray.classList.add('highlight-tray');
+      say('¿Contamos otra vez?');
 
-      const allActive = this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)');
-      allActive.forEach((btn, i) => {
-        const tStep = setTimeout(() => {
+      const STEP = 650;
+      const allActive = Array.from(this.container.querySelectorAll('.sweet-tray .treat-btn:not(.eaten-item)'));
+      let steps;
+      if (allActive.length === this.total) {
+        // Pocos dulces: se cuentan uno por uno en la bandeja
+        steps = allActive.map((btn, i) => () => {
           btn.classList.add('pop-counted');
           const badge = btn.querySelector('.treat-count');
           if (badge) {
@@ -606,14 +636,36 @@
             badge.classList.remove('hidden');
           }
           A.bubblePop(i + 1);
-        }, (i + 1) * 350);
-        this.guideTimeouts.push(tStep);
+          say(String(i + 1), { rate: 1.05 });
+        });
+      } else {
+        // Números grandes: estrategia de contar hacia adelante / atrás / de a saltos
+        const seq = [];
+        if (this.currentOp === '+') {
+          for (let n = this.numA; n <= this.total; n++) seq.push(n);
+        } else if (this.currentOp === '-') {
+          for (let n = this.numA; n >= this.total; n--) seq.push(n);
+        } else {
+          for (let k = 1; k <= this.numA; k++) seq.push(k * this.numB);
+        }
+        const tip = this.currentOp === '+' ? `Empieza en ${this.numA} y cuenta ${this.numB} más`
+          : (this.currentOp === '-' ? `Empieza en ${this.numA} y cuenta ${this.numB} hacia atrás` : `Cuenta de ${this.numB} en ${this.numB}`);
+        if (milkBubble) milkBubble.innerHTML = `${tip} 👆`;
+        steps = seq.map((n, i) => () => {
+          if (cinnaBubble) cinnaBubble.innerHTML = `<strong>${seq.slice(0, i + 1).join(' · ')}</strong>`;
+          A.bubblePop((i % 8) + 1);
+          say(i === 0 ? `${tip}: ${n}` : String(n), { rate: 1.05 });
+        });
+      }
+      steps.forEach((fn, i) => {
+        this.guideTimeouts.push(setTimeout(fn, 900 + i * STEP));
       });
 
-      const totalDelay = (allActive.length + 1) * 350 + 600;
+      const totalDelay = 900 + steps.length * STEP + 600;
       const tEnd = setTimeout(() => {
         if (cinnaBubble) cinnaBubble.innerHTML = `¡Hay <strong>${this.total}</strong> en total! 🌸`;
         if (milkBubble) milkBubble.innerHTML = `¡Elige el número <strong>${this.total}</strong>, ${cinnaName()}! ✨`;
+        say(`¡Son ${this.total}! Elige el ${this.total}.`);
         if (tray) tray.classList.remove('highlight-tray');
         this.isCountingHelpActive = false;
         btnEl.classList.remove('wobble');
