@@ -647,7 +647,15 @@
       }
       this.spawnBurst(av.x, av.y - 60, '#f472b6', 14);
       this.saveState();
-      window.Cinnamo?.passport?.addStars?.(1, 'avatar');
+      this.rewardOnce('dress', 1);
+    }
+
+    // Juego libre: las estrellas se dan una vez por tipo de acción en la sesión (no se pueden acumular sin fin)
+    rewardOnce(key, amount) {
+      this.rewarded = this.rewarded || new Set();
+      if (this.rewarded.has(key)) return;
+      this.rewarded.add(key);
+      window.Cinnamo?.passport?.addStars?.(amount, 'avatar');
     }
 
     cycleCustomForPlayer(slot, category) {
@@ -727,10 +735,13 @@
         custom: true,
         state: true
       };
+      // Máximo 14 objetos agregados por cuarto: el más antiguo se va para que el juego no se ponga lento
+      const customs = list.filter(o => o.custom);
+      if (customs.length >= 14) list.splice(list.indexOf(customs[0]), 1);
       list.push(newObj);
       if (A()) { A().unlock(); A().celebrate(); }
       this.spawnBurst(x, y - 20, '#38bdf8', 16);
-      window.Cinnamo?.passport?.addStars?.(2, 'avatar');
+      this.rewardOnce('decor', 2);
     }
 
     bindCanvasPointerEvents() {
@@ -887,7 +898,7 @@
       this.showEmotionBubble(av, '😋');
       if (A()) A().celebrate();
       this.spawnBurst(av.x, av.y - 65, '#fda4af', 18);
-      window.Cinnamo?.passport?.addStars?.(2, 'avatar');
+      this.rewardOnce('feed', 2);
     }
 
     triggerObjectInteraction(obj, av) {

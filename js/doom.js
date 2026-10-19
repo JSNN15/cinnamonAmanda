@@ -209,6 +209,7 @@
       this.setupFriendsList();
       this.bindInputs();
       this.startLoop();
+      window.Cinnamo?.say?.('Busca a los amigos con hambre y lánzales un dulce con el botón rosado.');
     }
 
     setupFriendsList() {

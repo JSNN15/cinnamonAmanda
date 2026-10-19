@@ -872,4 +872,15 @@
   audioInstance.currentTrackIndex = 0;
   window.Cinnamo = window.Cinnamo || {};
   window.Cinnamo.audio = audioInstance;
+
+  // Pestaña oculta o tablet bloqueada: silencio y menos batería
+  document.addEventListener('visibilitychange', () => {
+    const ctx = audioInstance.ctx;
+    if (document.hidden) {
+      if (ctx && ctx.state === 'running') ctx.suspend().catch(() => {});
+      if ('speechSynthesis' in window) { try { window.speechSynthesis.cancel(); } catch (_) {} }
+    } else if (ctx && ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+  });
 })();

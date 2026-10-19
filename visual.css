@@ -420,3 +420,17 @@ body .coop-banner-toast.visible {
 
 /* Marcador del Super Run en una sola línea también en celular horizontal */
 .plat-score-pill { white-space: nowrap; }
+
+/* Contraste legible en las tarjetas (AA) y foco visible para teclado o mando */
+.game-card p { color: #4a5a80; }
+button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
+  outline: 3px solid #f472b6; outline-offset: 3px;
+}
+@media (max-width: 480px) {
+  .top-right-actions .passport-btn { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wobble-friendly, .dance-bounce, .party-jump, .pop-counted, .math-level-up {
+    animation: none !important;
+  }
+}
