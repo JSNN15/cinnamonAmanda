@@ -1,3 +1,22 @@
+/* Respaldo de ctx.roundRect para tablets antiguas (iOS < 16, Android viejo):
+   sin esto Super Run, Casa de Sueños, Repartidor 3D y el trazado quedan en blanco. */
+(function () {
+  const P = window.CanvasRenderingContext2D && CanvasRenderingContext2D.prototype;
+  if (!P || P.roundRect) return;
+  P.roundRect = function (x, y, w, h, r) {
+    let rad = Array.isArray(r) ? (r[0] ?? 0) : (r ?? 0);
+    if (typeof rad === 'object') rad = rad.x ?? 0;
+    rad = Math.max(0, Math.min(rad, Math.abs(w) / 2, Math.abs(h) / 2));
+    this.moveTo(x + rad, y);
+    this.arcTo(x + w, y, x + w, y + h, rad);
+    this.arcTo(x + w, y + h, x, y + h, rad);
+    this.arcTo(x, y + h, x, y, rad);
+    this.arcTo(x, y, x + w, y, rad);
+    this.closePath();
+    return this;
+  };
+})();
+
 /* Audio Engine 100% sintetizado con Web Audio API:
  *  - Sistema de Música Relajante de Alta Calidad (Lofi Lullaby, Celesta Aterciopelada y Warm Pads)
  *  - ARQUITECTURA ROBUSTA ANTI-SUPERPOSICIÓN:
@@ -52,7 +71,7 @@
 
       // SFX bus
       this.sfxGain = this.ctx.createGain();
-      this.sfxGain.gain.value = 0.55;
+      this.sfxGain.gain.value = this.sfxMuted ? 0 : 0.55;
       this.sfxGain.connect(this.masterGain);
 
       // Music master bus (con filtro cálido tipo lofi / celesta aterciopelada)
@@ -93,6 +112,15 @@
         this.masterGain.gain.setValueAtTime(this.muted ? 0 : 0.35, this.ctx.currentTime);
       }
       return this.muted;
+    }
+
+    // Silencia solo los efectos (la música sigue): lo usa el chip "Efectos" de ¡A Volar!
+    setSfxMuted(m) {
+      this.sfxMuted = !!m;
+      if (this.sfxGain && this.ctx) {
+        this.sfxGain.gain.setValueAtTime(this.sfxMuted ? 0 : 0.55, this.ctx.currentTime);
+      }
+      return this.sfxMuted;
     }
 
     toggleMute() {

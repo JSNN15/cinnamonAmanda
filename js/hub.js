@@ -171,6 +171,7 @@
 
     stopActiveGames() {
       if (window.Cinnamo.pauseFlightGame) window.Cinnamo.pauseFlightGame();
+      if (window.Cinnamo.suspendFlightSensors) window.Cinnamo.suspendFlightSensors();
       if (window.Cinnamo.platformerGame && window.Cinnamo.platformerGame.stop) window.Cinnamo.platformerGame.stop();
       if (window.Cinnamo.doomGame && window.Cinnamo.doomGame.stop) window.Cinnamo.doomGame.stop();
       if (window.Cinnamo.puzzleGame && window.Cinnamo.puzzleGame.stop) window.Cinnamo.puzzleGame.stop();
@@ -221,6 +222,7 @@
         if (window.Cinnamo.startFlightGame) {
           window.Cinnamo.startFlightGame();
         }
+        if (window.Cinnamo.resumeFlightSensors) window.Cinnamo.resumeFlightSensors();
       } else if (gameKey === 'math') {
         const mathMount = document.getElementById('math-mount');
         if (window.Cinnamo.mathGame) {

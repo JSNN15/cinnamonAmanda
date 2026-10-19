@@ -572,13 +572,14 @@
         setTimeout(() => item.classList.add('dance-bounce'), i * 80);
       });
 
-      setTimeout(() => {
+      // guardado en guideTimeouts para que stop() lo cancele si se sale del juego antes
+      this.guideTimeouts.push(setTimeout(() => {
         if (this.score >= this.totalGoal) {
           this.triggerPartyVictory();
         } else {
           this.nextRound();
         }
-      }, 1500);
+      }, 1500));
     }
 
     handleDoubtAndGuide(btnEl) {

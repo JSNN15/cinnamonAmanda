@@ -870,8 +870,8 @@
     <div id="roomCodeModal" class="room-modal-backdrop hidden">
       <div class="room-modal-card">
         <div class="room-modal-title">🌸 Conectar con la Tele</div>
-        <div class="room-modal-desc">Ingresa el código de 4 letras que aparece en tu pantalla o TV:</div>
-        <input type="text" id="roomCodeInput" class="room-modal-input" maxlength="4" placeholder="SALA" autofocus />
+        <div class="room-modal-desc">Ingresa el código de 6 letras que aparece en tu pantalla o TV:</div>
+        <input type="text" id="roomCodeInput" class="room-modal-input" maxlength="6" placeholder="CÓDIGO" autofocus />
         <button id="btnRoomModalConnect" class="btn-room-modal-connect">✨ ¡CONECTAR MANDO! ✨</button>
       </div>
     </div>
@@ -917,6 +917,14 @@
 
       let roomCode = getRoomCode();
       window.roomCode = roomCode;
+      // Clave del QR: permite entrar sin que la TV tenga que aceptar
+      let roomKey = '';
+      try {
+        const urlKey = (urlParams.get('k') || '').replace(/[^A-Z0-9]/gi, '');
+        if (urlKey) sessionStorage.setItem('cinna_ctrl_key_' + roomCode, urlKey);
+        roomKey = urlKey || sessionStorage.getItem('cinna_ctrl_key_' + roomCode) || '';
+      } catch (_) {}
+      let rejectedByTv = false;
       const headerRoomText = document.getElementById('headerRoomText');
       if (headerRoomText) headerRoomText.textContent = roomCode;
 
@@ -1005,6 +1013,7 @@
 
       function scheduleReconnect(delay = 2000) {
         if (reconnectTimeout) clearTimeout(reconnectTimeout);
+        if (rejectedByTv) return;
         reconnectTimeout = setTimeout(() => {
           connectPeer();
         }, delay);
@@ -1066,8 +1075,8 @@
 
             conn.on('open', () => {
               peerConn = conn;
-              updateStatus('connected', '🟢 ¡En Vivo en TV! ✨');
-              conn.send({ type: 'hello', room: roomCode, player: playerSlot });
+              updateStatus('connecting', roomKey ? '🟡 Conectando a TV...' : '🟡 Esperando que la TV acepte...');
+              conn.send({ type: 'hello', room: roomCode, player: playerSlot, key: roomKey });
               startHeartbeat();
             });
 
@@ -1075,6 +1084,11 @@
               if (!data) return;
               if (data.type === 'pong') {
                 lastPongTime = Date.now();
+                return;
+              }
+              if (data.type === 'rejected') {
+                rejectedByTv = true;
+                updateStatus('disconnected', '🔴 La TV no aceptó (Toca)');
                 return;
               }
               if (data.type === 'welcome') {
@@ -1091,6 +1105,7 @@
 
             conn.on('close', () => {
               peerConn = null;
+              if (rejectedByTv) return;
               updateStatus('disconnected', '🔴 Desconectado (Toca)');
               scheduleReconnect(2000);
             });
@@ -1114,8 +1129,24 @@
 
       connectPeer();
 
+      // Evitar que la pantalla del celular se apague a mitad del juego
+      let wakeLock = null;
+      async function keepScreenOn() {
+        try {
+          if ('wakeLock' in navigator && !wakeLock) {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+          }
+        } catch (_) {}
+      }
+      window.addEventListener('pointerdown', keepScreenOn, { passive: true });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && wakeLock === null) keepScreenOn();
+      });
+
       statusEl.addEventListener('click', () => {
         playHapticBeep(600);
+        rejectedByTv = false;
         connectPeer();
       });
 
@@ -1209,8 +1240,10 @@
       if (btnRoomConnect && roomInput) {
         btnRoomConnect.addEventListener('click', () => {
           const val = roomInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-          if (val && val.length >= 2) {
+          if (val && val.length >= 4) {
             playHapticBeep(640);
+            rejectedByTv = false;
+            try { roomKey = sessionStorage.getItem('cinna_ctrl_key_' + val) || ''; } catch (_) { roomKey = ''; }
             roomCode = val;
             window.roomCode = val;
             sessionStorage.setItem('cinna_ctrl_room', val);

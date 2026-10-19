@@ -115,7 +115,7 @@
     }
 
     start() {
-      if (!VoiceCommands.supported()) return Promise.reject(new Error('Este navegador no soporta reconocimiento de voz (usá Chrome o Edge).'));
+      if (!VoiceCommands.supported()) return Promise.reject(new Error('Este navegador no soporta reconocimiento de voz (usa Chrome o Edge).'));
       const R = window.SpeechRecognition || window.webkitSpeechRecognition;
       const r = new R();
       const nav = (navigator.language || '').toLowerCase();
@@ -145,6 +145,10 @@
         if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
           this.active = false;
           this.m.emit('status', { source: 'voice', ok: false, msg: 'Permiso de micrófono denegado.' });
+        } else if (e.error === 'network' || e.error === 'audio-capture' || e.error === 'language-not-supported') {
+          // sin red o sin micrófono: no reintentar en bucle
+          this.active = false;
+          this.m.emit('status', { source: 'voice', ok: false, msg: 'La voz no está disponible ahora.' });
         }
       };
 

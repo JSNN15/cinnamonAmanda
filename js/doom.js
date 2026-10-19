@@ -680,7 +680,8 @@
             if (this.fedCount === this.totalFriends) {
               window.Cinnamo?.passport?.addStars?.(3, 'doom');
               setTimeout(() => {
-                this.container.querySelector('#doomVictoryOverlay').classList.remove('hidden');
+                const overlay = this.container?.querySelector('#doomVictoryOverlay');
+                if (overlay) overlay.classList.remove('hidden');
               }, 600);
             }
             break;

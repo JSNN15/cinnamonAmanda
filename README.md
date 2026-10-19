@@ -1,6 +1,8 @@
 # 🌸 Cinnamoroll Land · Suite de Juegos Preescolares de Sanrio
 
-Una suite de juegos web liviana, interactiva, relajante y de alta calidad diseñada especialmente para **Amanda (5 años)**, inspirada en el universo oficial de **Cinnamoroll** y sus amigos de Sanrio (*Milk, Pompompurin, Mocha y Chiffon*).
+Una suite de juegos web liviana, interactiva, relajante y de alta calidad pensada para niñas y niños de 5 a 8 años, inspirada en **Cinnamoroll** y sus amigos de Sanrio (*Milk, Pompompurin, Mocha y Chiffon*).
+
+> **Aviso:** proyecto de fans, familiar y sin fines comerciales. No está afiliado, patrocinado ni aprobado por Sanrio. Cinnamoroll y sus personajes son marcas y obras de © Sanrio Co., Ltd. La licencia Apache-2.0 de este repositorio cubre solo el código; **no** cubre las imágenes de personajes de `assets/` ni los archivos `cinnamoroll_*.png`.
 
 **Sitio en Vivo (GitHub Pages):** [https://jsnn15.github.io/cinnamonAmanda/](https://jsnn15.github.io/cinnamonAmanda/)
 
@@ -167,7 +169,7 @@ Diseñado con progresión curricular de **5 a 8 años** y **4 modos pedagógicos
     * 🛡️ **Escudo de Algodón de Azúcar (`coopShield`):** Activa durante **8 segundos** una burbuja de protección e impulso aéreo en *Super Run* y *Vuelo Mágico*.
     * 💖 **Porra de Ánimo (`coopCheer`):** Muestra un banner festivo de aliento con voz cariñosa y lluvia de corazones en pantalla.
 * **🏅 Pasaporte Mágico y Álbum de Stickers (`cinnamo_passport_v1` en `localStorage`):**
-  * Registra las estrellas mágicas ganadas y desbloquea **10 Stickers coleccionables oficiales de Sanrio** accesibles desde el botón `🏅 Stickers` en la barra superior o desde el mando móvil.
+  * Registra las estrellas mágicas ganadas y desbloquea **10 Stickers coleccionables de Sanrio** accesibles desde el botón `🏅 Stickers` en la barra superior o desde el mando móvil.
 
 ---
 

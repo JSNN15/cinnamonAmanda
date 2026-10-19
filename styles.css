@@ -3032,3 +3032,23 @@ body.touch-input-active .flight-touch-controls {
   align-self: flex-start; background: #ffffff; border: 2px solid #fecaca; border-radius: 999px;
   padding: 4px 12px; font: 800 12px var(--font); color: #dc2626; cursor: pointer;
 }
+
+/* ---------- Aceptar mando nuevo (celular que escribió el código a mano) ---------- */
+.cinna-accept-controller {
+  position: fixed; inset: 0; z-index: 30000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(40, 30, 60, .45); padding: 16px;
+}
+.cinna-accept-card {
+  background: #fff; border-radius: 24px; padding: 22px 20px; max-width: 360px; width: 100%;
+  text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.25); font-family: inherit;
+}
+.cinna-accept-title { font-size: 20px; font-weight: 800; color: #4a5a80; margin-bottom: 6px; }
+.cinna-accept-desc { font-size: 15px; color: #4a5a80; margin-bottom: 16px; }
+.cinna-accept-actions { display: flex; gap: 12px; justify-content: center; }
+.cinna-accept-actions button {
+  min-height: 52px; min-width: 120px; border: 0; border-radius: 16px;
+  font: inherit; font-size: 17px; font-weight: 800; cursor: pointer;
+}
+.cinna-accept-yes { background: #34d399; color: #064e3b; }
+.cinna-accept-no { background: #fecdd3; color: #881337; }
