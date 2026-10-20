@@ -304,3 +304,27 @@ Se ejecutó una **auditoría QA exhaustiva e interactiva juego por juego (los 9 
 2. **Suite Profunda de Jugabilidad Local y Responsividad (`qa_all_9_games.py`):**
    - Prueba todas las mecánicas internas de los 9 juegos, el sistema adaptativo `MathProgress`, los 4 modos de *Palabras Mágicas*, las dificultades `6/9/12/16` de *Rompecabezas Mágico*, y valida `0px` de desborde horizontal en **Desktop (`1280×800`)**, **Tablet (`768×1024`)** y **Mobile (`390×844`)** con **`0` errores en consola JS**.
 
+---
+
+## 13. Evolución `v37`: Expansión de *Cinnamoroll World* (Playa, Spa & Cocina Combinable), Vuelo Cooperativo de 3 Jugadores en *"¡A Volar!"* y Tienda Mágica de Recompensas del Pasaporte
+
+### 13.1 Nuevas Habitaciones, Exteriores y Cocina Combinable en *Cinnamoroll World* (`js/avatar-world.js`)
+1. **Expansión a 5 Espacios Interactivos (`ROOMS`):**
+   - 🏖️ **Habitación 4 — Playa de Verano (`beach`):** Exterior costero con cielo dinámico (*Día / Atardecer / Noche*), mar turquesa con olitas de espuma animadas, arena dorada con estrellas de mar y 4 objetos interactivos: **Castillo de Arena (`sand_castle`)**, **Carrito de Helados (`ice_cream_cart`, que despacha copas heladas al tocarlo)**, **Reposera con Sombrilla (`beach_lounger`)** y **Tabla de Surf (`surf_board`)**.
+   - 🛁 **Habitación 5 — Salón de Mascotas & Spa (`spa`):** Espacio relajante en tonos menta y agua con **Tina de Burbujas Animadas (`bubble_tub`)**, **Casita de Mascotas (`pet_house`)**, **Tocador de Spa (`salon_mirror`)** y **Lámpara de Aroma (`aroma_lamp`)**.
+2. **Sistema de Cocina Combinable (`craftSpecialRecipe` + `kitchen_mixer`):**
+   - En la *Cafetería*, se incorporó la **Batidora de Recetas (`kitchen_mixer`)** y la mecánica de **combinación de ingredientes**: al arrastrar un alimento sobre otro postre o sobre la batidora/horno (o al activar la batidora), se elabora un **Super Pastel Arcoíris de 3 pisos (`rainbow_cake`)** con lluvia de partículas y recompensa de estrellas en el Pasaporte.
+
+### 13.2 Multijugador Cooperativo en Pantalla de hasta 3 Jugadores en *"¡A Volar!"* (`js/game.js`, `js/character.js`, `js/controller-bridge.js`)
+- **Vuelo Simultáneo `P1 🌸`, `P2 🩵` y `P3 💛`:** Cuando se conectan 2 o 3 celulares (o controles Bluetooth), `P2` (*Milk*, con chupete celeste y rulito) y `P3` (*Pompompurin*, con boina café) entran a volar junto a *Cinnamoroll* (`P1`), cada uno con su insignia flotante (`P1 🌸`, `P2 🩵`, `P3 💛`), física vertical continua independiente (`setCoPlayerJoystick`, `setCoPlayerInput`), piruetas aéreas y recolección compartida de estrellas y rollitos de canela.
+- **Renderizado Vectorial de Compañeros Sanrio (`js/character.js`):** Se amplió `CH.draw()` con `HERO_PALETTES` para dibujar en vuelo a *Cinnamoroll, Milk, Pompompurin, Mocha y Chiffon* con sus rasgos distintivos y halo luminoso.
+
+### 13.3 Tienda Mágica de Recompensas en el Pasaporte (`js/passport.js` + `js/avatar-world.js`)
+- Las estrellas ⭐ acumuladas en todos los juegos ahora desbloquean **5 Recompensas Reales (`REWARDS_CATALOG`)** en la nueva sección **🎁 Tienda Mágica de Recompensas** dentro de `#passportModal`:
+  1. 👗 **Vestido Gala Arcoíris (`rainbow_royal`, 5 ⭐)**
+  2. 🦄 **Corona de Unicornio (`unicorn_horn`, 10 ⭐)**
+  3. 🍦 **Helado Triple Mágico (`ice_cream_cone`, 15 ⭐)**
+  4. 🪑 **Trono Real de Nubes (`cloud_throne`, 20 ⭐)**
+  5. 🍨 **Copa Fuente de Helado (`ice_cream_fountain`, 30 ⭐)**
+- Con un solo toque en **`💖 ¡Usar en Casa!`** (`claimReward` / `equipReward`), el traje, corona, helado o mueble real se equipa o aparece inmediatamente en *Cinnamoroll World* sin restar estrellas al niño.
+

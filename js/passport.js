@@ -1,7 +1,9 @@
 /* ============================================================================
-   PASAPORTE MÁGICO DE AMANDA & MODO COOPERATIVO ASIMÉTRICO (TV + CELULAR) v25
+   PASAPORTE MÁGICO, TIENDA DE RECOMPENSAS & MODO COOPERATIVO ASIMÉTRICO v37
    1. Álbum Persistente de Stickers y Estrellas en localStorage (cinnamo_passport_v1)
-   2. Poderes Cooperativos en Tiempo Real desde el Mando Móvil:
+   2. Tienda Mágica de Recompensas: desbloquea y equipa trajes reales, coronas
+      y muebles exclusivos en Cinnamoroll World usando las estrellas acumuladas.
+   3. Poderes Cooperativos en Tiempo Real desde el Mando Móvil:
       - 🌟 Lluvia de Estrellas (coopStarRain)
       - 🛡️ Escudo de Algodón de Azúcar (coopShield)
       - 💖 Porra de Ánimo en Vivo (coopCheer)
@@ -102,6 +104,54 @@
     }
   ];
 
+  const REWARDS_CATALOG = [
+    {
+      id: 'reward_rainbow_royal',
+      name: 'Vestido Gala Arcoíris',
+      category: 'outfit',
+      itemId: 'rainbow_royal',
+      icon: '👗',
+      desc: 'Traje real multicolor para lucir en Cinnamoroll World.',
+      starsReq: 5
+    },
+    {
+      id: 'reward_unicorn_horn',
+      name: 'Corona de Unicornio',
+      category: 'hat',
+      itemId: 'unicorn_horn',
+      icon: '🦄',
+      desc: 'Cuerno dorado mágico con florcitas pastel.',
+      starsReq: 10
+    },
+    {
+      id: 'reward_ice_cream_cone',
+      name: 'Helado Triple Mágico',
+      category: 'prop',
+      itemId: 'ice_cream_cone',
+      icon: '🍦',
+      desc: 'Cono de tres sabores para llevar en la mano.',
+      starsReq: 15
+    },
+    {
+      id: 'reward_cloud_throne',
+      name: 'Trono Real de Nubes',
+      category: 'decor',
+      itemId: 'cloud_throne',
+      icon: '🪑',
+      desc: 'Sillón real de algodón y estrellas para decorar tu casa.',
+      starsReq: 20
+    },
+    {
+      id: 'reward_ice_cream_fountain',
+      name: 'Copa Fuente de Helado',
+      category: 'decor',
+      itemId: 'ice_cream_fountain',
+      icon: '🍨',
+      desc: 'Postre gigante de fiesta para compartir con amigos.',
+      starsReq: 30
+    }
+  ];
+
   class AmandaPassportAndCoop {
     constructor() {
       this.state = this.loadState();
@@ -119,6 +169,7 @@
       const fallback = {
         stars: 5,
         unlocked: ['welcome_amanda', 'sky_pilot'],
+        unlockedRewards: ['reward_rainbow_royal'],
         gamesPlayed: {},
         coopUses: 0
       };
@@ -129,6 +180,7 @@
         return {
           stars: typeof parsed.stars === 'number' ? parsed.stars : 5,
           unlocked: Array.isArray(parsed.unlocked) && parsed.unlocked.length ? parsed.unlocked : ['welcome_amanda', 'sky_pilot'],
+          unlockedRewards: Array.isArray(parsed.unlockedRewards) && parsed.unlockedRewards.length ? parsed.unlockedRewards : ['reward_rainbow_royal'],
           gamesPlayed: parsed.gamesPlayed || {},
           coopUses: parsed.coopUses || 0
         };
@@ -162,7 +214,7 @@
           box-shadow: 0 3px 10px rgba(244, 114, 182, 0.35) !important;
         }
         .passport-modal-card {
-          max-width: 680px !important;
+          max-width: 700px !important;
           width: 94vw !important;
           max-height: 88vh !important;
           overflow-y: auto !important;
@@ -184,7 +236,7 @@
           flex-wrap: wrap;
         }
         .passport-stat-pill {
-          font-size: 16px;
+          font-size: 15px;
           font-weight: 800;
           color: #0369a1;
           display: flex;
@@ -265,6 +317,81 @@
           font-size: 11px;
           font-weight: 700;
           color: #db2777;
+        }
+        /* Tienda Mágica de Recompensas */
+        .passport-shop-section {
+          margin-top: 20px;
+          padding-top: 16px;
+          border-top: 3px dashed #f9a8d4;
+        }
+        .passport-shop-title {
+          font-size: 18px;
+          font-weight: 800;
+          color: #be185d;
+          margin: 0 0 4px;
+          text-align: center;
+        }
+        .passport-shop-sub {
+          font-size: 13px;
+          font-weight: 700;
+          color: #7c3aed;
+          margin: 0 0 12px;
+          text-align: center;
+        }
+        .passport-rewards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
+          gap: 10px;
+        }
+        .reward-shop-card {
+          background: #ffffff;
+          border: 3px solid #c4b5fd;
+          border-radius: 18px;
+          padding: 10px 8px;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: space-between;
+          gap: 4px;
+          transition: transform 0.18s ease, box-shadow 0.18s ease;
+          cursor: pointer;
+        }
+        .reward-shop-card.unlocked {
+          background: linear-gradient(145deg, #fffdf9 0%, #f3e8ff 55%, #fce7f3 100%);
+          border-color: #a855f7;
+          box-shadow: 0 5px 14px rgba(168, 85, 247, 0.22);
+        }
+        .reward-shop-card.can-claim {
+          background: linear-gradient(145deg, #fef9c3 0%, #fce7f3 100%);
+          border-color: #eab308;
+        }
+        .reward-shop-card.locked {
+          opacity: 0.65;
+          border-style: dashed;
+        }
+        .reward-shop-ico {
+          font-size: 28px;
+          line-height: 1;
+          margin-bottom: 2px;
+        }
+        .reward-shop-btn {
+          margin-top: 4px;
+          border: none;
+          border-radius: 999px;
+          padding: 5px 10px;
+          font-family: inherit;
+          font-size: 11px;
+          font-weight: 800;
+          cursor: pointer;
+          width: 100%;
+          color: #ffffff;
+          background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+          box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3);
+        }
+        .reward-shop-card.locked .reward-shop-btn {
+          background: #94a3b8;
+          box-shadow: none;
         }
         /* Overlay Cooperativo Asimétrico */
         #coopStageOverlay {
@@ -349,13 +476,19 @@
             <h2>Pasaporte Mágico de ${cinnaName()}</h2>
           </div>
           <p class="modal-desc" style="margin-bottom:6px;">
-            ¡Colecciona estrellas jugando o en modo Cooperativo con tu celular para desbloquear todos los Stickers brillantes!
+            ¡Colecciona estrellas jugando o en modo Cooperativo con tu celular para desbloquear todos los Stickers y Recompensas!
           </p>
           <div class="passport-summary-bar">
             <div class="passport-stat-pill">⭐ Estrellas Mágicas: <strong id="passportStarCount">0</strong></div>
             <div class="passport-stat-pill">🏅 Stickers: <strong id="passportStickerCount">0 / 10</strong></div>
+            <div class="passport-stat-pill">🎁 Regalos: <strong id="passportRewardCount">0 / 5</strong></div>
           </div>
           <div class="stickers-album-grid" id="passportStickersGrid"></div>
+          <div class="passport-shop-section">
+            <h3 class="passport-shop-title">🎁 Tienda Mágica de Recompensas</h3>
+            <p class="passport-shop-sub">¡Tus estrellas desbloquean ropa real y muebles especiales para Cinnamoroll World!</p>
+            <div class="passport-rewards-grid" id="passportRewardsGrid"></div>
+          </div>
         </div>
       `;
       document.body.appendChild(modal);
@@ -391,6 +524,51 @@
       }
     }
 
+    isRewardUnlocked(rewardId) {
+      if (!rewardId) return true;
+      this.state.unlockedRewards = this.state.unlockedRewards || ['reward_rainbow_royal'];
+      if (this.state.unlockedRewards.includes(rewardId)) return true;
+      const rw = REWARDS_CATALOG.find(r => r.id === rewardId || r.itemId === rewardId);
+      if (rw && this.state.stars >= rw.starsReq) {
+        this.state.unlockedRewards.push(rw.id);
+        return true;
+      }
+      return false;
+    }
+
+    claimReward(rewardId) {
+      const rw = REWARDS_CATALOG.find(r => r.id === rewardId || r.itemId === rewardId);
+      if (!rw) return false;
+      this.state.unlockedRewards = this.state.unlockedRewards || ['reward_rainbow_royal'];
+      if (!this.state.unlockedRewards.includes(rw.id)) {
+        if (this.state.stars < rw.starsReq) return false;
+        this.state.unlockedRewards.push(rw.id);
+        this.saveState();
+      }
+      this.equipReward(rw.id, 1);
+      this.renderPassportGrid();
+      return true;
+    }
+
+    equipReward(rewardId, slot = 1) {
+      const rw = REWARDS_CATALOG.find(r => r.id === rewardId || r.itemId === rewardId);
+      if (!rw || !this.isRewardUnlocked(rw.id)) return false;
+      const aw = window.Cinnamo?.avatarWorldGame;
+      if (aw) {
+        if (rw.category === 'decor') {
+          aw.spawnDecorItem?.(rw.itemId, slot);
+        } else {
+          aw.applyCustomization?.(slot, rw.category, rw.itemId);
+        }
+      }
+      if (window.Cinnamo?.audio) {
+        window.Cinnamo.audio.unlock();
+        window.Cinnamo.audio.celebrate();
+      }
+      this.showCoopBanner(`🎁 ¡${rw.icon} ${rw.name} equipado en Cinnamoroll World! ✨`, 3000);
+      return true;
+    }
+
     addStars(amount = 1, gameKey = null) {
       this.state.stars = Math.max(0, (this.state.stars || 0) + amount);
       if (gameKey) {
@@ -404,6 +582,12 @@
             this.state.unlocked.push(st.id);
             newlyUnlocked = st;
           }
+        }
+      }
+      this.state.unlockedRewards = this.state.unlockedRewards || ['reward_rainbow_royal'];
+      for (const rw of REWARDS_CATALOG) {
+        if (!this.state.unlockedRewards.includes(rw.id) && this.state.stars >= rw.starsReq) {
+          this.state.unlockedRewards.push(rw.id);
         }
       }
       this.saveState();
@@ -423,11 +607,21 @@
       if (titleEl) titleEl.textContent = `Pasaporte Mágico de ${cinnaName()}`;
       const starEl = document.getElementById('passportStarCount');
       const countEl = document.getElementById('passportStickerCount');
+      const rwCountEl = document.getElementById('passportRewardCount');
       const grid = document.getElementById('passportStickersGrid');
+      const rwGrid = document.getElementById('passportRewardsGrid');
       if (!grid) return;
+
+      this.state.unlockedRewards = this.state.unlockedRewards || ['reward_rainbow_royal'];
+      for (const rw of REWARDS_CATALOG) {
+        if (!this.state.unlockedRewards.includes(rw.id) && this.state.stars >= rw.starsReq) {
+          this.state.unlockedRewards.push(rw.id);
+        }
+      }
 
       if (starEl) starEl.textContent = this.state.stars;
       if (countEl) countEl.textContent = `${this.state.unlocked.length} / ${STICKERS_CATALOG.length}`;
+      if (rwCountEl) rwCountEl.textContent = `${this.state.unlockedRewards.length} / ${REWARDS_CATALOG.length}`;
 
       grid.innerHTML = STICKERS_CATALOG.map(st => {
         const isUnlocked = this.state.unlocked.includes(st.id);
@@ -468,6 +662,40 @@
           }
         });
       });
+
+      if (rwGrid) {
+        rwGrid.innerHTML = REWARDS_CATALOG.map(rw => {
+          const isUnlocked = this.state.unlockedRewards.includes(rw.id);
+          const canClaim = !isUnlocked && this.state.stars >= rw.starsReq;
+          const cls = isUnlocked ? 'unlocked' : (canClaim ? 'can-claim' : 'locked');
+          const btnText = isUnlocked ? '💖 ¡Usar en Casa!' : (canClaim ? '✨ ¡Desbloquear!' : `🔒 ⭐ ${rw.starsReq}`);
+          return `
+            <div class="reward-shop-card ${cls}" data-reward="${rw.id}" title="${rw.desc}">
+              <div class="reward-shop-ico">${rw.icon}</div>
+              <div class="sticker-name">${rw.name}</div>
+              <div class="sticker-req">${isUnlocked ? '🎁 ¡Desbloqueado!' : `Meta: ⭐ ${rw.starsReq}`}</div>
+              <button type="button" class="reward-shop-btn">${btnText}</button>
+            </div>
+          `;
+        }).join('');
+
+        rwGrid.querySelectorAll('.reward-shop-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const rwId = card.dataset.reward;
+            const rw = REWARDS_CATALOG.find(r => r.id === rwId);
+            if (!rw) return;
+            if (this.isRewardUnlocked(rw.id)) {
+              this.claimReward(rw.id);
+            } else {
+              if (window.Cinnamo?.audio) {
+                window.Cinnamo.audio.unlock();
+                window.Cinnamo.audio.softBoing();
+              }
+              this.showCoopBanner(`🔒 Junta ⭐ ${rw.starsReq} estrellas jugando para desbloquear "${rw.name}"`, 2600);
+            }
+          });
+        });
+      }
     }
 
     openPassport() {
@@ -666,6 +894,7 @@
 
   window.Cinnamo = window.Cinnamo || {};
   const manager = new AmandaPassportAndCoop();
+  manager.REWARDS_CATALOG = REWARDS_CATALOG;
   window.Cinnamo.passport = manager;
   window.Cinnamo.coop = manager;
 })();

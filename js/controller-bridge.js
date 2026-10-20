@@ -518,6 +518,13 @@
               plat.coPlayers[slot].active = false;
             }
           }
+          const fl = window.Cinnamo?.flightGame;
+          if (fl && fl.coPlayers?.[slot]) {
+            fl.coPlayers[slot].active = this.players[slot].active;
+            if (this.players[slot].heroId && fl.selectHeroById) {
+              fl.selectHeroById(this.players[slot].heroId, slot);
+            }
+          }
         }
         const aw = window.Cinnamo?.avatarWorldGame;
         if (aw && aw.players?.[slot]) {
@@ -547,6 +554,8 @@
         const screen = window.Cinnamo?.hub?.currentScreen;
         if (screen === 'avatar' && window.Cinnamo?.avatarWorldGame?.applyCustomization) {
           window.Cinnamo.avatarWorldGame.applyCustomization(playerSlot, 'base', heroId);
+        } else if (screen === 'flight' && window.Cinnamo?.flightGame?.selectHeroById) {
+          window.Cinnamo.flightGame.selectHeroById(heroId, playerSlot);
         } else if (screen === 'doom' && window.Cinnamo?.doomGame?.selectHeroById) {
           window.Cinnamo.doomGame.selectHeroById(heroId);
         } else if (screen === 'puzzle' && window.Cinnamo?.puzzleGame?.selectCharacterById) {
@@ -914,8 +923,12 @@
         return;
       }
 
-      // 3. A Volar (Vuelo analógico suave: subir y bajar con respuesta directa)
+      // 3. A Volar (Vuelo analógico suave: soporta P1, P2 y P3 simultáneos en pantalla)
       if (screen === 'flight') {
+        if (playerSlot === 2 || playerSlot === 3) {
+          window.Cinnamo?.flightGame?.setCoPlayerJoystick?.(playerSlot, x, y);
+          return;
+        }
         const input = IN();
         if (input) {
           if (Math.abs(y) > 0.12) {
@@ -1026,8 +1039,12 @@
         return;
       }
 
-      // 3. Despachar a A Volar (game.js: subir/bajar continuo, pirueta, saludo)
+      // 3. Despachar a A Volar (game.js: subir/bajar continuo, pirueta, saludo; soporta P1, P2 y P3)
       if (screen === 'flight') {
+        if (playerSlot === 2 || playerSlot === 3) {
+          window.Cinnamo?.flightGame?.setCoPlayerInput?.(playerSlot, btn, pressed);
+          return;
+        }
         const input = IN();
         if (input) {
           if (btn === 'up') {

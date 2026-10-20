@@ -1,4 +1,6 @@
-/* Lógica del juego: volar, juntar estrellas, celebrar. Sin "game over": sólo refuerzo positivo. */
+/* Lógica del juego: volar, juntar estrellas, celebrar. Sin "game over": sólo refuerzo positivo.
+ * Soporta hasta 3 jugadores simultáneos en pantalla (P1 🌸, P2 🩵, P3 💛) con mando móvil o Bluetooth.
+ */
 (function () {
   const { audio: A, input: IN, character: CH } = window.Cinnamo;
   const $ = id => document.getElementById(id);
@@ -38,16 +40,21 @@
     themeFrom: 0, themeTo: 0, themeMix: 1,
     items: [], parts: [], clouds: [], stars: [],
     spawnT: 1, trail: null, celebrateT: 0, combo: 0, comboT: 0,
-    p: { y: 0.5, vy: 0, mood: 'idle', moodT: 0, spin: 0, spinT: 0, blinkT: 2, blink: 0, wiggle: 0 },
+    p: { slot: 1, heroId: 'cinna', y: 0.5, vy: 0, mood: 'idle', moodT: 0, spin: 0, spinT: 0, blinkT: 2, blink: 0, wiggle: 0 },
+    coPlayers: {
+      2: { slot: 2, active: false, heroId: 'milk', y: 0.32, vy: 0, axis: 0, keys: { up: false, down: false }, mood: 'idle', moodT: 0, spin: 0, spinT: 0, blinkT: 2.3, blink: 0, wiggle: 0 },
+      3: { slot: 3, active: false, heroId: 'purin', y: 0.68, vy: 0, axis: 0, keys: { up: false, down: false }, mood: 'idle', moodT: 0, spin: 0, spinT: 0, blinkT: 3.1, blink: 0, wiggle: 0 },
+    }
   };
 
   function layout() {
     size = clamp(Math.min(W, H) * 0.2, 70, 170);
-    px = W * 0.26;
+    px = W * 0.28;
     top = H * 0.12 + size * 0.55;
     bottom = H * 0.84 - size * 0.5;
   }
   const playToY = v => lerp(top, bottom, v);
+  const getFlyerX = slot => slot === 1 ? px : (slot === 2 ? Math.max(size * 0.65, px - size * 0.78) : Math.max(size * 0.45, px - size * 1.48));
   IN.pointerMapper = clientY => clamp((clientY - top) / (bottom - top), 0, 1);
 
   function resize() {
@@ -110,7 +117,7 @@
   function floatText(x, y, txt) { S.parts.push({ kind: 'text', x, y, vx: 0, vy: -70, life: 0.9, t: 0, txt }); }
 
   /* ---------------- Acciones ---------------- */
-  function setMood(m, t) { S.p.mood = m; S.p.moodT = t; }
+  function setMood(m, t, target = S.p) { target.mood = m; target.moodT = t; }
   function currentPointer() { return S.p.y; }
 
   function onAction({ type, source }) {
@@ -154,7 +161,63 @@
   }
   IN.on('action', onAction);
 
-  function collect(it) {
+  /* ---------------- Controles Cooperativos P2 y P3 ---------------- */
+  function setCoPlayerJoystick(slot, x, y) {
+    const cp = S.coPlayers[slot];
+    if (!cp) return;
+    cp.active = true;
+    cp.axis = Math.abs(y) > 0.12 ? clamp(y, -1, 1) : 0;
+    if (cp.axis !== 0 && S.mode !== 'play') startGame();
+  }
+
+  function setCoPlayerInput(slot, btn, pressed) {
+    const cp = S.coPlayers[slot];
+    if (!cp) return;
+    cp.active = true;
+    if (pressed && S.mode !== 'play') startGame();
+    const fx = getFlyerX(slot);
+    const fy = playToY(cp.y);
+    if (btn === 'up') {
+      cp.keys.up = pressed;
+      if (pressed) {
+        cp.vy = -1.9;
+        setMood('happy', 0.8, cp);
+        A.whoosh(true);
+      }
+    } else if (btn === 'down') {
+      cp.keys.down = pressed;
+      if (pressed) {
+        cp.vy = 1.5;
+        A.whoosh(false);
+      }
+    } else if ((btn === 'jump' || btn === 'spin') && pressed) {
+      if (cp.spinT <= 0) {
+        cp.spinT = 0.8;
+        A.spin();
+        setMood('wow', 0.9, cp);
+        floatText(fx, fy - size * 0.42, '¡Pirueta! ✨');
+      }
+    } else if ((btn === 'treat' || btn === 'hello') && pressed) {
+      setMood('happy', 1.4, cp);
+      cp.wiggle = 1.4;
+      burst(fx, fy - size * 0.38, 8, ['#38bdf8', '#fde047', '#f472b6'], 120, 'heart');
+      floatText(fx, fy - size * 0.42, `¡Equipo P${slot}! 💖`);
+      A.kawaiiChirp('cheer');
+    }
+  }
+
+  function selectHeroById(heroId, slot = 1) {
+    const valid = ['cinna', 'milk', 'purin', 'mocha', 'chiffon'];
+    const id = valid.includes(heroId) ? heroId : 'cinna';
+    if (slot === 2 || slot === 3) {
+      S.coPlayers[slot].active = true;
+      S.coPlayers[slot].heroId = id;
+    } else {
+      S.p.heroId = id;
+    }
+  }
+
+  function collect(it, collector = S.p) {
     it.got = true;
     S.score++; S.inLevel++;
     S.combo = S.comboT > 0 ? S.combo + 1 : 0; S.comboT = 1.2;
@@ -162,7 +225,7 @@
     burst(it.x, it.y, it.type === 'star' ? 12 : 22, colors);
     floatText(it.x, it.y - it.r, '+1');
     it.type === 'star' ? A.collect(S.combo) : A.colorSplat();
-    setMood('happy', 0.5);
+    setMood('happy', 0.5, collector);
     updateHud(true);
     if (S.inLevel >= GOAL) celebrate();
   }
@@ -176,11 +239,26 @@
     A.celebrate();
     window.Cinnamo?.passport?.addStars?.(2, 'flight');
     setMood('happy', 3); S.p.spinT = 0.8;
+    for (const s of [2, 3]) {
+      if (S.coPlayers[s].active) {
+        setMood('happy', 3, S.coPlayers[s]);
+        S.coPlayers[s].spinT = 0.8;
+      }
+    }
     const el = $('cheer');
     el.textContent = CHEERS[(Math.random() * CHEERS.length) | 0];
     el.classList.remove('hidden'); el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
     setTimeout(() => el.classList.add('hidden'), 2400);
     setTimeout(() => updateHud(false), 600);
+  }
+
+  function stepFlyerAnim(flyer, dt) {
+    flyer.blinkT -= dt;
+    if (flyer.blinkT <= 0) { flyer.blink = 0.13; flyer.blinkT = rand(2, 5); }
+    flyer.blink = Math.max(0, flyer.blink - dt);
+    flyer.moodT -= dt; if (flyer.moodT <= 0) flyer.mood = 'idle';
+    flyer.wiggle = Math.max(0, flyer.wiggle - dt);
+    if (flyer.spinT > 0) { flyer.spinT -= dt; flyer.spin = (1 - Math.max(0, flyer.spinT) / 0.8) * Math.PI * 2; } else flyer.spin = 0;
   }
 
   /* ---------------- Update ---------------- */
@@ -195,18 +273,15 @@
     }
     if (S.themeMix < 1) S.themeMix = Math.min(1, S.themeMix + dt / 3);
 
-    // parpadeo
-    p.blinkT -= dt;
-    if (p.blinkT <= 0) { p.blink = 0.13; p.blinkT = rand(2, 5); }
-    p.blink = Math.max(0, p.blink - dt);
-    p.moodT -= dt; if (p.moodT <= 0) p.mood = 'idle';
-    p.wiggle = Math.max(0, p.wiggle - dt);
-    if (p.spinT > 0) { p.spinT -= dt; p.spin = (1 - Math.max(0, p.spinT) / 0.8) * Math.PI * 2; } else p.spin = 0;
+    stepFlyerAnim(p, dt);
+    for (const s of [2, 3]) {
+      if (S.coPlayers[s].active) stepFlyerAnim(S.coPlayers[s], dt);
+    }
 
     updateParticles(dt);
     if (S.mode !== 'play') return;
 
-    // movimiento: resorte amortiguado → suave, directo y receptivo hacia arriba y hacia abajo
+    // movimiento P1: resorte amortiguado → suave, directo y receptivo hacia arriba y hacia abajo
     const ctl = IN.getControl();
     let acc;
     if (ctl.axis !== 0) {
@@ -224,20 +299,51 @@
     if (p.y < 0) { p.y = 0; p.vy = Math.abs(p.vy) * 0.3; }
     if (p.y > 1) { p.y = 1; p.vy = -Math.abs(p.vy) * 0.3; }
 
+    // movimiento Cooperativo P2 y P3
+    for (const s of [2, 3]) {
+      const cp = S.coPlayers[s];
+      if (!cp.active) continue;
+      const keyAxis = (cp.keys.down ? 1 : 0) - (cp.keys.up ? 1 : 0);
+      const cpAxis = cp.axis !== 0 ? cp.axis : keyAxis;
+      const cpAcc = cpAxis !== 0 ? (cpAxis * 2.8 - cp.vy) * 14 : -cp.vy * 7;
+      cp.vy += cpAcc * dt;
+      cp.y += cp.vy * dt;
+      if (cp.y < 0) { cp.y = 0; cp.vy = Math.abs(cp.vy) * 0.3; }
+      if (cp.y > 1) { cp.y = 1; cp.vy = -Math.abs(cp.vy) * 0.3; }
+    }
+
     spawn(dt);
     S.comboT -= dt;
     if (S.celebrateT > 0) S.celebrateT -= dt;
 
-    // items + imán generoso (para manos de 5 años)
-    const py = playToY(p.y) + Math.sin(S.t * 3) * size * 0.05;
+    // Lista de voladores activos (P1, P2, P3) con imán generoso
+    const activeFlyers = [
+      { ref: p, x: getFlyerX(1), y: playToY(p.y) + Math.sin(S.t * 3) * size * 0.05 }
+    ];
+    for (const s of [2, 3]) {
+      const cp = S.coPlayers[s];
+      if (cp.active) {
+        activeFlyers.push({ ref: cp, x: getFlyerX(s), y: playToY(cp.y) + Math.sin(S.t * 3 + s) * size * 0.05 });
+      }
+    }
+
     const v = speed();
     for (const it of S.items) {
       if (it.got) continue;
       it.x -= v * dt;
       it.ph += dt * 3;
-      const dx = px - it.x, dy = py - it.y, d = Math.hypot(dx, dy);
-      if (d < size * 1.5 && dx > -size * 0.5) { const f = (1 - d / (size * 1.5)) * 900 * dt; it.x += dx / d * f; it.y += dy / d * f; }
-      if (d < size * 0.55 + it.r) collect(it);
+      for (const fl of activeFlyers) {
+        const dx = fl.x - it.x, dy = fl.y - it.y, d = Math.hypot(dx, dy);
+        if (d < size * 1.5 && dx > -size * 0.5) {
+          const f = (1 - d / (size * 1.5)) * 900 * dt;
+          it.x += dx / d * f;
+          it.y += dy / d * f;
+        }
+        if (d < size * 0.55 + it.r) {
+          collect(it, fl.ref);
+          break;
+        }
+      }
     }
     S.items = S.items.filter(it => !it.got && it.x > -80);
   }
@@ -260,6 +366,30 @@
       cloud: mix(a.cloudC, b.cloudC, t), floor: mix(a.floorC, b.floorC, t),
       stars: lerp(a.stars, b.stars, t), sun: lerp(a.sun, b.sun, t),
     };
+  }
+
+  function drawPlayerBadge(x, y, slot) {
+    const colors = { 1: '#ec4899', 2: '#0ea5e9', 3: '#eab308' };
+    const labels = { 1: 'P1 🌸', 2: 'P2 🩵', 3: 'P3 💛' };
+    ctx.save();
+    ctx.font = '800 13px "Baloo 2", system-ui';
+    const txt = labels[slot] || `P${slot}`;
+    const tw = Math.max(44, ctx.measureText(txt).width + 18);
+    const bx = x - tw / 2;
+    const by = y - size * 0.68;
+    ctx.fillStyle = colors[slot] || '#ec4899';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(bx, by, tw, 22, 11);
+    else ctx.rect(bx, by, tw, 22);
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#ffffff';
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(txt, x, by + 11);
+    ctx.restore();
   }
 
   function render() {
@@ -333,11 +463,13 @@
     // items
     for (const it of S.items) drawItem(it);
 
-    // Cinnamoroll
+    // Cinnamoroll (P1) y compañeros cooperativos (P2, P3)
     const p = S.p;
     const inMenu = S.mode === 'menu';
+    const hasCoop = S.coPlayers[2].active || S.coPlayers[3].active;
     const charState = {
       t: S.t,
+      heroId: p.heroId || 'cinna',
       flapSpeed: p.wiggle > 0 ? 22 : 8 + Math.min(6, Math.abs(p.vy) * 8),
       flapAmp: p.wiggle > 0 ? 0.55 : 0.38,
       mood: p.mood, blink: p.blink > 0,
@@ -353,7 +485,27 @@
       CH.draw(m, mc.clientWidth / 2, mc.clientHeight * 0.5 + Math.sin(S.t * 2) * 5, mc.clientWidth * 0.52,
         { ...charState, tilt: 0, glow: false, mood: 'idle' });
     } else {
-      CH.draw(ctx, px, playToY(p.y) + Math.sin(S.t * 3) * size * 0.05, size, charState);
+      // Dibujar compañeros cooperativos P3 y P2 primero (ligeramente detrás de P1)
+      for (const s of [3, 2]) {
+        const cp = S.coPlayers[s];
+        if (!cp.active) continue;
+        const cpx = getFlyerX(s);
+        const cpy = playToY(cp.y) + Math.sin(S.t * 3 + s) * size * 0.05;
+        CH.draw(ctx, cpx, cpy, size * 0.88, {
+          t: S.t + s * 0.4,
+          heroId: cp.heroId || (s === 2 ? 'milk' : 'purin'),
+          flapSpeed: cp.wiggle > 0 ? 22 : 8 + Math.min(6, Math.abs(cp.vy) * 8),
+          flapAmp: cp.wiggle > 0 ? 0.55 : 0.38,
+          mood: cp.mood, blink: cp.blink > 0,
+          tilt: clamp(cp.vy * 0.35, -0.35, 0.35),
+          spin: cp.spin, glow: true
+        });
+        drawPlayerBadge(cpx, cpy, s);
+      }
+
+      const p1y = playToY(p.y) + Math.sin(S.t * 3) * size * 0.05;
+      CH.draw(ctx, px, p1y, size, charState);
+      if (hasCoop) drawPlayerBadge(px, p1y, 1);
     }
 
     // partículas
@@ -657,17 +809,25 @@
   updateHud();
   requestAnimationFrame(frame);
 
+  S.setCoPlayerJoystick = setCoPlayerJoystick;
+  S.setCoPlayerInput = setCoPlayerInput;
+  S.selectHeroById = selectHeroById;
+
   window.Cinnamo.state = S; // útil para depurar desde la consola
   window.Cinnamo.game = S;
   window.Cinnamo.flightGame = {
     state: S,
+    coPlayers: S.coPlayers,
     startGame,
     pause,
     moveUp: (pressed = true) => IN.setKey('up', pressed),
     moveDown: (pressed = true) => IN.setKey('down', pressed),
     spin: () => IN.emit('action', { type: 'spin', source: 'api' }),
     hello: () => IN.emit('action', { type: 'hello', source: 'api' }),
-    setAxis: (val) => IN.setAxis(val)
+    setAxis: (val) => IN.setAxis(val),
+    setCoPlayerJoystick,
+    setCoPlayerInput,
+    selectHeroById
   };
 
   // ?demo → arranca solo y vuela en piloto automático (para probar la visual)

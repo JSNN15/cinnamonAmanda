@@ -1,6 +1,6 @@
-/* Cinnamoroll: renderizado fiel al personaje original oficial de Sanrio.
- * Utiliza el spritesheet auténtico derivado de las ilustraciones oficiales
- * con animación fluida de aleteo de orejas, parpadeo tierno y expresiones.
+/* Cinnamoroll & Amigos: renderizado fiel al personaje original oficial de Sanrio.
+ * Utiliza el spritesheet auténtico derivado de las ilustraciones oficiales para Cinnamoroll
+ * y renderizado vectorial kawaii articulado para los compañeros de vuelo cooperativo (Milk, Purin, Mocha, Chiffon).
  */
 (function () {
   const FRAME_W = 607;
@@ -25,17 +25,34 @@
     });
   }
 
-  // Paleta oficial para fallback vectorial
+  // Paleta oficial para fallback vectorial y amigos Sanrio cooperativos (P1, P2, P3)
   const OUT = '#5b3e31';       // contorno marrón chocolate cálido Sanrio
   const WHITE = '#ffffff';
   const EYE = '#2aa8e6';        // celeste cian vivo
   const CHEEK = 'rgba(255, 170, 195, 0.85)';
   const TONGUE = '#ff9eb5';
 
+  const HERO_PALETTES = {
+    cinna:   { body: '#ffffff', ear: '#ffffff', eye: '#2aa8e6', cheek: 'rgba(255, 170, 195, 0.85)', glow: 'rgba(255, 255, 255, 0.7)' },
+    milk:    { body: '#fffdf7', ear: '#fffdf7', eye: '#0284c7', cheek: 'rgba(255, 179, 198, 0.88)', glow: 'rgba(186, 230, 253, 0.75)', pacifier: true, curl: true },
+    purin:   { body: '#fef08a', ear: '#fde047', eye: '#5b3e31', cheek: 'rgba(252, 165, 165, 0.85)', glow: 'rgba(254, 240, 138, 0.75)', beret: true },
+    mocha:   { body: '#d6a77a', ear: '#b88658', eye: '#4a2c11', cheek: 'rgba(255, 141, 161, 0.85)', glow: 'rgba(251, 207, 232, 0.75)', flowers: true },
+    chiffon: { body: '#fdebd0', ear: '#e59866', eye: '#5b3e31', cheek: 'rgba(255, 133, 162, 0.85)', glow: 'rgba(254, 215, 170, 0.75)', fluffy: true }
+  };
+
   function drawVectorFallback(ctx, x, y, size, st) {
+    const heroId = (st && st.heroId) || 'cinna';
+    const pal = HERO_PALETTES[heroId] || HERO_PALETTES.cinna;
     const k = size / 100;
     ctx.save();
     ctx.translate(x, y);
+    if (st && st.glow) {
+      const g = ctx.createRadialGradient(0, 0, size * 0.15, 0, 0, size * 0.9);
+      g.addColorStop(0, pal.glow);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(0, 0, size * 0.9, 0, Math.PI * 2); ctx.fill();
+    }
     ctx.rotate((st.tilt || 0) + (st.spin || 0));
     ctx.scale(k, k);
     ctx.lineWidth = 3.8;
@@ -48,7 +65,7 @@
     // cola
     ctx.beginPath();
     ctx.arc(-34, 42, 14, 0, Math.PI * 2);
-    ctx.fillStyle = WHITE; ctx.fill(); ctx.stroke();
+    ctx.fillStyle = pal.body; ctx.fill(); ctx.stroke();
     ctx.beginPath();
     ctx.arc(-34, 42, 7, 0.5, Math.PI * 1.8);
     ctx.stroke();
@@ -59,47 +76,73 @@
       ctx.translate(s * -26, -18);
       ctx.rotate(s * (-0.15 + flap));
       ctx.beginPath();
-      ctx.ellipse(s * -48, 6, 52, 18, s * 0.1, 0, Math.PI * 2);
-      ctx.fillStyle = WHITE; ctx.fill(); ctx.stroke();
+      ctx.ellipse(s * -48, 6, pal.fluffy ? 44 : 52, pal.fluffy ? 22 : 18, s * 0.1, 0, Math.PI * 2);
+      ctx.fillStyle = pal.ear; ctx.fill(); ctx.stroke();
       ctx.restore();
     }
 
     // cuerpo y patitas
     ctx.beginPath();
     ctx.ellipse(0, 36, 32, 28, 0, 0, Math.PI * 2);
-    ctx.fillStyle = WHITE; ctx.fill(); ctx.stroke();
+    ctx.fillStyle = pal.body; ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.arc(-14, 62, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.arc(14, 62, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
     // bracitos
     const armUp = st.mood === 'happy' ? -10 : 0;
-    ctx.beginPath(); ctx.ellipse(-26, 28 + armUp, 8, 12, 0.45, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(26, 28 + armUp, 8, 12, -0.45, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(-26, 28 + armUp, 8, 12, 0.45, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.ellipse(26, 28 + armUp, 8, 12, -0.45, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
     // cabeza suave
     ctx.beginPath();
     ctx.ellipse(0, 0, 56, 38, 0, 0, Math.PI * 2);
-    ctx.fillStyle = WHITE; ctx.fill(); ctx.stroke();
+    ctx.fillStyle = pal.body; ctx.fill(); ctx.stroke();
+
+    // Accesorios distintivos de cada amigo Sanrio
+    if (pal.curl) {
+      ctx.beginPath(); ctx.arc(0, -38, 9, 0, Math.PI * 1.8);
+      ctx.fillStyle = pal.body; ctx.fill(); ctx.stroke();
+    }
+    if (pal.beret) {
+      ctx.beginPath(); ctx.ellipse(0, -36, 28, 10, -0.1, 0, Math.PI * 2);
+      ctx.fillStyle = '#8b5a3c'; ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -45); ctx.lineTo(3, -53); ctx.stroke();
+    }
+    if (pal.flowers) {
+      for (const sx of [-32, 32]) {
+        ctx.fillStyle = '#f472b6';
+        ctx.beginPath(); ctx.arc(sx, -26, 8, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#fde047';
+        ctx.beginPath(); ctx.arc(sx, -26, 3.5, 0, Math.PI * 2); ctx.fill();
+      }
+    }
 
     // cachetes rosados
-    ctx.fillStyle = CHEEK;
+    ctx.fillStyle = pal.cheek;
     ctx.beginPath(); ctx.ellipse(-34, 12, 12, 7, 0, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(34, 12, 12, 7, 0, 0, Math.PI * 2); ctx.fill();
 
-    // ojos celestes
+    // ojos
     if (st.blink) {
       ctx.beginPath();
       ctx.arc(-22, 2, 6, Math.PI * 0.15, Math.PI * 0.85);
       ctx.arc(22, 2, 6, Math.PI * 0.15, Math.PI * 0.85);
       ctx.stroke();
     } else {
-      ctx.fillStyle = EYE;
+      ctx.fillStyle = pal.eye;
       ctx.beginPath(); ctx.ellipse(-22, 2, 5.5, 8.5, 0, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.ellipse(22, 2, 5.5, 8.5, 0, 0, Math.PI * 2); ctx.fill();
     }
 
-    // boca
-    if (st.mood === 'happy' || st.mood === 'wow') {
+    // boca o chupete (Milk)
+    if (pal.pacifier) {
+      ctx.beginPath(); ctx.arc(0, 14, 9, 0, Math.PI * 2);
+      ctx.fillStyle = '#38bdf8'; ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(0, 14, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff'; ctx.fill();
+    } else if (st.mood === 'happy' || st.mood === 'wow') {
       ctx.beginPath();
       ctx.moveTo(-6, 8);
       ctx.lineTo(6, 8);
@@ -121,9 +164,13 @@
   }
 
   /**
-   * @param st { t, flapSpeed, flapAmp, mood:'idle'|'happy'|'wow', blink:boolean, tilt, spin, glow }
+   * @param st { t, flapSpeed, flapAmp, mood:'idle'|'happy'|'wow', blink:boolean, tilt, spin, glow, heroId }
    */
   function draw(ctx, x, y, size, st) {
+    if (st && st.heroId && st.heroId !== 'cinna') {
+      drawVectorFallback(ctx, x, y, size, st);
+      return;
+    }
     if (!img) ensureSprite();
     if (!imgLoaded) {
       drawVectorFallback(ctx, x, y, size, st);

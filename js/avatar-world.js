@@ -30,7 +30,8 @@
     { id: 'ballet_tutu', name: 'Tutú Ballet', primary: '#f9a8d4', secondary: '#fdf2f8', ribbon: '#db2777', style: 'tutu' },
     { id: 'royal_cape', name: 'Capa Real', primary: '#c084fc', secondary: '#fef08a', ribbon: '#9333ea', style: 'cape' },
     { id: 'denim_overalls', name: 'Jardinera', primary: '#60a5fa', secondary: '#fef08a', ribbon: '#2563eb', style: 'overalls' },
-    { id: 'sakura_kimono', name: 'Kimono Sakura', primary: '#fda4af', secondary: '#fef9c3', ribbon: '#be123c', style: 'kimono' }
+    { id: 'sakura_kimono', name: 'Kimono Sakura', primary: '#fda4af', secondary: '#fef9c3', ribbon: '#be123c', style: 'kimono' },
+    { id: 'rainbow_royal', name: 'Gala Arcoíris ⭐', primary: '#f472b6', secondary: '#fef08a', ribbon: '#38bdf8', style: 'rainbow_royal', rewardId: 'reward_rainbow_royal' }
   ];
 
   const HATS = [
@@ -41,7 +42,8 @@
     { id: 'sakura', name: 'Flores' },
     { id: 'sleep_cap', name: 'Gorro de dormir' },
     { id: 'wizard', name: 'Sombrero mágico' },
-    { id: 'strawberry', name: 'Frutilla' }
+    { id: 'strawberry', name: 'Frutilla' },
+    { id: 'unicorn_horn', name: 'Unicornio ⭐', rewardId: 'reward_unicorn_horn' }
   ];
 
   const GLASSES = [
@@ -59,6 +61,7 @@
     { id: 'roll', name: 'Rollito' },
     { id: 'mic', name: 'Micrófono' },
     { id: 'balloon', name: 'Globo' },
+    { id: 'ice_cream_cone', name: 'Helado Triple ⭐', rewardId: 'reward_ice_cream_cone' },
     { id: 'none', name: 'Manos libres' }
   ];
 
@@ -79,15 +82,20 @@
     { type: 'tea_set', name: 'Tetera', w: 64, h: 58, food: true },
     { type: 'fairy_lamp', name: 'Lámpara', w: 54, h: 92, light: true },
     { type: 'gift_box', name: 'Regalo', w: 62, h: 62, toy: true },
-    { type: 'balloon_bunch', name: 'Globos', w: 66, h: 115, decor: true }
+    { type: 'balloon_bunch', name: 'Globos', w: 66, h: 115, decor: true },
+    { type: 'rainbow_cake', name: 'Pastel Arcoíris', w: 76, h: 74, food: true },
+    { type: 'cloud_throne', name: 'Trono de Nubes ⭐', w: 92, h: 110, seat: true, rewardId: 'reward_cloud_throne' },
+    { type: 'ice_cream_fountain', name: 'Copa Helada ⭐', w: 68, h: 78, food: true, rewardId: 'reward_ice_cream_fountain' }
   ];
   // Nombres cortos que manda el celular
-  const DECOR_ALIASES = { cake: 'cake_stand', plush: 'plush_bunny', plant: 'plant_pot', gift: 'gift_box', lamp: 'fairy_lamp' };
+  const DECOR_ALIASES = { cake: 'cake_stand', plush: 'plush_bunny', plant: 'plant_pot', gift: 'gift_box', lamp: 'fairy_lamp', throne: 'cloud_throne', icecream: 'ice_cream_fountain' };
 
   const ROOMS = [
     { id: 'cafe', name: 'Cafetería', icon: 'cupcake', wallTop: '#fff5f7', wallBottom: '#fce7f3', stripe: '#fde4ef', wainscot: '#fbcfe8', floorTop: '#fdebd0', floorStripe: '#f6d9b8', accent: '#ec4899' },
     { id: 'bedroom', name: 'Cuarto', icon: 'moon', wallTop: '#eef7ff', wallBottom: '#dff0ff', stripe: '#d3eaff', wainscot: '#bae6fd', floorTop: '#f3e8ff', floorStripe: '#e4d2fb', accent: '#0284c7' },
-    { id: 'garden', name: 'Jardín', icon: 'flower', outdoor: true, wallTop: '#bfe6ff', wallBottom: '#e6f6ff', wainscot: '#ffffff', floorTop: '#c9f2d4', floorStripe: '#a7e6b9', accent: '#16a34a' }
+    { id: 'garden', name: 'Jardín', icon: 'flower', outdoor: true, wallTop: '#bfe6ff', wallBottom: '#e6f6ff', wainscot: '#ffffff', floorTop: '#c9f2d4', floorStripe: '#a7e6b9', accent: '#16a34a' },
+    { id: 'beach', name: 'Playa', icon: 'sun', outdoor: true, beach: true, wallTop: '#7dd3fc', wallBottom: '#e0f2fe', wainscot: '#38bdf8', floorTop: '#fef08a', floorStripe: '#fde047', accent: '#0284c7' },
+    { id: 'spa', name: 'Spa & Mascotas', icon: 'sparkle', wallTop: '#f0fdf4', wallBottom: '#dcfce7', stripe: '#bbf7d0', wainscot: '#86efac', floorTop: '#e0f2fe', floorStripe: '#bae6fd', accent: '#14b8a6' }
   ];
 
   const SLOT_COLORS = { 1: '#ec4899', 2: '#0ea5e9', 3: '#eab308' };
@@ -167,10 +175,11 @@
 
       this.roomObjects = {
         cafe: [
-          { id: 'oven', type: 'oven', name: 'Horno', x: 165, y: 382, w: 135, h: 130, state: false, fixed: true },
-          { id: 'counter', type: 'counter', name: 'Vitrina', x: 380, y: 392, w: 190, h: 105, state: false, fixed: true },
-          { id: 'tea_table', type: 'tea_table', name: 'Mesa de té', x: 675, y: 438, w: 170, h: 86, seat: true, food: true },
-          { id: 'jukebox_cafe', type: 'music_box', name: 'Radio', x: 865, y: 392, w: 86, h: 110, state: false }
+          { id: 'oven', type: 'oven', name: 'Horno', x: 145, y: 382, w: 135, h: 130, state: false, fixed: true },
+          { id: 'kitchen_mixer', type: 'mixer', name: 'Batidora de Recetas', x: 278, y: 390, w: 88, h: 98, state: false, fixed: true },
+          { id: 'counter', type: 'counter', name: 'Vitrina', x: 445, y: 392, w: 190, h: 105, state: false, fixed: true },
+          { id: 'tea_table', type: 'tea_table', name: 'Mesa de té', x: 700, y: 438, w: 170, h: 86, seat: true, food: true },
+          { id: 'jukebox_cafe', type: 'music_box', name: 'Radio', x: 880, y: 392, w: 86, h: 110, state: false }
         ],
         bedroom: [
           { id: 'cloud_bed', type: 'cloud_bed', name: 'Cama nube', x: 235, y: 418, w: 230, h: 125, seat: true, sleep: true, state: false, fixed: true },
@@ -183,6 +192,18 @@
           { id: 'fountain', type: 'fountain', name: 'Fuente', x: 525, y: 420, w: 175, h: 125, state: true, fixed: true },
           { id: 'party_stage', type: 'stage', name: 'Escenario', x: 805, y: 408, w: 200, h: 130, seat: true, state: false, fixed: true },
           { id: 'picnic_basket', type: 'cake_stand', name: 'Pastel', x: 485, y: 488, w: 72, h: 64, food: true }
+        ],
+        beach: [
+          { id: 'sand_castle', type: 'sand_castle', name: 'Castillo de Arena', x: 215, y: 452, w: 145, h: 105, toy: true, state: false, fixed: true },
+          { id: 'ice_cream_cart', type: 'ice_cream_cart', name: 'Carrito de Helados', x: 495, y: 412, w: 175, h: 135, state: false, fixed: true },
+          { id: 'beach_lounger', type: 'beach_lounger', name: 'Reposera de Playa', x: 785, y: 445, w: 180, h: 115, seat: true, sleep: true, state: false, fixed: true },
+          { id: 'surf_board', type: 'surf_board', name: 'Tabla de Surf', x: 635, y: 492, w: 125, h: 50, seat: true, toy: true }
+        ],
+        spa: [
+          { id: 'bubble_tub', type: 'bubble_tub', name: 'Tina de Burbujas', x: 245, y: 432, w: 210, h: 118, seat: true, state: true, fixed: true },
+          { id: 'pet_house', type: 'pet_house', name: 'Casita de Mascotas', x: 530, y: 412, w: 155, h: 122, toy: true, state: true, fixed: true },
+          { id: 'salon_mirror', type: 'vanity', name: 'Tocador de Spa', x: 795, y: 392, w: 145, h: 145, wardrobe: true, fixed: true },
+          { id: 'aroma_lamp', type: 'fairy_lamp', name: 'Aroma Relajante', x: 660, y: 410, w: 54, h: 92, light: true, state: true }
         ]
       };
 
@@ -801,6 +822,12 @@
             return;
           }
           if (obj.food) {
+            // Combinación de ingredientes: arrastrar comida a otro postre o a la batidora/horno crea una Receta Especial
+            const otherFood = this.getRoomItems().find(o => o !== obj && (o.food || o.type === 'mixer' || o.type === 'oven') && Math.hypot(o.x - obj.x, o.y - obj.y) < 88);
+            if (otherFood) {
+              this.craftSpecialRecipe(obj, otherFood);
+              return;
+            }
             for (const s of [1, 2, 3]) {
               const av = this.avatars[s];
               if (av.active && Math.hypot(av.x - obj.x, (av.y - 50) - (obj.y - 25)) < 90) {
@@ -877,6 +904,28 @@
       this.rewardOnce('feed', 2);
     }
 
+    craftSpecialRecipe(ingredientObj, stationObj) {
+      const list = this.getRoomItems();
+      if (ingredientObj && ingredientObj.custom && list.includes(ingredientObj)) {
+        list.splice(list.indexOf(ingredientObj), 1);
+      }
+      const x = stationObj ? stationObj.x : 340;
+      const y = stationObj ? Math.max(this.floorY + 36, stationObj.y + 18) : 445;
+      const crafted = this.spawnDecorItem('rainbow_cake', 1);
+      crafted.x = Math.max(110, Math.min(this.logicalW - 110, x + 75));
+      crafted.y = y;
+      this.spawnBurst(crafted.x, crafted.y - 36, '#f472b6', 22);
+      this.spawnBurst(crafted.x, crafted.y - 46, '#fde047', 16);
+      for (const s of [1, 2, 3]) {
+        if (this.avatars[s].active) {
+          this.avatars[s].hop = 1;
+          this.showEmotionBubble(this.avatars[s], 'star');
+        }
+      }
+      this.rewardOnce('recipe_craft', 3);
+      return crafted;
+    }
+
     triggerObjectInteraction(obj, av) {
       if (!obj) return;
       if (A()) A().unlock();
@@ -904,14 +953,19 @@
         return;
       }
 
-      // Horno, vitrina, radio y fuente
+      // Horno, batidora de recetas, vitrina, carrito de helados, radio y fuente
       obj.state = !obj.state;
       if (obj.type === 'oven' && obj.state) {
         this.ovenTimer = 1.4; // en un momento sale un pastel recién horneado
         if (A()) A().bubblePop(2);
+      } else if (obj.type === 'mixer') {
+        this.craftSpecialRecipe(null, obj);
       } else if (obj.type === 'counter') {
         const cake = this.spawnDecorItem('cake_stand');
         cake.x = Math.max(110, Math.min(this.logicalW - 110, obj.x + 130));
+      } else if (obj.type === 'ice_cream_cart') {
+        const sundae = this.spawnDecorItem('ice_cream_fountain', av?.slot || 1);
+        sundae.x = Math.max(110, Math.min(this.logicalW - 110, obj.x + 115));
       } else if (obj.type === 'music_box') {
         for (const s of [1, 2, 3]) {
           if (this.avatars[s].active) {
@@ -1193,6 +1247,7 @@
     }
 
     drawRoomBackdrop(ctx, room, W, H) {
+      if (room.beach) { this.drawBeachBackdrop(ctx, room, W, H); return; }
       if (room.outdoor) { this.drawGardenBackdrop(ctx, room, W, H); return; }
       const fy = this.floorY;
 
@@ -1366,6 +1421,66 @@
         const px = (i * 89 + Math.sin(this.time * 0.8 + i) * 40 + this.time * 20) % W;
         const py = (i * 47 + this.time * (26 + i * 2)) % (H - 40);
         ctx.beginPath(); ctx.ellipse(px, py, 5, 3, this.time + i, 0, TAU); ctx.fill();
+      }
+    }
+
+    drawBeachBackdrop(ctx, room, W, H) {
+      const fy = this.floorY;
+      const skies = { day: ['#7dd3fc', '#e0f2fe'], sunset: ['#fb7185', '#fef08a'], night: ['#1e1b4b', '#312e81'] };
+      const pair = skies[this.lightingMode] || skies.day;
+      const g = ctx.createLinearGradient(0, 0, 0, fy);
+      g.addColorStop(0, pair[0]);
+      g.addColorStop(1, pair[1]);
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, fy);
+
+      // Sol o luna
+      const sx = 860, sy = 96;
+      ctx.fillStyle = this.lightingMode === 'night' ? '#fef9c3' : (this.lightingMode === 'sunset' ? '#fb923c' : '#fde047');
+      ctx.beginPath(); ctx.arc(sx, sy, 36, 0, TAU); ctx.fill();
+      ctx.strokeStyle = OUT; ctx.lineWidth = 2.4; ctx.stroke();
+
+      // Nubes
+      for (let i = 0; i < 3; i++) {
+        const cx = ((this.time * (12 + i * 4) + i * 340) % (W + 300)) - 150;
+        this.drawCloud(ctx, cx, 68 + i * 52, 0.85 - i * 0.12);
+      }
+
+      // Mar turquesa animado con olitas de espuma blanca
+      const seaTop = fy - 88;
+      const seaGrad = ctx.createLinearGradient(0, seaTop, 0, fy);
+      seaGrad.addColorStop(0, this.lightingMode === 'night' ? '#1d4ed8' : '#0ea5e9');
+      seaGrad.addColorStop(1, this.lightingMode === 'night' ? '#38bdf8' : '#67e8f9');
+      ctx.fillStyle = seaGrad;
+      ctx.fillRect(0, seaTop, W, 88);
+
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      ctx.lineWidth = 4;
+      for (let row = 0; row < 2; row++) {
+        const wy = seaTop + 26 + row * 34;
+        ctx.beginPath();
+        for (let x = 0; x <= W; x += 28) {
+          const yOff = Math.sin(this.time * 2.6 + x * 0.03 + row) * 5;
+          if (x === 0) ctx.moveTo(x, wy + yOff);
+          else ctx.lineTo(x, wy + yOff);
+        }
+        ctx.stroke();
+      }
+
+      // Arena dorada suave
+      const sandG = ctx.createLinearGradient(0, fy, 0, H);
+      sandG.addColorStop(0, '#fef08a');
+      sandG.addColorStop(1, '#fde047');
+      ctx.fillStyle = sandG;
+      ctx.fillRect(0, fy, W, H - fy);
+
+      // Conchitas y estrellas de mar decorativas en la arena
+      for (let i = 0; i < 8; i++) {
+        const cx = 75 + i * 120;
+        const cy = fy + 24 + (i % 3) * 38;
+        ctx.fillStyle = i % 2 === 0 ? '#f9a8d4' : '#fdba74';
+        starPath(ctx, cx, cy, 8, 0.45, 5);
+        ctx.fill();
       }
     }
 
@@ -1613,6 +1728,42 @@
         ctx.beginPath(); ctx.moveTo(x + 14, y - 92); ctx.lineTo(x + 26, y - 116); ctx.stroke();
         ctx.beginPath(); ctx.arc(x + 26, y - 118, 4, 0, TAU); fillStroke(ctx, '#f472b6', 2);
         for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.arc(x - 18 + i * 18, y - 16, 4, 0, TAU); fillStroke(ctx, obj.state && i === Math.floor(this.time * 4) % 3 ? '#fde047' : '#fff', 1.8); }
+      } else if (obj.type === 'mixer') {
+        roundRect(ctx, x - 36, y - 18, 72, 18, 8); fillStroke(ctx, '#f472b6', 2.6);
+        ctx.beginPath(); ctx.arc(x, y - 48, 28, 0, Math.PI); fillStroke(ctx, '#bae6fd', 2.6);
+        roundRect(ctx, x - 18, y - 92, 48, 24, 12); fillStroke(ctx, '#fbcfe8', 2.6);
+        ctx.fillStyle = '#fde047'; starPath(ctx, x + 6, y - 80, 7); ctx.fill();
+      } else if (obj.type === 'sand_castle') {
+        roundRect(ctx, x - 58, y - 48, 116, 48, 10); fillStroke(ctx, '#fde047', 2.6);
+        roundRect(ctx, x - 36, y - 86, 72, 42, 8); fillStroke(ctx, '#fef08a', 2.6);
+        ctx.beginPath(); ctx.moveTo(x - 42, y - 86); ctx.lineTo(x, y - 116); ctx.lineTo(x + 42, y - 86); ctx.closePath(); fillStroke(ctx, '#f472b6', 2.4);
+        ctx.beginPath(); ctx.arc(x, y - 18, 14, Math.PI, TAU); fillStroke(ctx, '#b45309', 2.2);
+      } else if (obj.type === 'ice_cream_cart') {
+        roundRect(ctx, x - 72, y - 86, 144, 68, 16); fillStroke(ctx, '#fff1f2', 2.8);
+        roundRect(ctx, x - 78, y - 128, 156, 26, 12); fillStroke(ctx, '#f472b6', 2.6);
+        ctx.beginPath(); ctx.arc(x - 42, y - 14, 18, 0, TAU); fillStroke(ctx, '#fde047', 2.6);
+        ctx.beginPath(); ctx.arc(x + 42, y - 14, 18, 0, TAU); fillStroke(ctx, '#fde047', 2.6);
+        this.drawCupcake(ctx, x, y - 54, 1.1);
+      } else if (obj.type === 'beach_lounger') {
+        roundRect(ctx, x - 78, y - 34, 156, 26, 12); fillStroke(ctx, '#7dd3fc', 2.8);
+        ctx.strokeStyle = OUT; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.moveTo(x + 30, y - 34); ctx.lineTo(x + 44, y - 125); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x + 44, y - 120, 56, Math.PI, TAU); fillStroke(ctx, '#f472b6', 2.6);
+      } else if (obj.type === 'surf_board') {
+        ctx.beginPath(); ctx.ellipse(x, y - 16, 58, 18, -0.08, 0, TAU); fillStroke(ctx, '#38bdf8', 2.6);
+        ctx.fillStyle = '#fde047'; starPath(ctx, x, y - 16, 10); ctx.fill();
+      } else if (obj.type === 'bubble_tub') {
+        for (let i = -3; i <= 3; i++) {
+          const by = y - 68 - Math.abs(Math.sin(this.time * 2 + i)) * 10;
+          ctx.beginPath(); ctx.arc(x + i * 22, by, 16, 0, TAU); fillStroke(ctx, '#e0f2fe', 2);
+        }
+        roundRect(ctx, x - 92, y - 64, 184, 58, 28); fillStroke(ctx, '#ffffff', 2.8);
+        roundRect(ctx, x - 98, y - 72, 196, 16, 8); fillStroke(ctx, '#99f6e4', 2.4);
+      } else if (obj.type === 'pet_house') {
+        roundRect(ctx, x - 58, y - 78, 116, 78, 16); fillStroke(ctx, '#dcfce7', 2.8);
+        ctx.beginPath(); ctx.moveTo(x - 70, y - 74); ctx.lineTo(x, y - 122); ctx.lineTo(x + 70, y - 74); ctx.closePath(); fillStroke(ctx, '#f9a8d4', 2.8);
+        ctx.beginPath(); ctx.arc(x, y - 28, 26, Math.PI, TAU); fillStroke(ctx, '#ffffff', 2.4);
+        ctx.fillStyle = '#f472b6'; heartPath(ctx, x, y - 92, 9); ctx.fill();
       } else {
         this.drawDecorShape(ctx, obj.type, x, y, obj.state);
       }
@@ -1703,6 +1854,23 @@
           ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.beginPath(); ctx.ellipse(x + dx + sway - 5, y + dy - 6, 4, 6, -0.4, 0, TAU); ctx.fill();
         });
         roundRect(ctx, x - 10, y - 10, 20, 10, 4); fillStroke(ctx, '#fff', 2);
+      } else if (type === 'rainbow_cake') {
+        ctx.beginPath(); ctx.ellipse(x, y - 6, 36, 10, 0, 0, TAU); fillStroke(ctx, '#ffffff', 2.4);
+        roundRect(ctx, x - 30, y - 34, 60, 24, 8); fillStroke(ctx, '#f9a8d4', 2.4);
+        roundRect(ctx, x - 24, y - 54, 48, 22, 8); fillStroke(ctx, '#93c5fd', 2.4);
+        roundRect(ctx, x - 18, y - 70, 36, 18, 7); fillStroke(ctx, '#fde047', 2.4);
+        this.drawStrawberry(ctx, x, y - 74, 0.85);
+      } else if (type === 'cloud_throne') {
+        roundRect(ctx, x - 36, y - 96, 72, 86, 32); fillStroke(ctx, '#e0f2fe', 2.6);
+        roundRect(ctx, x - 42, y - 42, 84, 36, 16); fillStroke(ctx, '#f9a8d4', 2.6);
+        ctx.fillStyle = '#fde047'; starPath(ctx, x, y - 76, 12); fillStroke(ctx, '#fde047', 2);
+      } else if (type === 'ice_cream_fountain') {
+        ctx.beginPath(); ctx.ellipse(x, y - 6, 26, 8, 0, 0, TAU); fillStroke(ctx, '#ffffff', 2.2);
+        ctx.beginPath(); ctx.moveTo(x - 24, y - 42); ctx.lineTo(x + 24, y - 42); ctx.lineTo(x + 10, y - 8); ctx.lineTo(x - 10, y - 8); ctx.closePath(); fillStroke(ctx, '#bae6fd', 2.4);
+        for (const [dx, dy, c] of [[-12, -48, '#f9a8d4'], [12, -48, '#fde047'], [0, -60, '#c4b5fd']]) {
+          ctx.beginPath(); ctx.arc(x + dx, y + dy, 13, 0, TAU); fillStroke(ctx, c, 2.2);
+        }
+        this.drawStrawberry(ctx, x, y - 74, 0.75);
       } else {
         // Respaldo genérico: cajita con estrella
         roundRect(ctx, x - 32, y - 58, 64, 56, 18); fillStroke(ctx, '#ffffff', 2.6);
@@ -1984,9 +2152,12 @@
         ctx.beginPath(); ctx.moveTo(-14, -46); ctx.lineTo(4, -24); ctx.moveTo(14, -46); ctx.lineTo(-4, -24); ctx.lineWidth = 2.4; ctx.strokeStyle = OUT; ctx.stroke();
         roundRect(ctx, -24, -28, 48, 9, 3); fillStroke(ctx, outfit.secondary, 2.2);
         this.drawFlower(ctx, 12, -18, 3, '#ffffff');
-      } else if (style === 'dress') {
+      } else if (style === 'dress' || style === 'rainbow_royal') {
         ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(-26, -18); for (let i = 0; i < 6; i++) ctx.quadraticCurveTo(-22 + i * 9, -12, -17 + i * 9, -18); ctx.stroke();
+        if (style === 'rainbow_royal') {
+          ctx.fillStyle = '#fde047'; starPath(ctx, 0, -26, 6); ctx.fill();
+        }
       }
 
       if (style !== 'kimono') {
@@ -2158,6 +2329,12 @@
         for (const [dx, dy] of [[-14, -8], [-4, -14], [8, -12], [16, -4], [-18, -2], [2, -4]]) { ctx.beginPath(); ctx.ellipse(dx, dy, 1.4, 2, 0, 0, TAU); ctx.fill(); }
         ctx.beginPath(); ctx.moveTo(-10, -20); ctx.lineTo(-4, -26); ctx.lineTo(0, -21); ctx.lineTo(5, -27); ctx.lineTo(10, -20); ctx.quadraticCurveTo(0, -16, -10, -20); ctx.closePath();
         fillStroke(ctx, '#4ade80', 2);
+      } else if (id === 'unicorn_horn') {
+        ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(0, -34); ctx.lineTo(9, 0); ctx.closePath();
+        fillStroke(ctx, '#fde047', 2.4);
+        for (const [dx, c] of [[-14, '#f9a8d4'], [0, '#93c5fd'], [14, '#c4b5fd']]) {
+          this.drawFlower(ctx, dx, 2, 5, c);
+        }
       }
       ctx.restore();
     }
@@ -2203,6 +2380,12 @@
         ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(10 + sway, -24, 6 + sway, -46); ctx.stroke();
         heartPath(ctx, 6 + sway, -60, 15); fillStroke(ctx, '#fb7185', 2.4);
         ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.beginPath(); ctx.ellipse(0 + sway, -66, 3, 5, -0.5, 0, TAU); ctx.fill();
+      } else if (id === 'ice_cream_cone') {
+        ctx.beginPath(); ctx.moveTo(-7, -6); ctx.lineTo(7, -6); ctx.lineTo(0, 12); ctx.closePath();
+        fillStroke(ctx, '#f5c48a', 2);
+        for (const [dy, c] of [[-10, '#f9a8d4'], [-18, '#93c5fd'], [-26, '#fde047']]) {
+          ctx.beginPath(); ctx.arc(0, dy, 7, 0, TAU); fillStroke(ctx, c, 2);
+        }
       }
       ctx.restore();
     }
