@@ -54,6 +54,8 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad pensad
   * 🛋️ **Modo Decorar Casa:** Catálogo deslizable con 8 muebles y comidas para agregar, arrastrar o dar de comer a los personajes (`😋`).
 * **Control Híbrido Touch + Celular Multi-Player (P1, P2, P3):**
   * Toca y arrastra directamente en pantalla, o usa el joystick analógico y la barra `#avatarActionStrip` en el celular para mover avatares, cambiar cuartos y decorar.
+* **`v42` · Manos libres:** botón flotante **✋ Soltar** (o tocar la mano del avatar, o la opción *Soltar* de la pestaña *En la mano*) deja el objeto en el piso y se vuelve a agarrar con un toque. Columpio sincronizado, personajes nunca tapados por muebles y caritas que vuelven solas a la elegida.
+* **Para agentes que continúan el desarrollo:** leer primero [`ARQUITECTURA_AVATAR_WORLD_PRO_CUERPOS_DIGITALES.md`](ARQUITECTURA_AVATAR_WORLD_PRO_CUERPOS_DIGITALES.md) §6 (reglas obligatorias + backlog) y correr `python tools/test_digital_bodies_e2e.py` y `python tools/test_v42_ux_regressions.py` antes de cada commit.
 
 ### 1. 🛫 ¡A Volar con Cinnamoroll! (`js/game.js` · v28)
 * **Mecánica:** Vuela por cielos de colores recolectando estrellas mágicas ⭐, rollitos de canela 🍥 y corazones 💗.
