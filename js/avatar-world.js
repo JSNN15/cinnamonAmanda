@@ -88,11 +88,19 @@
     { type: 'rainbow_cake', name: 'Pastel Arcoíris', w: 76, h: 74, food: true },
     { type: 'perfume_bottle', name: 'Perfume Mágico ✨', w: 48, h: 58, gadget: 'perfume', toy: true },
     { type: 'hair_dryer', name: 'Secador de Pelo 💨', w: 54, h: 52, gadget: 'dryer', toy: true },
+    { type: 'watering_can', name: 'Regadera Jardín 🌸', w: 62, h: 56, gadget: 'watering', toy: true },
+    { type: 'flamingo_ring', name: 'Flotador Flamenco 🦩', w: 82, h: 80, hasFrontCover: true, seat: true, toy: true },
+    { type: 'spa_brush', name: 'Cepillo de Burbujas 🫧', w: 50, h: 54, gadget: 'brush', toy: true },
     { type: 'cloud_throne', name: 'Trono de Nubes ⭐', w: 92, h: 110, seat: true, rewardId: 'reward_cloud_throne' },
     { type: 'ice_cream_fountain', name: 'Copa Helada ⭐', w: 68, h: 78, food: true, rewardId: 'reward_ice_cream_fountain' }
   ];
   // Nombres cortos que manda el celular
-  const DECOR_ALIASES = { cake: 'cake_stand', plush: 'plush_bunny', plant: 'plant_pot', gift: 'gift_box', lamp: 'fairy_lamp', throne: 'cloud_throne', icecream: 'ice_cream_fountain' };
+  const DECOR_ALIASES = {
+    cake: 'cake_stand', plush: 'plush_bunny', plant: 'plant_pot', gift: 'gift_box',
+    lamp: 'fairy_lamp', throne: 'cloud_throne', icecream: 'ice_cream_fountain',
+    perfume: 'perfume_bottle', dryer: 'hair_dryer', watering: 'watering_can',
+    flamingo: 'flamingo_ring', brush: 'spa_brush'
+  };
 
   const ROOMS = [
     { id: 'cafe', name: 'Cafetería', icon: 'cupcake', wallTop: '#fff5f7', wallBottom: '#fce7f3', stripe: '#fde4ef', wainscot: '#fbcfe8', floorTop: '#fdebd0', floorStripe: '#f6d9b8', accent: '#ec4899' },
@@ -171,6 +179,7 @@
       this.particles = [];
       this.floatingNotes = [];
       this.dragState = null;
+      this.CATALOG_DECOR = CATALOG_DECOR;
 
       this.avatars = {
         1: this.createAvatar(1, 'cinna', 320, 445, 'sky_dress', 'crown', 'none', 'wand', 'happy', true),
@@ -183,7 +192,8 @@
           { id: 'oven', type: 'oven', name: 'Horno', x: 145, y: 382, w: 135, h: 130, state: false, fixed: true },
           { id: 'kitchen_mixer', type: 'mixer', name: 'Batidora de Recetas', x: 278, y: 390, w: 88, h: 98, state: false, fixed: true },
           { id: 'counter', type: 'counter', name: 'Vitrina', x: 445, y: 392, w: 190, h: 105, state: false, fixed: true },
-          { id: 'tea_table', type: 'tea_table', name: 'Mesa de té', x: 700, y: 438, w: 170, h: 86, seat: true, food: true },
+          { id: 'tea_table', type: 'tea_table', name: 'Mesa de té', x: 700, y: 438, w: 170, h: 86, seat: true, food: true, hasFrontCover: true },
+          { id: 'cafe_teapot', type: 'cafe_teapot', name: 'Tetera Humeante', x: 700, y: 395, w: 48, h: 46, gadget: 'teapot', custom: true, state: false },
           { id: 'jukebox_cafe', type: 'music_box', name: 'Radio', x: 880, y: 392, w: 86, h: 110, state: false }
         ],
         bedroom: [
@@ -196,22 +206,26 @@
           { id: 'plush_rug', type: 'rug', name: 'Alfombra Tejida', x: 530, y: 498, w: 250, h: 64, seat: true, flat: true }
         ],
         garden: [
-          { id: 'sakura_swing', type: 'swing', name: 'Columpio', x: 230, y: 398, w: 165, h: 185, seat: true, swingAngle: 0, fixed: true },
+          { id: 'swing', type: 'swing', name: 'Columpio', x: 230, y: 398, w: 165, h: 185, seat: true, swingAngle: 0, fixed: true, hasFrontCover: true },
           { id: 'fountain', type: 'fountain', name: 'Fuente', x: 525, y: 420, w: 175, h: 125, state: true, fixed: true },
           { id: 'party_stage', type: 'stage', name: 'Escenario', x: 805, y: 408, w: 200, h: 130, seat: true, state: false, fixed: true },
-          { id: 'picnic_basket', type: 'cake_stand', name: 'Pastel', x: 485, y: 488, w: 72, h: 64, food: true }
+          { id: 'watering_can', type: 'watering_can', name: 'Regadera Jardín', x: 375, y: 450, w: 56, h: 52, gadget: 'watering', custom: true, state: false },
+          { id: 'picnic_basket', type: 'picnic_basket', name: 'Canasta de Picnic', x: 485, y: 488, w: 72, h: 64, gadget: 'picnic', custom: true, state: false }
         ],
         beach: [
           { id: 'sand_castle', type: 'sand_castle', name: 'Castillo de Arena', x: 215, y: 452, w: 145, h: 105, toy: true, state: false, fixed: true },
           { id: 'ice_cream_cart', type: 'ice_cream_cart', name: 'Carrito de Helados', x: 495, y: 412, w: 175, h: 135, state: false, fixed: true },
-          { id: 'beach_lounger', type: 'beach_lounger', name: 'Reposera de Playa', x: 785, y: 445, w: 180, h: 115, seat: true, sleep: true, state: false, fixed: true },
+          { id: 'beach_lounger', type: 'beach_lounger', name: 'Reposera de Playa', x: 785, y: 445, w: 180, h: 115, seat: true, sleep: true, state: false, fixed: true, hasFrontCover: true },
+          { id: 'flamingo_ring', type: 'flamingo_ring', name: 'Flotador Flamenco', x: 360, y: 485, w: 84, h: 80, seat: true, hasFrontCover: true, toy: true, custom: true, state: false },
           { id: 'surf_board', type: 'surf_board', name: 'Tabla de Surf', x: 635, y: 492, w: 125, h: 50, seat: true, toy: true }
         ],
         spa: [
           { id: 'bubble_tub', type: 'bubble_tub', name: 'Tina de Burbujas', x: 245, y: 432, w: 210, h: 118, seat: true, hasFrontCover: true, state: true, fixed: true },
           { id: 'pet_house', type: 'pet_house', name: 'Casita de Mascotas', x: 530, y: 412, w: 155, h: 122, toy: true, state: true, fixed: true },
+          { id: 'spa_pet_bowl', type: 'spa_pet_bowl', name: 'Plato de Comida Cachorro', x: 645, y: 450, w: 46, h: 36, gadget: 'pet_bowl', custom: true, state: false },
+          { id: 'spa_brush', type: 'spa_brush', name: 'Cepillo de Burbujas', x: 410, y: 435, w: 48, h: 48, gadget: 'brush', custom: true, state: false },
           { id: 'salon_mirror', type: 'vanity', name: 'Tocador de Spa', x: 795, y: 392, w: 145, h: 145, wardrobe: true, fixed: true },
-          { id: 'aroma_lamp', type: 'fairy_lamp', name: 'Aroma Relajante', x: 660, y: 410, w: 54, h: 92, light: true, state: true }
+          { id: 'aroma_lamp', type: 'fairy_lamp', name: 'Aroma Relajante', x: 710, y: 410, w: 54, h: 92, light: true, state: true }
         ]
       };
 
@@ -220,10 +234,33 @@
 
     get players() { return this.avatars; }
     set players(val) { this.avatars = val; }
+    get amanda() { return this.avatars[1]; }
+    set amanda(val) { this.avatars[1] = val; }
+    get friend() { return this.avatars[2]; }
+    set friend(val) { this.avatars[2] = val; }
+    get friend2() { return this.avatars[3]; }
+    set friend2(val) { this.avatars[3] = val; }
+    get characters() { return [this.avatars[1], this.avatars[2], this.avatars[3]]; }
+    set characters(val) { if (Array.isArray(val)) { if (val[0]) this.avatars[1] = val[0]; if (val[1]) this.avatars[2] = val[1]; if (val[2]) this.avatars[3] = val[2]; } }
+
+    dropItemOnAvatar(av, obj) {
+      if (!av || !obj) return;
+      if (obj.food) {
+        this.feedAvatar(av, obj);
+      } else if (obj.gadget || obj.toy || obj.type) {
+        av.heldItem = obj.gadget || obj.type;
+        av.propId = obj.gadget || obj.type;
+        this.triggerObjectInteraction(obj, av);
+      }
+    }
+    handleDropOnAvatar(av, obj) {
+      return this.dropItemOnAvatar(av, obj);
+    }
 
     createAvatar(slot, baseId, x, y, outfitId, hatId, glassesId, propId, exprId, active) {
       return {
         slot, active, baseId, outfitId, hatId, glassesId, propId, exprId,
+        heldItem: null,
         x, y, targetX: null, targetY: null, pendingObj: null, vx: 0, vy: 0,
         facing: slot === 2 ? -1 : 1,
         walkPhase: 0, earAngle: 0, earVel: 0,
@@ -750,6 +787,8 @@
         id: `decor_${Date.now()}_${Math.floor(Math.random() * 9999)}`,
         type: template.type, name: template.name, x, y, w: template.w, h: template.h,
         food: !!template.food, toy: !!template.toy, seat: !!template.seat, light: !!template.light,
+        gadget: template.gadget || null,
+        hasFrontCover: !!template.hasFrontCover,
         custom: true, state: true, drop: 0
       };
     }
@@ -917,12 +956,13 @@
               this.craftSpecialRecipe(obj, otherFood);
               return;
             }
-            for (const s of [1, 2, 3]) {
-              const av = this.avatars[s];
-              if (av.active && Math.hypot(av.x - obj.x, (av.y - 50) - (obj.y - 25)) < 90) {
-                this.feedAvatar(av, obj);
-                break;
-              }
+          }
+          for (const s of [1, 2, 3]) {
+            const av = this.avatars[s];
+            if (av.active && Math.hypot(av.x - obj.x, (av.y - 50) - (obj.y - 25)) < 90) {
+              this.dropItemOnAvatar(av, obj);
+              if (obj.custom) this.saveState();
+              return;
             }
           }
           if (obj.custom) this.saveState();
@@ -991,6 +1031,7 @@
     }
 
     feedAvatar(av, foodObj) {
+      av.heldItem = foodObj.type;
       av.chewTimer = 2.6;
       av.exprId = 'yummy';
       av.sleeping = false;
@@ -1042,6 +1083,69 @@
         if (av) { av.earVel = 1.8; av.hop = 0.8; av.exprId = 'starry'; this.showEmotionBubble(av, 'sparkle'); }
         return;
       }
+      if (obj.gadget === 'teapot' || obj.type === 'cafe_teapot') {
+        obj.state = !obj.state;
+        if (A()) A().sparkleChime();
+        this.spawnBurst(obj.x - 18, obj.y - 28, '#d97706', 16);
+        for (let i = 0; i < 4; i++) {
+          this.particles.push({
+            x: obj.x - 20 + (Math.random() - 0.5) * 8, y: obj.y - 36 - i * 8,
+            vx: -15 + Math.random() * 10, vy: -30 - Math.random() * 20,
+            r: 5 + i * 2, color: 'rgba(255, 255, 255, 0.75)', life: 0.9, shape: 'ring'
+          });
+        }
+        if (av) { av.hop = 0.8; av.exprId = 'yummy'; this.showEmotionBubble(av, 'yum'); }
+        return;
+      }
+      if (obj.gadget === 'watering' || obj.type === 'watering_can') {
+        obj.state = !obj.state;
+        if (A()) A().bubblePop(3);
+        this.spawnBurst(obj.x - 22, obj.y - 18, '#38bdf8', 18);
+        for (let i = 0; i < 6; i++) {
+          this.particles.push({
+            x: obj.x - 22 + Math.random() * 8, y: obj.y - 18 + Math.random() * 8,
+            vx: -35 - Math.random() * 20, vy: 15 + Math.random() * 35,
+            r: 3 + Math.random() * 2, color: '#38bdf8', life: 0.7, shape: 'dot'
+          });
+        }
+        if (av) { av.hop = 0.8; av.exprId = 'happy'; this.showEmotionBubble(av, 'sun'); }
+        return;
+      }
+      if (obj.gadget === 'picnic' || obj.type === 'picnic_basket') {
+        obj.state = !obj.state;
+        if (A()) A().celebrate();
+        this.spawnBurst(obj.x, obj.y - 35, '#f43f5e', 18);
+        if (av) { av.hop = 1; av.exprId = 'starry'; this.showEmotionBubble(av, 'star'); }
+        return;
+      }
+      if (obj.gadget === 'pet_bowl' || obj.type === 'spa_pet_bowl') {
+        obj.state = !obj.state;
+        if (A()) A().sparkleChime();
+        this.spawnBurst(obj.x, obj.y - 15, '#fbbf24', 16);
+        const petHouse = this.getRoomItems().find(o => o.type === 'pet_house');
+        if (petHouse) {
+          petHouse.state = true;
+          petHouse.ping = 1;
+          this.spawnBurst(petHouse.x, petHouse.y - 40, '#f472b6', 12);
+        }
+        if (av) { av.hop = 0.8; av.exprId = 'love'; this.showEmotionBubble(av, 'heart'); }
+        return;
+      }
+      if (obj.gadget === 'brush' || obj.type === 'spa_brush') {
+        obj.state = !obj.state;
+        if (A()) A().bubblePop(3);
+        this.spawnBurst(obj.x, obj.y - 25, '#99f6e4', 20);
+        for (let i = 0; i < 6; i++) {
+          this.particles.push({
+            x: obj.x + (Math.random() - 0.5) * 20, y: obj.y - 20 - i * 6,
+            vx: (Math.random() - 0.5) * 40, vy: -25 - Math.random() * 25,
+            r: 4 + Math.random() * 5, color: i % 2 === 0 ? '#a7f3d0' : '#bae6fd',
+            life: 0.8 + Math.random() * 0.4, shape: 'ring'
+          });
+        }
+        if (av) { av.earVel = 2.0; av.hop = 0.8; av.exprId = 'starry'; this.showEmotionBubble(av, 'sparkle'); }
+        return;
+      }
       if (obj.type === 'vanity') {
         obj.state = !obj.state; // Abre/cierra el cajón 2.5D con joyas
         if (A()) A().sparkleChime();
@@ -1073,12 +1177,21 @@
 
       // Horno, batidora de recetas, vitrina, carrito de helados, radio y fuente
       obj.state = !obj.state;
-      if (obj.type === 'oven' && obj.state) {
-        this.ovenTimer = 1.4; // en un momento sale un pastel recién horneado
-        if (A()) A().bubblePop(2);
+      if (obj.type === 'oven') {
+        if (obj.state) {
+          this.ovenTimer = 1.4; // en un momento sale un pastel recién horneado
+          if (A()) A().bubblePop(2);
+          this.spawnBurst(obj.x, obj.y - 54, '#fde68a', 16);
+        } else {
+          this.spawnBurst(obj.x, obj.y - 54, '#94a3b8', 10);
+        }
       } else if (obj.type === 'mixer') {
         this.craftSpecialRecipe(null, obj);
       } else if (obj.type === 'counter') {
+        if (obj.state) {
+          if (A()) A().sparkleChime();
+          this.spawnBurst(obj.x - 59, obj.y - 120, '#fbbf24', 16);
+        }
         const cake = this.spawnDecorItem('cake_stand');
         cake.x = Math.max(110, Math.min(this.logicalW - 110, obj.x + 130));
       } else if (obj.type === 'ice_cream_cart') {
@@ -1871,6 +1984,19 @@
       ctx.fillStyle = 'rgba(92, 61, 46, 0.08)';
       ctx.fillRect(0, fy, W, 9);
 
+      // Esquinas arquitectónicas 2.5D (Caja de Habitación con paredes laterales en escorzo para salas interiores)
+      ctx.save();
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.14)';
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(78, 36); ctx.lineTo(78, fy - 58); ctx.lineTo(0, fy); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(W, 0); ctx.lineTo(W - 78, 36); ctx.lineTo(W - 78, fy - 58); ctx.lineTo(W, fy); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(92, 61, 46, 0.18)'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(78, 36); ctx.lineTo(78, fy - 58); ctx.lineTo(0, fy);
+      ctx.moveTo(W - 78, 36); ctx.lineTo(W - 78, fy - 58); ctx.lineTo(W, fy);
+      ctx.moveTo(78, 36); ctx.lineTo(W - 78, 36);
+      ctx.stroke();
+      ctx.restore();
+
       // Ventana panorámica y mobiliario mural según la habitación
       if (room.id === 'cafe') {
         this.drawWindow(ctx, 515, 175, 190, 155);
@@ -1892,19 +2018,6 @@
           this.drawFlower(c, 0, 2, 12, '#2dd4bf');
         });
       } else {
-        // Esquinas arquitectónicas 2.5D (Caja de Habitación con paredes laterales en escorzo)
-        ctx.save();
-        ctx.fillStyle = 'rgba(148, 163, 184, 0.14)';
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(78, 36); ctx.lineTo(78, fy - 58); ctx.lineTo(0, fy); ctx.closePath(); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(W, 0); ctx.lineTo(W - 78, 36); ctx.lineTo(W - 78, fy - 58); ctx.lineTo(W, fy); ctx.closePath(); ctx.fill();
-        ctx.strokeStyle = 'rgba(92, 61, 46, 0.18)'; ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(78, 36); ctx.lineTo(78, fy - 58); ctx.lineTo(0, fy);
-        ctx.moveTo(W - 78, 36); ctx.lineTo(W - 78, fy - 58); ctx.lineTo(W, fy);
-        ctx.moveTo(78, 36); ctx.lineTo(W - 78, 36);
-        ctx.stroke();
-        ctx.restore();
-
         this.drawWindow(ctx, 490, 175, 210, 165);
         // Repisa aérea sobre el tocador con plantas colgantes y libros
         this.drawShelf(ctx, 685, 148);
@@ -2269,43 +2382,107 @@
       ctx.lineCap = 'round';
 
       if (obj.type === 'oven') {
-        // Horno de Chef Pastelero 2.5D con campana extractora, tetera, reloj digital y puerta de vidrio
-        roundRect(ctx, x - 66, y - 126, 132, 126, 22); fillStroke(ctx, '#fbcfe8', 2.8);
-        // Lateral 2.5D
-        roundRect(ctx, x - 60, y - 120, 120, 114, 18); fillStroke(ctx, '#fce7f3', 2);
-        // Panel de control superior con reloj digital y perillas
+        // CUERPO DIGITAL 2.5D: Horno de Chef Pastelero con lateral extruido, topFace, 2 rejillas y puerta abatible
+        // 1. Cara lateral 2.5D (extrusión oblicua derecha sombreada)
+        ctx.beginPath();
+        ctx.moveTo(x + 66, y - 126); ctx.lineTo(x + 82, y - 138);
+        ctx.lineTo(x + 82, y - 12); ctx.lineTo(x + 66, y);
+        ctx.closePath();
+        fillStroke(ctx, '#f472b6', 2.4);
+
+        // 2. Cara superior (topFace con luz cenital e iluminación +15%)
+        ctx.beginPath();
+        ctx.moveTo(x - 66, y - 126); ctx.lineTo(x - 50, y - 138);
+        ctx.lineTo(x + 82, y - 138); ctx.lineTo(x + 66, y - 126);
+        ctx.closePath();
+        fillStroke(ctx, '#fdf2f8', 2.6);
+
+        // Hornillas sobre la tapa superior
+        for (const hx of [-28, 28]) {
+          ctx.beginPath(); ctx.ellipse(x + hx + 8, y - 132, 16, 5, 0, 0, TAU);
+          fillStroke(ctx, '#475569', 1.8);
+        }
+        // Tetera decorativa sobre las hornillas
+        this.drawTeapot(ctx, x - 20, y - 132, 0.68);
+
+        // 3. Cara frontal del horno
+        roundRect(ctx, x - 66, y - 126, 132, 126, 20); fillStroke(ctx, '#fbcfe8', 2.8);
+        roundRect(ctx, x - 60, y - 120, 120, 114, 16); fillStroke(ctx, '#fce7f3', 2);
+
+        // Panel de control superior con reloj digital y perillas giratorias
         roundRect(ctx, x - 54, y - 114, 108, 22, 8); fillStroke(ctx, '#ffffff', 2.2);
         roundRect(ctx, x - 18, y - 110, 36, 14, 4); fillStroke(ctx, '#0f172a', 1.6);
         ctx.fillStyle = '#4ade80'; ctx.font = '800 9px monospace'; ctx.textAlign = 'center';
         ctx.fillText(obj.state ? '350°' : '12:00', x, y - 100);
         for (const dx of [-38, 38]) {
           ctx.beginPath(); ctx.arc(x + dx, y - 103, 5.5, 0, TAU); fillStroke(ctx, '#f472b6', 1.8);
+          ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x + dx - 1.5, y - 104.5, 1.5, 0, TAU); ctx.fill();
         }
-        // Tetera sobre las hornillas
-        this.drawTeapot(ctx, x - 26, y - 126, 0.68);
-        // Ventana del horno con reflejo de cristal y luz interior
-        roundRect(ctx, x - 48, y - 84, 96, 60, 14);
-        fillStroke(ctx, obj.state ? '#fde68a' : '#1e293b', 2.8);
+
+        // Cavidad interior del horno con dos rejillas metálicas
+        roundRect(ctx, x - 48, y - 86, 96, 62, 12);
+        fillStroke(ctx, obj.state ? '#451a03' : '#1e293b', 2.6);
         if (obj.state) {
-          const glow = ctx.createRadialGradient(x, y - 54, 4, x, y - 54, 52);
-          glow.addColorStop(0, 'rgba(251,191,36,0.85)'); glow.addColorStop(1, 'rgba(251,191,36,0)');
-          ctx.fillStyle = glow; ctx.fillRect(x - 48, y - 84, 96, 60);
+          const glow = ctx.createRadialGradient(x, y - 55, 6, x, y - 55, 54);
+          glow.addColorStop(0, 'rgba(251,191,36,0.92)');
+          glow.addColorStop(0.6, 'rgba(245,158,11,0.4)');
+          glow.addColorStop(1, 'rgba(251,191,36,0)');
+          ctx.fillStyle = glow; ctx.fillRect(x - 48, y - 86, 96, 62);
         }
-        // Rejilla interior y rollito horneándose
-        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(x - 42, y - 42); ctx.lineTo(x + 42, y - 42); ctx.stroke();
-        this.drawRoll(ctx, x - 14, y - 48, obj.state ? 1.05 + Math.sin(this.time * 6) * 0.06 : 0.95);
-        this.drawCupcake(ctx, x + 18, y - 44, 0.72);
-        // Manilla cromada
-        roundRect(ctx, x - 36, y - 78, 72, 6, 3); fillStroke(ctx, '#ffffff', 1.8);
+
+        // Rejilla superior e inferior
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(x - 44, y - 64); ctx.lineTo(x + 44, y - 64);
+        ctx.moveTo(x - 44, y - 38); ctx.lineTo(x + 44, y - 38);
+        ctx.stroke();
+
+        // Rollito y Cupcake horneándose
+        this.drawRoll(ctx, x - 14, y - 68, obj.state ? 1.05 + Math.sin(this.time * 6) * 0.05 : 0.95);
+        this.drawCupcake(ctx, x + 18, y - 42, 0.72);
+
+        // Puerta de vidrio abatible: se abre hacia abajo cuando obj.state === true
+        if (obj.state) {
+          // Puerta abierta en perspectiva abatida hacia abajo
+          ctx.beginPath();
+          ctx.moveTo(x - 48, y - 24); ctx.lineTo(x + 48, y - 24);
+          ctx.lineTo(x + 40, y - 6); ctx.lineTo(x - 40, y - 6);
+          ctx.closePath();
+          fillStroke(ctx, 'rgba(253, 242, 248, 0.85)', 2.2);
+          roundRect(ctx, x - 32, y - 9, 64, 5, 2.5); fillStroke(ctx, '#ffffff', 1.8);
+        } else {
+          // Puerta de vidrio cerrada con marco y brillo especular
+          roundRect(ctx, x - 48, y - 86, 96, 62, 12);
+          ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(x - 28, y - 78); ctx.lineTo(x - 8, y - 36);
+          ctx.moveTo(x - 10, y - 78); ctx.lineTo(x + 10, y - 36);
+          ctx.stroke();
+          // Manilla cromada sobre la puerta
+          roundRect(ctx, x - 36, y - 80, 72, 6, 3); fillStroke(ctx, '#ffffff', 1.8);
+        }
 
       } else if (obj.type === 'counter') {
-        // MOSTRADOR HELADERÍA + CAJA REGISTRADORA $2.00 + FREEZER CON HIELOS (Inspirado en Imagen 1 de Pazu Avatar World)
-        // Base del mostrador 2.5D
-        roundRect(ctx, x - 98, y - 98, 196, 98, 20); fillStroke(ctx, '#ffffff', 2.8);
+        // CUERPO DIGITAL 2.5D: Mostrador Heladería + Vitrina + Caja Registradora Deslizante
+        // 1. Cara lateral 2.5D (extrusión oblicua derecha sombreada)
+        ctx.beginPath();
+        ctx.moveTo(x + 98, y - 98); ctx.lineTo(x + 114, y - 110);
+        ctx.lineTo(x + 114, y - 12); ctx.lineTo(x + 98, y);
+        ctx.closePath();
+        fillStroke(ctx, '#fce7f3', 2.4);
+
+        // 2. Cara superior (topFace: mesón con escorzo e iluminación cenital)
+        ctx.beginPath();
+        ctx.moveTo(x - 102, y - 98); ctx.lineTo(x - 86, y - 110);
+        ctx.lineTo(x + 114, y - 110); ctx.lineTo(x + 98, y - 98);
+        ctx.closePath();
+        fillStroke(ctx, '#f472b6', 2.8);
+
+        // Frente del mostrador
+        roundRect(ctx, x - 98, y - 98, 196, 98, 18); fillStroke(ctx, '#ffffff', 2.8);
         roundRect(ctx, x - 92, y - 90, 74, 82, 12); fillStroke(ctx, '#fce7f3', 2);
 
-        // Cubículo inferior izquierdo con Bolsas de Regalo con moño (igual a Imagen 1 Pazu)
+        // Bolsas de regalo con moño en cubículo izquierdo
         for (const [bx, col] of [[x - 72, '#f472b6'], [x - 42, '#38bdf8']]) {
           roundRect(ctx, bx - 11, y - 48, 22, 32, 4); fillStroke(ctx, col, 1.8);
           ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
@@ -2313,45 +2490,69 @@
           this.drawBowShape(ctx, bx, y - 34, 0.25, '#fef08a');
         }
 
-        // Mesón superior rosa brillante
-        roundRect(ctx, x - 102, y - 104, 204, 18, 9); fillStroke(ctx, '#f472b6', 2.8);
+        // Borde frontal del mesón
+        roundRect(ctx, x - 102, y - 102, 204, 14, 7); fillStroke(ctx, '#f472b6', 2.6);
 
-        // Caja Registradora Electrónica con pantalla verde "$2.00" y lector de tarjetas (sobre el lado izquierdo)
+        // Caja registradora electrónica (lado izquierdo)
         roundRect(ctx, x - 86, y - 134, 54, 32, 8); fillStroke(ctx, '#e2e8f0', 2.4);
         roundRect(ctx, x - 80, y - 150, 42, 18, 5); fillStroke(ctx, '#0f172a', 2.2);
         ctx.fillStyle = '#4ade80';
         ctx.font = '800 11px "Baloo 2", monospace';
         ctx.textAlign = 'center';
         ctx.fillText('$2.00', x - 59, y - 137);
-        // Teclas de la caja + ticket blanco saliendo
+
+        // Teclas de colores y lector POS
         for (let kx = 0; kx < 3; kx++) {
           roundRect(ctx, x - 78 + kx * 13, y - 122, 9, 7, 2); fillStroke(ctx, ['#f43f5e', '#facc15', '#38bdf8'][kx], 1.4);
         }
-        // Lector POS de tarjeta al lado de la caja
         roundRect(ctx, x - 26, y - 124, 16, 22, 4); fillStroke(ctx, '#38bdf8', 1.8);
 
-        // Vitrina Freezer Refrigerada derecha con cubitos de hielo translúcidos, paletas, conos y Boba Tea
+        // Cajón deslizante articulado de la caja registradora
+        const pullY = obj.state ? 16 : 0;
+        const pullX = obj.state ? -4 : 0;
+        if (obj.state) {
+          // Compartimento interior con billetes verdes y monedas doradas
+          roundRect(ctx, x - 86 + pullX, y - 108 + pullY, 54, 18, 4); fillStroke(ctx, '#334155', 2);
+          // Billetes verdes
+          roundRect(ctx, x - 82 + pullX, y - 105 + pullY, 14, 12, 2); fillStroke(ctx, '#22c55e', 1.4);
+          // Monedas doradas
+          ctx.fillStyle = '#facc15';
+          for (const mx of [-60, -52, -44]) {
+            ctx.beginPath(); ctx.arc(x + mx + pullX, y - 99 + pullY, 3.2, 0, TAU); ctx.fill();
+          }
+          // Ticket de compra saliendo hacia arriba
+          roundRect(ctx, x - 64 + pullX, y - 124 + pullY, 14, 16, 2); fillStroke(ctx, '#ffffff', 1.4);
+          ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.moveTo(x - 61 + pullX, y - 118 + pullY); ctx.lineTo(x - 53 + pullX, y - 118 + pullY);
+          ctx.moveTo(x - 61 + pullX, y - 114 + pullY); ctx.lineTo(x - 53 + pullX, y - 114 + pullY);
+          ctx.stroke();
+          // Frente del cajón extendido
+          roundRect(ctx, x - 88 + pullX, y - 104 + pullY, 58, 14, 4); fillStroke(ctx, '#cbd5e1', 2);
+        } else {
+          // Cajón cerrado en reposo
+          roundRect(ctx, x - 84, y - 104, 50, 10, 3); fillStroke(ctx, '#cbd5e1', 1.8);
+        }
+
+        // Vitrina Freezer Refrigerada derecha con cubitos de hielo, paletas y brillo
         roundRect(ctx, x - 12, y - 86, 102, 76, 14); fillStroke(ctx, '#e0f2fe', 2.4);
-        // Cama de cubitos de hielo brillantes
         ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
         for (let ix = 0; ix < 6; ix++) {
           roundRect(ctx, x - 6 + ix * 15, y - 34 + (ix % 2) * 3, 13, 11, 3);
           ctx.fill();
           ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 1.4; ctx.stroke();
         }
-        // Paletas heladas de colores, cono soft-serve y cupcake en la vitrina
         for (const [px, col] of [[x + 6, '#f43f5e'], [x + 26, '#a3e635'], [x + 46, '#fb923c']]) {
           roundRect(ctx, px - 2, y - 42, 4, 12, 2); fillStroke(ctx, '#fde68a', 1.4);
           roundRect(ctx, px - 7, y - 64, 14, 24, 7); fillStroke(ctx, col, 2);
           ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(px - 4, y - 60, 3, 14);
         }
         this.drawCupcake(ctx, x + 72, y - 46, 0.78);
-        // Brillo diagonal del cristal de la vitrina
         ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.moveTo(x - 2, y - 78); ctx.lineTo(x + 16, y - 52); ctx.moveTo(x + 12, y - 78); ctx.lineTo(x + 26, y - 58); ctx.stroke();
 
       } else if (obj.type === 'tea_table') {
-        // Juego de Comedor & Salón de Té con 2 sillas acolchadas y mantel de encaje
+        // Base layer: 2 sillas acolchadas laterales y pedestal central de la mesa
         for (const side of [-1, 1]) {
           const cx = x + side * 62;
           roundRect(ctx, cx - 18, y - 82, 36, 46, 14); fillStroke(ctx, '#fbcfe8', 2.4);
@@ -2361,11 +2562,7 @@
         }
         roundRect(ctx, x - 9, y - 56, 18, 52, 5); fillStroke(ctx, '#e59866', 2.6);
         roundRect(ctx, x - 34, y - 8, 68, 9, 4); fillStroke(ctx, '#e59866', 2.4);
-        ctx.beginPath(); ctx.ellipse(x, y - 58, 84, 26, 0, 0, TAU); fillStroke(ctx, '#fff1f2', 2.8);
-        ctx.beginPath(); ctx.ellipse(x, y - 60, 72, 18, 0, 0, TAU); ctx.strokeStyle = '#f9a8d4'; ctx.setLineDash([6, 6]); ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
-        this.drawTeapot(ctx, x - 38, y - 62, 0.78);
-        this.drawCakeSlice(ctx, x + 2, y - 60, 0.85);
-        this.drawTeacup(ctx, x + 42, y - 62, 0.82);
+        ctx.beginPath(); ctx.ellipse(x, y - 56, 82, 24, 0, 0, TAU); fillStroke(ctx, '#fed7aa', 2.2);
 
       } else if (obj.type === 'cloud_bed') {
         // CUERPO DIGITAL 2.5D: Cama con Dosel, Postes Torneados, Respaldo Capitoné y Capas (BackLayer)
@@ -2592,55 +2789,102 @@
         ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.arc(x - 14, y - 26, 3.5, 0, TAU); ctx.arc(x + 10, y - 26, 3.5, 0, TAU); ctx.fill();
 
       } else if (obj.type === 'swing') {
+        // CUERPO DIGITAL 2.5D: Columpio de Jardín con viga rústica superior, postes laterales y asiento
+        roundRect(ctx, x - 76, y - 180, 152, 16, 8); fillStroke(ctx, '#b07a4a', 2.8);
+        ctx.strokeStyle = '#9c6644'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x - 68, y - 172); ctx.lineTo(x + 68, y - 172); ctx.stroke();
+        // Postes laterales en A
+        ctx.strokeStyle = '#b07a4a'; ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(x - 68, y - 172); ctx.lineTo(x - 82, y);
+        ctx.moveTo(x + 68, y - 172); ctx.lineTo(x + 82, y);
+        ctx.stroke();
+        // Cuerdas traseras y asiento oscilante
         ctx.save();
-        roundRect(ctx, x - 72, y - 178, 144, 14, 7); fillStroke(ctx, '#b07a4a', 2.6);
         ctx.translate(x, y - 165);
         ctx.rotate(obj.swingAngle || 0);
-        ctx.strokeStyle = '#f472b6'; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(-42, 0); ctx.lineTo(-42, 135); ctx.moveTo(42, 0); ctx.lineTo(42, 135); ctx.stroke();
-        for (let i = 0; i < 4; i++) { this.drawFlower(ctx, -42, 20 + i * 32, 5.5, '#fbcfe8'); this.drawFlower(ctx, 42, 34 + i * 32, 5.5, '#fbcfe8'); }
-        roundRect(ctx, -56, 128, 112, 20, 10); fillStroke(ctx, '#fdebd0', 2.8);
-        roundRect(ctx, -48, 122, 96, 10, 5); fillStroke(ctx, '#f9a8d4', 2);
+        ctx.strokeStyle = '#d97706'; ctx.lineWidth = 3.2;
+        ctx.beginPath(); ctx.moveTo(-42, 0); ctx.lineTo(-42, 134); ctx.moveTo(42, 0); ctx.lineTo(42, 134); ctx.stroke();
+        roundRect(ctx, -56, 128, 112, 18, 9); fillStroke(ctx, '#b07a4a', 2.6);
+        roundRect(ctx, -48, 122, 96, 10, 5); fillStroke(ctx, '#f9a8d4', 2.2);
         ctx.restore();
 
       } else if (obj.type === 'fountain') {
-        ctx.beginPath(); ctx.ellipse(x, y - 18, 86, 30, 0, 0, TAU); fillStroke(ctx, '#ffffff', 2.8);
-        ctx.beginPath(); ctx.ellipse(x, y - 20, 74, 22, 0, 0, TAU); ctx.fillStyle = '#38bdf8'; ctx.fill();
-        // Nenúfares flotantes
-        for (const lx of [-42, 38]) {
-          ctx.beginPath(); ctx.ellipse(x + lx, y - 16, 10, 5, 0, 0, TAU); fillStroke(ctx, '#4ade80', 1.6);
-          this.drawFlower(ctx, x + lx, y - 19, 3.5, '#f9a8d4');
+        // CUERPO DIGITAL 2.5D: Fuente Monumental con 2 platos escalonados en perspectiva y 3 chorros animados
+        // 1. Zócalo y plato inferior escalonado de piedra labrada
+        ctx.beginPath(); ctx.ellipse(x, y - 12, 92, 28, 0, 0, TAU); fillStroke(ctx, '#cbd5e1', 2.8);
+        ctx.beginPath(); ctx.ellipse(x, y - 18, 86, 26, 0, 0, TAU); fillStroke(ctx, '#ffffff', 2.6);
+        ctx.beginPath(); ctx.ellipse(x, y - 20, 76, 20, 0, 0, TAU); ctx.fillStyle = '#38bdf8'; ctx.fill();
+
+        // Ondas concéntricas animadas en el agua
+        const rip = (this.time * 26) % 36;
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.ellipse(x, y - 20, 24 + rip, 7 + rip * 0.28, 0, 0, TAU); ctx.stroke();
+
+        // Nenúfares flotantes con flores sakura
+        for (const lx of [-44, 40]) {
+          ctx.beginPath(); ctx.ellipse(x + lx, y - 18, 11, 5.5, 0, 0, TAU); fillStroke(ctx, '#4ade80', 1.6);
+          this.drawFlower(ctx, x + lx, y - 21, 4, '#f9a8d4');
         }
-        roundRect(ctx, x - 12, y - 64, 24, 44, 6); fillStroke(ctx, '#ffffff', 2.4);
-        ctx.beginPath(); ctx.ellipse(x, y - 64, 34, 11, 0, 0, TAU); fillStroke(ctx, '#ffffff', 2.4);
-        // Estatua superior de Cinnamoroll dorado
-        ctx.beginPath(); ctx.arc(x, y - 78, 11, 0, TAU); fillStroke(ctx, '#fef08a', 2);
+
+        // 2. Columna central tallada y plato superior escalonado
+        roundRect(ctx, x - 14, y - 66, 28, 48, 7); fillStroke(ctx, '#ffffff', 2.4);
+        roundRect(ctx, x - 18, y - 48, 36, 8, 4); fillStroke(ctx, '#e2e8f0', 2);
+        ctx.beginPath(); ctx.ellipse(x, y - 66, 38, 13, 0, 0, TAU); fillStroke(ctx, '#ffffff', 2.4);
+        ctx.beginPath(); ctx.ellipse(x, y - 68, 32, 10, 0, 0, TAU); ctx.fillStyle = '#0284c7'; ctx.fill();
+
+        // 3. Estatuilla superior de Cinnamoroll dorada con corona
+        ctx.beginPath(); ctx.arc(x, y - 82, 12, 0, TAU); fillStroke(ctx, '#fef08a', 2.2);
+        ctx.beginPath(); ctx.ellipse(x - 14, y - 82, 7, 3.5, -0.2, 0, TAU); ctx.ellipse(x + 14, y - 82, 7, 3.5, 0.2, 0, TAU); fillStroke(ctx, '#fef08a', 1.8);
+        ctx.fillStyle = '#f59e0b'; starPath(ctx, x, y - 96, 5.5); ctx.fill();
+
+        // 4. Tres chorros parabólicos animados brotando con partículas y espuma
         if (obj.state) {
-          const jetH = 40 + Math.sin(this.time * 6) * 8;
-          ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 5;
+          const jetH = 36 + Math.sin(this.time * 6) * 6;
+          ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 4;
           ctx.beginPath();
-          ctx.moveTo(x, y - 82); ctx.quadraticCurveTo(x - 24, y - 82 - jetH, x - 50, y - 22);
-          ctx.moveTo(x, y - 82); ctx.quadraticCurveTo(x + 24, y - 82 - jetH, x + 50, y - 22);
+          ctx.moveTo(x - 4, y - 84); ctx.quadraticCurveTo(x - 28, y - 84 - jetH, x - 54, y - 22);
+          ctx.moveTo(x + 4, y - 84); ctx.quadraticCurveTo(x + 28, y - 84 - jetH, x + 54, y - 22);
+          ctx.moveTo(x, y - 86); ctx.quadraticCurveTo(x, y - 86 - jetH * 1.25, x, y - 66);
           ctx.stroke();
+
           ctx.fillStyle = 'rgba(255,255,255,0.92)';
-          for (let i = 0; i < 5; i++) {
-            const t = (this.time * 1.4 + i / 5) % 1;
-            ctx.beginPath(); ctx.arc(x + (i - 2) * 22 * t, y - 82 - Math.sin(t * Math.PI) * jetH, 3.2, 0, TAU); ctx.fill();
+          for (let i = 0; i < 6; i++) {
+            const t = (this.time * 1.5 + i / 6) % 1;
+            ctx.beginPath(); ctx.arc(x + (i - 2.5) * 20 * t, y - 84 - Math.sin(t * Math.PI) * jetH, 3.2, 0, TAU); ctx.fill();
           }
         }
 
       } else if (obj.type === 'stage') {
-        // Escenario Musical con parlantes laterales y luces de concierto
-        ctx.beginPath(); ctx.ellipse(x, y - 16, 98, 34, 0, 0, TAU); fillStroke(ctx, '#f5d0fe', 2.8);
-        ctx.beginPath(); ctx.ellipse(x, y - 24, 84, 25, 0, 0, TAU); fillStroke(ctx, '#fdf4ff', 2.8);
+        // CUERPO DIGITAL 2.5D: Escenario de Concierto Volumétrico con parlantes 3D y focos dinámicos
+        // Plataforma escalonada 2.5D
+        ctx.beginPath(); ctx.ellipse(x, y - 10, 102, 36, 0, 0, TAU); fillStroke(ctx, '#c084fc', 2.8);
+        ctx.beginPath(); ctx.ellipse(x, y - 18, 98, 34, 0, 0, TAU); fillStroke(ctx, '#e9d5ff', 2.8);
+        ctx.beginPath(); ctx.ellipse(x, y - 25, 86, 26, 0, 0, TAU); fillStroke(ctx, '#ffffff', 2.6);
+
+        // Torres de parlantes laterales en 2.5D con conos woofer y tweeters
         for (const side of [-1, 1]) {
-          roundRect(ctx, x + side * 74 - 14, y - 68, 28, 46, 7); fillStroke(ctx, '#334155', 2.2);
-          ctx.beginPath(); ctx.arc(x + side * 74, y - 38, 8, 0, TAU); fillStroke(ctx, '#38bdf8', 1.8);
-          ctx.beginPath(); ctx.arc(x + side * 74, y - 55, 5, 0, TAU); fillStroke(ctx, '#f472b6', 1.6);
+          const sx = x + side * 74;
+          // Extrusión lateral del parlante
+          ctx.beginPath();
+          ctx.moveTo(sx + side * 14, y - 72); ctx.lineTo(sx + side * 22, y - 80);
+          ctx.lineTo(sx + side * 22, y - 30); ctx.lineTo(sx + side * 14, y - 22);
+          ctx.closePath(); fillStroke(ctx, '#0f172a', 2.2);
+
+          // Frente del parlante
+          roundRect(ctx, sx - 14, y - 72, 28, 50, 7); fillStroke(ctx, '#1e293b', 2.4);
+          const pulse = obj.state ? 1 + Math.sin(this.time * 12 + side) * 0.12 : 1;
+          ctx.beginPath(); ctx.arc(sx, y - 42, 8.5 * pulse, 0, TAU); fillStroke(ctx, '#38bdf8', 1.8);
+          ctx.beginPath(); ctx.arc(sx, y - 60, 5, 0, TAU); fillStroke(ctx, '#f472b6', 1.6);
+          // Estrellitas decorativas en la base
           ctx.fillStyle = '#fde047';
           starPath(ctx, x + side * 48, y - 26, 9 + Math.sin(this.time * 4 + side) * 1.5); fillStroke(ctx, '#fde047', 2);
         }
+
+        // Micrófono con pedestal
         this.drawMic(ctx, x, y - 30, 0.95);
+
+        // Focos dinámicos de concierto
         if (obj.state) {
           ctx.globalAlpha = 0.35 + 0.15 * Math.sin(this.time * 5);
           ctx.fillStyle = '#fef08a';
@@ -2686,56 +2930,135 @@
         ctx.fillStyle = '#fde047'; starPath(ctx, x + 16, y - 93, 6); ctx.fill();
 
       } else if (obj.type === 'sand_castle') {
-        // Gran Castillo de Arena de 3 Torres con banderines, conchitas, balde y pala
+        // CUERPO DIGITAL 2.5D: Gran Castillo de Arena con 3 torres cilíndricas, foso de agua y puente levadizo
+        // 1. Foso perimetral de agua con reflejos
+        ctx.beginPath(); ctx.ellipse(x, y - 6, 88, 28, 0, 0, TAU); fillStroke(ctx, '#38bdf8', 2.2);
+        ctx.beginPath(); ctx.ellipse(x, y - 8, 78, 22, 0, 0, TAU); fillStroke(ctx, '#0284c7', 2);
+
+        // 2. Puente levadizo de madera sobre el foso
+        ctx.beginPath();
+        ctx.moveTo(x - 14, y + 6); ctx.lineTo(x + 14, y + 6);
+        ctx.lineTo(x + 12, y - 12); ctx.lineTo(x - 12, y - 12);
+        ctx.closePath();
+        fillStroke(ctx, '#b45309', 2.2);
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(x - 14, y + 6); ctx.lineTo(x - 12, y - 28); ctx.moveTo(x + 14, y + 6); ctx.lineTo(x + 12, y - 28); ctx.stroke();
+
+        // 3. Dos torres cilíndricas laterales con gradiente y almenas
         for (const side of [-1, 1]) {
-          roundRect(ctx, x + side * 46 - 16, y - 64, 32, 60, 6); fillStroke(ctx, '#fde047', 2.4);
+          const tx = x + side * 46;
+          roundRect(ctx, tx - 16, y - 66, 32, 60, 6); fillStroke(ctx, '#fde047', 2.4);
+          for (let k = -1; k <= 1; k++) {
+            roundRect(ctx, tx + k * 10 - 4, y - 72, 8, 8, 2); fillStroke(ctx, '#fde047', 1.8);
+          }
           ctx.beginPath();
-          ctx.moveTo(x + side * 46 - 20, y - 64); ctx.lineTo(x + side * 46, y - 88); ctx.lineTo(x + side * 46 + 20, y - 64);
+          ctx.moveTo(tx - 18, y - 66); ctx.lineTo(tx, y - 90); ctx.lineTo(tx + 18, y - 66);
           ctx.closePath(); fillStroke(ctx, '#38bdf8', 2.2);
         }
-        roundRect(ctx, x - 42, y - 52, 84, 52, 8); fillStroke(ctx, '#fde047', 2.6);
-        roundRect(ctx, x - 28, y - 92, 56, 44, 8); fillStroke(ctx, '#fef08a', 2.6);
-        ctx.beginPath(); ctx.moveTo(x - 34, y - 92); ctx.lineTo(x, y - 122); ctx.lineTo(x + 34, y - 92); ctx.closePath(); fillStroke(ctx, '#f472b6', 2.4);
-        // Bandera en la punta
+
+        // 4. Muralla y torreón central más alto
+        roundRect(ctx, x - 42, y - 52, 84, 50, 8); fillStroke(ctx, '#fde047', 2.6);
+        roundRect(ctx, x - 28, y - 96, 56, 46, 8); fillStroke(ctx, '#fef08a', 2.6);
+        for (let k = -2; k <= 2; k++) {
+          roundRect(ctx, x + k * 11 - 4, y - 102, 8, 8, 2); fillStroke(ctx, '#fef08a', 1.8);
+        }
+        ctx.beginPath(); ctx.moveTo(x - 32, y - 96); ctx.lineTo(x, y - 126); ctx.lineTo(x + 32, y - 96); ctx.closePath(); fillStroke(ctx, '#f472b6', 2.4);
         ctx.strokeStyle = OUT; ctx.lineWidth = 2.2;
-        ctx.beginPath(); ctx.moveTo(x, y - 122); ctx.lineTo(x, y - 140); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(x, y - 140); ctx.lineTo(x + 18, y - 134); ctx.lineTo(x, y - 128); ctx.closePath(); fillStroke(ctx, '#fbbf24', 1.8);
-        // Puerta y balde playero
-        ctx.beginPath(); ctx.arc(x, y - 4, 15, Math.PI, TAU); fillStroke(ctx, '#b45309', 2.2);
-        roundRect(ctx, x + 56, y - 24, 22, 22, 4); fillStroke(ctx, '#f43f5e', 2);
+        ctx.beginPath(); ctx.moveTo(x, y - 126); ctx.lineTo(x, y - 144); ctx.stroke();
+        const waveFlag = Math.sin(this.time * 4) * 2;
+        ctx.beginPath(); ctx.moveTo(x, y - 144); ctx.lineTo(x + 18, y - 138 + waveFlag); ctx.lineTo(x, y - 132); ctx.closePath(); fillStroke(ctx, '#fbbf24', 1.8);
+
+        // Puerta arqueada y balde playero
+        ctx.beginPath(); ctx.arc(x, y - 4, 15, Math.PI, TAU); fillStroke(ctx, '#1e293b', 2.2);
+        roundRect(ctx, x + 58, y - 24, 20, 20, 4); fillStroke(ctx, '#f43f5e', 2);
+        ctx.strokeStyle = '#fde047'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + 72, y - 24); ctx.lineTo(x + 80, y - 36); ctx.stroke();
 
       } else if (obj.type === 'ice_cream_cart') {
-        // Carrito Heladero Retro con vitrina de hielo, paletas, toldo festoneado y ruedas con rayos
+        // CUERPO DIGITAL 2.5D: Carrito Heladero Retro con lateral extruido, manillar, campana y ruedas con radios
+        // 1. Extrusión lateral 2.5D (lado derecho)
+        ctx.beginPath();
+        ctx.moveTo(x + 76, y - 88); ctx.lineTo(x + 92, y - 98);
+        ctx.lineTo(x + 92, y - 26); ctx.lineTo(x + 76, y - 18);
+        ctx.closePath(); fillStroke(ctx, '#fce7f3', 2.4);
+
+        // 2. Manillar trasero cromado para empujar el carrito
+        roundRect(ctx, x - 86, y - 82, 10, 26, 4); fillStroke(ctx, '#cbd5e1', 2);
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(x - 76, y - 72); ctx.lineTo(x - 86, y - 72); ctx.stroke();
+
+        // 3. Cuerpo principal del carrito y vitrina iluminada
         roundRect(ctx, x - 76, y - 88, 152, 70, 16); fillStroke(ctx, '#fff1f2', 2.8);
-        // Vitrina con hielos y paletas
         roundRect(ctx, x - 64, y - 80, 128, 36, 10); fillStroke(ctx, '#e0f2fe', 2.2);
         for (const [px, col] of [[-40, '#f43f5e'], [-14, '#fde047'], [14, '#a855f7'], [40, '#4ade80']]) {
           roundRect(ctx, x + px - 7, y - 74, 14, 22, 7); fillStroke(ctx, col, 1.8);
         }
-        // Postes y toldo a rayas
-        ctx.strokeStyle = OUT; ctx.lineWidth = 3;
+
+        // 4. Postes de latón y toldo festoneado a rayas rosa y blanco
+        ctx.strokeStyle = '#d97706'; ctx.lineWidth = 3.2;
         ctx.beginPath(); ctx.moveTo(x - 64, y - 88); ctx.lineTo(x - 64, y - 128); ctx.moveTo(x + 64, y - 88); ctx.lineTo(x + 64, y - 128); ctx.stroke();
         for (let k = -3; k <= 3; k++) {
           roundRect(ctx, x + k * 22 - 11, y - 136, 22, 24, [8, 8, 10, 10]);
           fillStroke(ctx, k % 2 === 0 ? '#f472b6' : '#ffffff', 2);
         }
+
+        // 5. Campana de bronce superior interactiva
+        const bellSway = obj.state ? Math.sin(this.time * 20) * 0.22 : 0;
+        ctx.save();
+        ctx.translate(x, y - 140);
+        ctx.rotate(bellSway);
+        ctx.beginPath(); ctx.arc(0, 0, 7, Math.PI, TAU); ctx.lineTo(8, 6); ctx.lineTo(-8, 6); ctx.closePath();
+        fillStroke(ctx, '#facc15', 2);
+        ctx.beginPath(); ctx.arc(0, 7.5, 2.5, 0, TAU); ctx.fill();
+        ctx.restore();
+
+        // 6. Ruedas grandes con radios dorados torneados y neumático exterior
         for (const wx of [-44, 44]) {
-          ctx.beginPath(); ctx.arc(x + wx, y - 14, 19, 0, TAU); fillStroke(ctx, '#fde047', 2.6);
-          ctx.beginPath(); ctx.arc(x + wx, y - 14, 7, 0, TAU); fillStroke(ctx, '#ffffff', 2);
+          ctx.beginPath(); ctx.arc(x + wx, y - 14, 20, 0, TAU); fillStroke(ctx, '#fde047', 2.6);
+          ctx.beginPath(); ctx.arc(x + wx, y - 14, 6.5, 0, TAU); fillStroke(ctx, '#ffffff', 2);
+          ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1.4;
+          for (let sp = 0; sp < 8; sp++) {
+            const a = (sp / 8) * TAU;
+            ctx.beginPath(); ctx.moveTo(x + wx + Math.cos(a) * 6.5, y - 14 + Math.sin(a) * 6.5);
+            ctx.lineTo(x + wx + Math.cos(a) * 19, y - 14 + Math.sin(a) * 19);
+            ctx.stroke();
+          }
         }
         this.drawCupcake(ctx, x, y - 42, 0.95);
 
       } else if (obj.type === 'beach_lounger') {
-        // Reposera con sombrilla a rayas y coco tropical con bombilla
-        roundRect(ctx, x - 78, y - 34, 156, 26, 12); fillStroke(ctx, '#7dd3fc', 2.8);
-        roundRect(ctx, x - 72, y - 52, 46, 24, 10); fillStroke(ctx, '#fef08a', 2.4);
+        // Base layer: armazón plegable de madera, respaldo en escorzo, sombrilla inclinada y coco tropical
+        roundRect(ctx, x - 78, y - 34, 156, 18, 8); fillStroke(ctx, '#d97706', 2.6);
+        for (const px of [-68, 68]) {
+          roundRect(ctx, x + px - 4, y - 16, 8, 18, 3); fillStroke(ctx, '#b45309', 2);
+        }
+        ctx.beginPath();
+        ctx.moveTo(x - 76, y - 32); ctx.lineTo(x - 34, y - 64);
+        ctx.lineTo(x - 28, y - 64); ctx.lineTo(x - 70, y - 32);
+        ctx.closePath(); fillStroke(ctx, '#b45309', 2.4);
+        roundRect(ctx, x - 64, y - 68, 32, 16, 7); fillStroke(ctx, '#fef08a', 2.2);
+
         ctx.strokeStyle = OUT; ctx.lineWidth = 4;
-        ctx.beginPath(); ctx.moveTo(x + 30, y - 34); ctx.lineTo(x + 44, y - 130); ctx.stroke();
-        ctx.beginPath(); ctx.arc(x + 44, y - 124, 58, Math.PI, TAU); fillStroke(ctx, '#f472b6', 2.6);
-        // Coco con bombilla al lado
-        ctx.beginPath(); ctx.arc(x + 62, y - 40, 11, 0, TAU); fillStroke(ctx, '#16a34a', 2);
-        ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.moveTo(x + 62, y - 48); ctx.lineTo(x + 70, y - 58); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x + 32, y - 34); ctx.lineTo(x + 46, y - 132); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x + 46, y - 126, 58, Math.PI, TAU); fillStroke(ctx, '#f472b6', 2.6);
+        ctx.fillStyle = '#ffffff';
+        for (const rx of [-36, -12, 12, 36]) {
+          ctx.beginPath(); ctx.arc(x + 46 + rx, y - 126, 11, Math.PI, TAU); ctx.fill();
+        }
+
+        ctx.beginPath(); ctx.arc(x + 64, y - 38, 12, 0, TAU); fillStroke(ctx, '#16a34a', 2.2);
+        ctx.strokeStyle = '#f472b6'; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(x + 64, y - 46); ctx.lineTo(x + 72, y - 58); ctx.stroke();
+
+      } else if (obj.type === 'flamingo_ring') {
+        // Base layer: Sombra de agua, mitad trasera de la cámara inflable y plumitas de la cola
+        ctx.fillStyle = 'rgba(2, 132, 199, 0.22)';
+        ctx.beginPath(); ctx.ellipse(x, y - 4, 46, 16, 0, 0, TAU); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(x, y - 18, 42, 18, 0, Math.PI, TAU); fillStroke(ctx, '#f472b6', 2.6);
+        ctx.beginPath(); ctx.ellipse(x, y - 18, 18, 8, 0, Math.PI, TAU); fillStroke(ctx, '#bae6fd', 2);
+        ctx.beginPath();
+        ctx.moveTo(x - 6, y - 24); ctx.quadraticCurveTo(x, y - 40, x + 8, y - 36);
+        ctx.quadraticCurveTo(x + 4, y - 26, x + 6, y - 22);
+        ctx.closePath(); fillStroke(ctx, '#ec4899', 2.2);
 
       } else if (obj.type === 'surf_board') {
         ctx.beginPath(); ctx.ellipse(x, y - 16, 62, 20, -0.08, 0, TAU); fillStroke(ctx, '#38bdf8', 2.6);
@@ -2748,37 +3071,75 @@
           const by = y - 70 - Math.abs(Math.sin(this.time * 2.2 + i)) * 11;
           ctx.beginPath(); ctx.arc(x + i * 22, by, 17, 0, TAU); fillStroke(ctx, '#e0f2fe', 2);
         }
-        // Patito de hule flotando en la espuma
         const duckY = y - 74 + Math.sin(this.time * 3) * 2.5;
         ctx.beginPath(); ctx.ellipse(x - 28, duckY, 11, 8, 0, 0, TAU); fillStroke(ctx, '#facc15', 2);
         ctx.beginPath(); ctx.arc(x - 21, duckY - 8, 7, 0, TAU); fillStroke(ctx, '#facc15', 2);
         ctx.fillStyle = '#f97316'; ctx.beginPath(); ctx.ellipse(x - 14, duckY - 7, 4, 2.2, 0, 0, TAU); ctx.fill();
-        // Grifo dorado
         ctx.strokeStyle = '#eab308'; ctx.lineWidth = 5;
         ctx.beginPath(); ctx.moveTo(x + 72, y - 68); ctx.quadraticCurveTo(x + 72, y - 98, x + 54, y - 88); ctx.stroke();
         roundRect(ctx, x - 94, y - 64, 188, 58, 28); fillStroke(ctx, '#ffffff', 2.8);
         roundRect(ctx, x - 100, y - 72, 200, 16, 8); fillStroke(ctx, '#99f6e4', 2.4);
-        // Escalón de madera de spa
         roundRect(ctx, x - 36, y - 10, 72, 12, 5); fillStroke(ctx, '#fed7aa', 2.2);
 
       } else if (obj.type === 'pet_house') {
-        // Mansión de Mascotas con Perrito Animado asomándose, plato de comida y huesito
-        roundRect(ctx, x - 62, y - 82, 124, 82, 16); fillStroke(ctx, '#dcfce7', 2.8);
-        ctx.beginPath(); ctx.moveTo(x - 74, y - 76); ctx.lineTo(x, y - 128); ctx.lineTo(x + 74, y - 76); ctx.closePath(); fillStroke(ctx, '#f9a8d4', 2.8);
-        ctx.beginPath(); ctx.arc(x, y - 28, 28, Math.PI, TAU); fillStroke(ctx, '#1e293b', 2.4);
-        ctx.fillStyle = '#f472b6'; heartPath(ctx, x, y - 96, 10); ctx.fill();
+        // CUERPO DIGITAL 2.5D: Mansión de Mascotas con tejado festoneado, lateral 2.5D y perrito reactivo
+        // 1. Pared lateral 2.5D (extrusión derecha)
+        ctx.beginPath();
+        ctx.moveTo(x + 62, y - 82); ctx.lineTo(x + 78, y - 96);
+        ctx.lineTo(x + 78, y - 14); ctx.lineTo(x + 62, y);
+        ctx.closePath(); fillStroke(ctx, '#bbf7d0', 2.4);
 
-        // ¡Perrito bebé animado asomándose en la puerta!
-        const pupBob = Math.sin(this.time * 3.5) * 2.5;
+        // 2. Pared frontal con entrada en arco
+        roundRect(ctx, x - 62, y - 82, 124, 82, 16); fillStroke(ctx, '#dcfce7', 2.8);
+
+        // 3. Tejado con tejas festoneadas y lateral extruido
+        ctx.beginPath();
+        ctx.moveTo(x, y - 128); ctx.lineTo(x + 16, y - 142);
+        ctx.lineTo(x + 92, y - 90); ctx.lineTo(x + 74, y - 76);
+        ctx.closePath(); fillStroke(ctx, '#f472b6', 2.6);
+
+        ctx.beginPath();
+        ctx.moveTo(x - 74, y - 76); ctx.lineTo(x, y - 128); ctx.lineTo(x + 74, y - 76);
+        ctx.closePath(); fillStroke(ctx, '#f9a8d4', 2.8);
+
+        // Tejas festoneadas en el tejado
+        for (let row = 0; row < 2; row++) {
+          const ty = y - 110 + row * 18;
+          for (let k = -2 + row; k <= 2 - row; k++) {
+            ctx.beginPath(); ctx.arc(x + k * 18, ty, 8, 0, Math.PI);
+            ctx.strokeStyle = '#f472b6'; ctx.lineWidth = 1.8; ctx.stroke();
+          }
+        }
+
+        // Ventana circular en el ático con lazo
+        ctx.beginPath(); ctx.arc(x, y - 100, 11, 0, TAU); fillStroke(ctx, '#ffffff', 2.2);
+        ctx.fillStyle = '#bae6fd'; ctx.beginPath(); ctx.arc(x, y - 100, 8, 0, TAU); ctx.fill();
+        this.drawBowShape(ctx, x, y - 100, 0.28, '#f472b6');
+
+        // Umbral de la puerta
+        ctx.beginPath(); ctx.arc(x, y - 28, 28, Math.PI, TAU); fillStroke(ctx, '#1e293b', 2.4);
+
+        // 4. Perrito bebé reactivo: si spa_pet_bowl está lleno de comida (state === true), se emociona al doble
+        const isFed = !!(this.getRoomItems().find(o => (o.type === 'spa_pet_bowl' || o.gadget === 'pet_bowl') && o.state));
+        const pupSpeed = isFed ? 7.0 : 3.5;
+        const pupAmp = isFed ? 4.5 : 2.5;
+        const pupBob = Math.sin(this.time * pupSpeed) * pupAmp;
         const py = y - 18 + pupBob;
-        ctx.beginPath(); ctx.ellipse(x - 16, py - 12, 7, 13, 0.35 + Math.sin(this.time * 4) * 0.1, 0, TAU); fillStroke(ctx, '#fde68a', 2);
-        ctx.beginPath(); ctx.ellipse(x + 16, py - 12, 7, 13, -0.35 - Math.sin(this.time * 4) * 0.1, 0, TAU); fillStroke(ctx, '#fde68a', 2);
+        const earFlap = isFed ? Math.sin(this.time * pupSpeed) * 0.25 : Math.sin(this.time * 4) * 0.1;
+
+        ctx.beginPath(); ctx.ellipse(x - 16, py - 12, 7, 13, 0.35 + earFlap, 0, TAU); fillStroke(ctx, '#fde68a', 2);
+        ctx.beginPath(); ctx.ellipse(x + 16, py - 12, 7, 13, -0.35 - earFlap, 0, TAU); fillStroke(ctx, '#fde68a', 2);
         ctx.beginPath(); ctx.ellipse(x, py - 12, 16, 13, 0, 0, TAU); fillStroke(ctx, '#fef9c3', 2.2);
         ctx.fillStyle = OUT;
         ctx.beginPath(); ctx.arc(x - 6, py - 13, 2.4, 0, TAU); ctx.arc(x + 6, py - 13, 2.4, 0, TAU); ctx.fill();
         ctx.fillStyle = '#f472b6'; ctx.beginPath(); ctx.arc(x, py - 9, 2.5, 0, TAU); ctx.fill();
-        // Platito de mascota al costado
-        ctx.beginPath(); ctx.ellipse(x + 48, y - 6, 15, 7, 0, 0, TAU); fillStroke(ctx, '#38bdf8', 2);
+
+        // Corazoncitos de felicidad flotando si está alimentado
+        if (isFed) {
+          ctx.fillStyle = '#f472b6';
+          heartPath(ctx, x - 18, py - 26 - Math.sin(this.time * 4) * 4, 4); ctx.fill();
+          heartPath(ctx, x + 18, py - 28 - Math.cos(this.time * 4) * 4, 3.5); ctx.fill();
+        }
       } else {
         this.drawDecorShape(ctx, obj.type, x, y, obj.state);
       }
@@ -2861,6 +3222,113 @@
         roundRect(ctx, x - 94, y - 60, 188, 54, [12, 12, 28, 28]); fillStroke(ctx, '#ffffff', 2.8);
         roundRect(ctx, x - 100, y - 68, 200, 14, 7); fillStroke(ctx, '#99f6e4', 2.4);
         roundRect(ctx, x - 36, y - 8, 72, 11, 5); fillStroke(ctx, '#fed7aa', 2.2);
+      } else if (obj.type === 'tea_table') {
+        // Multi-layer front cover: 2.5D tabletop, scalloped lace cloth, cake stand & teacups
+        ctx.beginPath(); ctx.ellipse(x, y - 58, 84, 26, 0, 0, TAU); fillStroke(ctx, '#fff1f2', 2.8);
+        ctx.beginPath(); ctx.ellipse(x, y - 60, 72, 18, 0, 0, TAU);
+        ctx.strokeStyle = '#f9a8d4'; ctx.setLineDash([6, 6]); ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+        // Caída de mantel festoneada frontal
+        ctx.beginPath();
+        ctx.moveTo(x - 76, y - 56);
+        ctx.quadraticCurveTo(x, y - 36, x + 76, y - 56);
+        ctx.quadraticCurveTo(x + 60, y - 48, x + 40, y - 48);
+        ctx.quadraticCurveTo(x + 20, y - 44, x, y - 44);
+        ctx.quadraticCurveTo(x - 20, y - 44, x - 40, y - 48);
+        ctx.quadraticCurveTo(x - 60, y - 48, x - 76, y - 56);
+        ctx.closePath();
+        fillStroke(ctx, '#fce7f3', 2.2);
+        // Vajilla en primer plano sobre la cintura del avatar sentado
+        this.drawTeapot(ctx, x - 38, y - 62, 0.78);
+        this.drawCakeSlice(ctx, x + 2, y - 60, 0.85);
+        this.drawTeacup(ctx, x + 42, y - 62, 0.82);
+      } else if (obj.type === 'swing') {
+        // Multi-layer front cover: Front floral vine ropes wrapping in front of character's hands
+        ctx.save();
+        ctx.translate(x, y - 165);
+        ctx.rotate(obj.swingAngle || 0);
+        ctx.strokeStyle = '#b07a4a'; ctx.lineWidth = 3.6;
+        ctx.beginPath();
+        ctx.moveTo(-42, 0); ctx.lineTo(-42, 135);
+        ctx.moveTo(42, 0); ctx.lineTo(42, 135);
+        ctx.stroke();
+        // Lianas florales verdes envolviendo cada cuerda lateralmente sin cruzar el rostro
+        ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 3;
+        for (const rx of [-42, 42]) {
+          ctx.beginPath();
+          ctx.moveTo(rx, 8);
+          for (let i = 0; i <= 6; i++) {
+            const sy = 14 + i * 18;
+            ctx.quadraticCurveTo(rx + (i % 2 === 0 ? 7 : -7), sy - 9, rx, sy);
+          }
+          ctx.stroke();
+        }
+        for (let i = 0; i < 4; i++) {
+          this.drawFlower(ctx, -42, 28 + i * 30, 6, '#f472b6');
+          this.drawFlower(ctx, 42, 18 + i * 30, 6, '#fbcfe8');
+        }
+        ctx.restore();
+      } else if (obj.type === 'beach_lounger') {
+        // Multi-layer front cover: Front wooden slats & striped beach towel lapel over character waist
+        roundRect(ctx, x - 78, y - 24, 156, 16, 8); fillStroke(ctx, '#7dd3fc', 2.4);
+        // Solapa de toalla afelpada a rayas amarillas y celestes con flecos
+        ctx.beginPath();
+        ctx.moveTo(x - 52, y - 44);
+        ctx.quadraticCurveTo(x, y - 50, x + 52, y - 44);
+        ctx.lineTo(x + 48, y - 18);
+        ctx.quadraticCurveTo(x, y - 14, x - 48, y - 18);
+        ctx.closePath();
+        fillStroke(ctx, '#fef08a', 2.4);
+        // Rayas celestes de la toalla
+        ctx.fillStyle = '#38bdf8';
+        for (let rx = -34; rx <= 34; rx += 18) {
+          ctx.fillRect(x + rx - 4, y - 42, 8, 24);
+        }
+        // Flecos
+        ctx.strokeStyle = '#fde047'; ctx.lineWidth = 2;
+        for (let fx = -44; fx <= 44; fx += 8) {
+          ctx.beginPath(); ctx.moveTo(x + fx, y - 18); ctx.lineTo(x + fx, y - 12); ctx.stroke();
+        }
+      } else if (obj.type === 'flamingo_ring') {
+        // Multi-layer front cover: Inflatable flamingo front rim, neck, head with sunglasses, wings
+        // Borde frontal del flotador
+        ctx.beginPath(); ctx.ellipse(x, y - 18, 42, 18, 0, 0, Math.PI);
+        ctx.lineTo(x - 42, y - 18); ctx.closePath();
+        fillStroke(ctx, '#f472b6', 2.6);
+        // Alas envolventes a los lados
+        ctx.beginPath(); ctx.ellipse(x - 36, y - 26, 12, 18, -0.4, 0, TAU); fillStroke(ctx, '#ec4899', 2.2);
+        ctx.beginPath(); ctx.ellipse(x + 36, y - 26, 12, 18, 0.4, 0, TAU); fillStroke(ctx, '#ec4899', 2.2);
+        // Cuello esbelto de flamenco subiendo frente al pecho
+        ctx.beginPath();
+        ctx.moveTo(x - 6, y - 20);
+        ctx.quadraticCurveTo(x - 14, y - 50, x - 2, y - 68);
+        ctx.quadraticCurveTo(x + 12, y - 68, x + 6, y - 48);
+        ctx.quadraticCurveTo(x + 2, y - 32, x + 6, y - 20);
+        ctx.closePath();
+        fillStroke(ctx, '#f472b6', 2.6);
+        // Cabeza
+        ctx.beginPath(); ctx.ellipse(x + 4, y - 72, 14, 11, -0.2, 0, TAU); fillStroke(ctx, '#f472b6', 2.6);
+        // Pico con base amarilla y punta curvada negra
+        ctx.beginPath();
+        ctx.moveTo(x + 15, y - 75);
+        ctx.lineTo(x + 26, y - 71);
+        ctx.quadraticCurveTo(x + 30, y - 63, x + 24, y - 63);
+        ctx.lineTo(x + 14, y - 67);
+        ctx.closePath();
+        fillStroke(ctx, '#fde047', 2);
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.moveTo(x + 22, y - 72);
+        ctx.lineTo(x + 26, y - 71);
+        ctx.quadraticCurveTo(x + 30, y - 63, x + 24, y - 63);
+        ctx.lineTo(x + 21, y - 65);
+        ctx.closePath();
+        ctx.fill();
+        // Gafas de sol oscuras kawaii
+        ctx.fillStyle = '#1e293b';
+        roundRect(ctx, x + 2, y - 77, 13, 8, 3); fillStroke(ctx, '#1e293b', 1.8);
+        roundRect(ctx, x - 8, y - 76, 9, 7, 2.5); fillStroke(ctx, '#1e293b', 1.6);
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(x + 1, y - 74); ctx.lineTo(x + 3, y - 74); ctx.stroke();
       }
       ctx.restore();
     }
@@ -2913,6 +3381,153 @@
         ctx.restore();
         return;
       }
+      if (type === 'cafe_teapot' || type === 'teapot') {
+        ctx.save();
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        const tilt = on ? -0.45 : 0;
+        ctx.translate(x, y - 20);
+        ctx.rotate(tilt);
+        this.drawTeapot(ctx, 0, 0, 1.15);
+        if (on) {
+          // Chorro de té ámbar vertiendo
+          ctx.strokeStyle = '#d97706'; ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.moveTo(-22, -8);
+          ctx.quadraticCurveTo(-38, 0, -44, 22);
+          ctx.stroke();
+          // Vapor de té
+          ctx.fillStyle = 'rgba(255,255,255,0.7)';
+          for (let s = 0; s < 3; s++) {
+            const sy = -28 - ((this.time * 20 + s * 12) % 36);
+            ctx.beginPath(); ctx.arc(-22 - s * 4, sy, 3 + s * 1.5, 0, TAU); ctx.fill();
+          }
+        }
+        ctx.restore();
+        return;
+      }
+      if (type === 'watering_can' || type === 'watering') {
+        ctx.save();
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        const tilt = on ? -0.48 : 0;
+        ctx.translate(x, y - 18);
+        ctx.rotate(tilt);
+        roundRect(ctx, -14, -14, 28, 28, 8); fillStroke(ctx, '#bae6fd', 2.4);
+        ctx.strokeStyle = OUT; ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.arc(0, -14, 12, Math.PI, TAU); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-14, -2); ctx.lineTo(-28, -14); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(-30, -16, 5, 8, -0.6, 0, TAU); fillStroke(ctx, '#fde047', 2);
+        this.drawFlower(ctx, 0, 0, 5, '#f472b6');
+        if (on) {
+          ctx.fillStyle = '#38bdf8';
+          for (let i = 0; i < 5; i++) {
+            const gt = ((this.time * 2.5 + i / 5) % 1);
+            const gx = -32 - gt * 28;
+            const gy = -16 + gt * 34;
+            ctx.beginPath(); ctx.arc(gx, gy, 2.5, 0, TAU); ctx.fill();
+          }
+        }
+        ctx.restore();
+        return;
+      }
+      if (type === 'picnic_basket' || type === 'picnic') {
+        ctx.save();
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(x - 26, y - 24); ctx.lineTo(x + 26, y - 24);
+        ctx.lineTo(x + 20, y); ctx.lineTo(x - 20, y);
+        ctx.closePath();
+        fillStroke(ctx, '#d97706', 2.6);
+        ctx.strokeStyle = '#b45309'; ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(x - 12, y - 24); ctx.lineTo(x - 8, y);
+        ctx.moveTo(x + 12, y - 24); ctx.lineTo(x + 8, y);
+        ctx.stroke();
+        ctx.strokeStyle = OUT; ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.arc(x, y - 24, 18, Math.PI, TAU); ctx.stroke();
+
+        if (!on) {
+          roundRect(ctx, x - 28, y - 28, 28, 8, 3); fillStroke(ctx, '#f59e0b', 2);
+          roundRect(ctx, x, y - 28, 28, 8, 3); fillStroke(ctx, '#f59e0b', 2);
+        } else {
+          roundRect(ctx, x - 22, y - 28, 44, 12, 3); fillStroke(ctx, '#fff1f2', 2);
+          ctx.fillStyle = '#f43f5e';
+          for (let vx = -18; vx <= 18; vx += 8) {
+            ctx.fillRect(x + vx, y - 28, 4, 12);
+          }
+          ctx.save(); ctx.translate(x - 24, y - 26); ctx.rotate(-0.55);
+          roundRect(ctx, -24, -4, 24, 8, 3); fillStroke(ctx, '#f59e0b', 2);
+          ctx.restore();
+          ctx.save(); ctx.translate(x + 24, y - 26); ctx.rotate(0.55);
+          roundRect(ctx, 0, -4, 24, 8, 3); fillStroke(ctx, '#f59e0b', 2);
+          ctx.restore();
+          this.drawCupcake(ctx, x - 10, y - 30, 0.6);
+          this.drawStrawberry(ctx, x + 10, y - 28, 0.55);
+        }
+        ctx.restore();
+        return;
+      }
+      if (type === 'spa_pet_bowl' || type === 'pet_bowl') {
+        ctx.save();
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.ellipse(x, y - 6, 20, 8, 0, 0, TAU); fillStroke(ctx, '#38bdf8', 2.4);
+        ctx.beginPath(); ctx.ellipse(x, y - 10, 18, 6, 0, 0, TAU); fillStroke(ctx, '#bae6fd', 2);
+        if (on) {
+          ctx.fillStyle = '#d97706';
+          for (let k = -3; k <= 3; k++) {
+            ctx.beginPath(); ctx.arc(x + k * 4, y - 11 + (k % 2) * 2, 2.5, 0, TAU); ctx.fill();
+          }
+          ctx.fillStyle = '#ffffff';
+          roundRect(ctx, x - 7, y - 13, 14, 4, 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(x - 7, y - 14, 2.2, 0, TAU); ctx.arc(x - 7, y - 10, 2.2, 0, TAU); ctx.fill();
+          ctx.beginPath(); ctx.arc(x + 7, y - 14, 2.2, 0, TAU); ctx.arc(x + 7, y - 10, 2.2, 0, TAU); ctx.fill();
+        } else {
+          ctx.fillStyle = '#0284c7';
+          ctx.beginPath(); ctx.ellipse(x, y - 9, 3.5, 2.5, 0, 0, TAU); ctx.fill();
+          ctx.beginPath(); ctx.arc(x - 3.5, y - 13, 1.2, 0, TAU); ctx.arc(x + 3.5, y - 13, 1.2, 0, TAU); ctx.arc(x, y - 14, 1.2, 0, TAU); ctx.fill();
+        }
+        ctx.restore();
+        return;
+      }
+      if (type === 'spa_brush' || type === 'brush') {
+        ctx.save();
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        roundRect(ctx, x - 4, y - 14, 8, 20, 4); fillStroke(ctx, '#fed7aa', 2);
+        ctx.beginPath(); ctx.ellipse(x, y - 24, 14, 10, 0, 0, TAU); fillStroke(ctx, '#99f6e4', 2.4);
+        ctx.strokeStyle = '#fbcfe8'; ctx.lineWidth = 1.8;
+        for (let bx = -8; bx <= 8; bx += 4) {
+          ctx.beginPath(); ctx.moveTo(x + bx, y - 32); ctx.lineTo(x + bx, y - 24); ctx.stroke();
+        }
+        if (on) {
+          ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.5;
+          for (let b = 0; b < 3; b++) {
+            const bAngle = this.time * 3 + b * 2;
+            const bx = x + Math.cos(bAngle) * 16;
+            const by = y - 30 + Math.sin(bAngle) * 10;
+            ctx.beginPath(); ctx.arc(bx, by, 4 + b, 0, TAU); ctx.stroke();
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath(); ctx.arc(bx - 1.5, by - 1.5, 1.2, 0, TAU); ctx.fill();
+          }
+        }
+        ctx.restore();
+        return;
+      }
+      if (type === 'flamingo_ring' || type === 'flamingo') {
+        ctx.save();
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.ellipse(x, y - 14, 32, 14, 0, 0, TAU); fillStroke(ctx, '#f472b6', 2.6);
+        ctx.beginPath(); ctx.ellipse(x, y - 14, 16, 7, 0, 0, TAU); fillStroke(ctx, '#bae6fd', 2);
+        ctx.beginPath();
+        ctx.moveTo(x - 4, y - 14);
+        ctx.quadraticCurveTo(x - 10, y - 36, x, y - 48);
+        ctx.quadraticCurveTo(x + 8, y - 48, x + 4, y - 34);
+        ctx.quadraticCurveTo(x + 2, y - 22, x + 4, y - 14);
+        ctx.closePath(); fillStroke(ctx, '#f472b6', 2.4);
+        ctx.beginPath(); ctx.ellipse(x + 3, y - 52, 10, 8, -0.2, 0, TAU); fillStroke(ctx, '#f472b6', 2.4);
+        ctx.beginPath(); ctx.moveTo(x + 10, y - 54); ctx.lineTo(x + 18, y - 51); ctx.lineTo(x + 10, y - 48); ctx.closePath(); fillStroke(ctx, '#fde047', 1.8);
+        roundRect(ctx, x + 2, y - 55, 9, 6, 2); fillStroke(ctx, '#1e293b', 1.6);
+        ctx.restore();
+        return;
+      }
       ctx.save();
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
@@ -2952,17 +3567,32 @@
         this.drawTeapot(ctx, x - 8, y - 8, 1);
         this.drawTeacup(ctx, x + 22, y - 8, 0.6);
       } else if (type === 'fairy_lamp') {
+        // CUERPO DIGITAL 2.5D: Difusor de Aroma & Lámpara de Loto de Cristal con Trípode
         if (on) {
-          const glow = ctx.createRadialGradient(x, y - 64, 4, x, y - 64, 54);
-          glow.addColorStop(0, 'rgba(253, 224, 71, 0.75)'); glow.addColorStop(1, 'rgba(253, 224, 71, 0)');
-          ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y - 64, 54, 0, TAU); ctx.fill();
+          const glow = ctx.createRadialGradient(x, y - 64, 6, x, y - 64, 62);
+          glow.addColorStop(0, 'rgba(253, 224, 71, 0.85)'); glow.addColorStop(1, 'rgba(253, 224, 71, 0)');
+          ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y - 64, 62, 0, TAU); ctx.fill();
         }
-        roundRect(ctx, x - 16, y - 8, 32, 8, 4); fillStroke(ctx, '#c4b5fd', 2.2);
-        ctx.strokeStyle = OUT; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(x, y - 8); ctx.lineTo(x, y - 40); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(x - 20, y - 44); ctx.lineTo(x + 20, y - 44); ctx.lineTo(x + 14, y - 86); ctx.lineTo(x - 14, y - 86); ctx.closePath();
-        fillStroke(ctx, on ? '#fef9c3' : '#f1f5f9', 2.6);
-        roundRect(ctx, x - 18, y - 92, 36, 8, 4); fillStroke(ctx, '#f9a8d4', 2.2);
-        ctx.fillStyle = on ? '#fbbf24' : '#cbd5e1'; starPath(ctx, x, y - 64, 8); ctx.fill();
+        // Patitas trípode de madera torneada
+        ctx.beginPath();
+        ctx.moveTo(x, y - 16); ctx.lineTo(x - 18, y); ctx.lineTo(x - 11, y); ctx.lineTo(x, y - 10);
+        ctx.lineTo(x + 11, y); ctx.lineTo(x + 18, y); ctx.closePath();
+        fillStroke(ctx, '#d97706', 2.2);
+        roundRect(ctx, x - 14, y - 14, 28, 8, 4); fillStroke(ctx, '#fde68a', 2);
+        roundRect(ctx, x - 4, y - 48, 8, 36, 4); fillStroke(ctx, '#fcd34d', 2);
+        // Cúpula difusora 2.5D en forma de flor de loto de cristal
+        for (const a of [-0.45, 0.45, 0]) {
+          ctx.save(); ctx.translate(x, y - 48); ctx.rotate(a);
+          ctx.beginPath(); ctx.ellipse(0, -18, 12, 22, 0, 0, TAU);
+          fillStroke(ctx, a === 0 ? (on ? '#fef08a' : '#f8fafc') : (on ? '#fbcfe8' : '#e2e8f0'), 2.2);
+          ctx.restore();
+        }
+        ctx.fillStyle = on ? '#f59e0b' : '#cbd5e1'; starPath(ctx, x, y - 64, 7); ctx.fill();
+        if (on) {
+          ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 2;
+          const mistY = y - 92 - ((this.time * 16) % 16);
+          ctx.beginPath(); ctx.ellipse(x, mistY, 10, 4, 0, 0, TAU); ctx.stroke();
+        }
       } else if (type === 'gift_box') {
         roundRect(ctx, x - 26, y - 44, 52, 44, 6); fillStroke(ctx, '#c4b5fd', 2.6);
         roundRect(ctx, x - 30, y - 54, 60, 14, 5); fillStroke(ctx, '#ddd6fe', 2.4);
@@ -3442,6 +4072,48 @@
       } else {
         // Ojos grandes Pazu HD (para 'happy', 'yummy', 'starry')
         const isWarmEye = base.eyeColor === '#5c3d2e' || base.eyeColor === '#4a2c11';
+
+        // Dynamic eyeGaze: seguimiento ocular dinámico sin clipping ni NaN
+        let targetX = null, targetY = null;
+        if (this.dragState?.target) {
+          targetX = this.dragState.target.x;
+          targetY = this.dragState.target.y - 30;
+        } else if (av.heldItem || (av.propId && av.propId !== 'none')) {
+          targetX = av.x + (av.facing || 1) * 24;
+          targetY = av.y - 34;
+        } else if (av.chewTimer > 0) {
+          targetX = av.x + (av.facing || 1) * 16;
+          targetY = av.y - 45;
+        } else {
+          let nearest = null, minDist = 220;
+          for (const s of [1, 2, 3]) {
+            const oav = this.avatars[s];
+            if (oav && oav !== av && oav.active) {
+              const d = Math.hypot(oav.x - av.x, oav.y - av.y);
+              if (d < minDist) { minDist = d; nearest = oav; }
+            }
+          }
+          if (nearest) {
+            targetX = nearest.x;
+            targetY = nearest.y - 65;
+          }
+        }
+
+        let gazeX = 0, gazeY = 0;
+        if (targetX !== null && targetY !== null && Number.isFinite(targetX) && Number.isFinite(targetY)) {
+          const worldDx = targetX - av.x;
+          const worldDy = targetY - (av.y - 68.5);
+          const localDx = worldDx * (av.facing || 1);
+          const localDy = worldDy;
+          const dist = Math.hypot(localDx, localDy);
+          if (dist > 0.001) {
+            gazeX = Math.max(-2.2, Math.min(2.2, (localDx / dist) * 2.2));
+            gazeY = Math.max(-1.5, Math.min(1.5, (localDy / dist) * 1.5));
+          }
+        }
+        if (isNaN(gazeX)) gazeX = 0;
+        if (isNaN(gazeY)) gazeY = 0;
+
         for (const side of [-1, 1]) {
           const ex = side * 15.5;
           const ey = -68.5;
@@ -3453,7 +4125,7 @@
           ctx.fill();
 
           // Iris grande con gradiente vertical de 3 tonos
-          const irisG = ctx.createLinearGradient(ex, ey - 7, ex, ey + 7);
+          const irisG = ctx.createLinearGradient(ex + gazeX, ey - 7 + gazeY, ex + gazeX, ey + 7 + gazeY);
           if (isWarmEye) {
             irisG.addColorStop(0, '#3e2211');
             irisG.addColorStop(0.55, '#78350f');
@@ -3464,35 +4136,35 @@
             irisG.addColorStop(1, '#7dd3fc');
           }
           ctx.beginPath();
-          ctx.ellipse(ex - side * 0.4, ey + 0.4, 5.7, 7.2, 0, 0, TAU);
+          ctx.ellipse(ex - side * 0.4 + gazeX, ey + 0.4 + gazeY, 5.7, 7.2, 0, 0, TAU);
           ctx.fillStyle = irisG;
           ctx.fill();
 
           // Pupila central profunda
           ctx.beginPath();
-          ctx.ellipse(ex - side * 0.4, ey + 0.6, 3.1, 4.1, 0, 0, TAU);
+          ctx.ellipse(ex - side * 0.4 + gazeX * 1.08, ey + 0.6 + gazeY * 1.08, 3.1, 4.1, 0, 0, TAU);
           ctx.fillStyle = isWarmEye ? '#1c0f07' : '#082f49';
           ctx.fill();
 
           // Brillo inferior translúcido en el iris
           ctx.fillStyle = isWarmEye ? 'rgba(253, 224, 71, 0.45)' : 'rgba(186, 230, 253, 0.55)';
           ctx.beginPath();
-          ctx.ellipse(ex, ey + 4.2, 3.4, 1.8, 0, 0, TAU);
+          ctx.ellipse(ex + gazeX * 0.5, ey + 4.2 + gazeY * 0.5, 3.4, 1.8, 0, 0, TAU);
           ctx.fill();
 
           // Doble catchlight especular (brillo principal grande arriba-izq + secundario abajo-der)
           ctx.fillStyle = '#ffffff';
           ctx.beginPath();
-          ctx.ellipse(ex - 2.1, ey - 2.8, 2.3, 2.8, -0.2, 0, TAU);
+          ctx.ellipse(ex - 2.1 + gazeX * 0.25, ey - 2.8 + gazeY * 0.25, 2.3, 2.8, -0.2, 0, TAU);
           ctx.fill();
           ctx.beginPath();
-          ctx.arc(ex + 2.0, ey + 2.4, 1.25, 0, TAU);
+          ctx.arc(ex + 2.0 + gazeX * 0.25, ey + 2.4 + gazeY * 0.25, 1.25, 0, TAU);
           ctx.fill();
 
           // Si está en modo 'starry', estrellita dorada brillante dentro del ojo
           if (expr === 'starry') {
             ctx.fillStyle = '#fef08a';
-            starPath(ctx, ex + 0.5, ey + 0.5, 3.8);
+            starPath(ctx, ex + 0.5 + gazeX, ey + 0.5 + gazeY, 3.8);
             ctx.fill();
           }
 
@@ -3650,7 +4322,7 @@
       ctx.ellipse(-24, -33 - armWave, 8.5, 6.2, -0.3 + armWave * 0.04, 0, TAU);
       fillStroke(ctx, base.bodyColor, 2.6);
       // Prop sostenido en la mano derecha (se acerca a la boca al comer/beber)
-      const prop = av.propId;
+      const prop = av.heldItem || av.propId;
       const px = av.chewTimer > 0 ? 16 : 30;
       const py = -34 - eatingLift - armWave * 0.5;
       if (prop && prop !== 'none') this.drawPropShape(ctx, prop, px, py);
@@ -3726,6 +4398,9 @@
         for (const [dy, c] of [[-10, '#f9a8d4'], [-18, '#93c5fd'], [-26, '#fde047']]) {
           ctx.beginPath(); ctx.arc(0, dy, 7, 0, TAU); fillStroke(ctx, c, 2);
         }
+      } else if (id) {
+        ctx.scale(0.55, 0.55);
+        this.drawDecorShape(ctx, id, 0, 0, true);
       }
       ctx.restore();
     }
@@ -3801,6 +4476,7 @@
     }
   }
 
+  AvatarWorldGame.prototype.CATALOG_DECOR = CATALOG_DECOR;
 
   window.Cinnamo = window.Cinnamo || {};
   const game = new AvatarWorldGame();
