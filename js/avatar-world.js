@@ -86,6 +86,8 @@
     { type: 'gift_box', name: 'Regalo', w: 62, h: 62, toy: true },
     { type: 'balloon_bunch', name: 'Globos', w: 66, h: 115, decor: true },
     { type: 'rainbow_cake', name: 'Pastel Arcoíris', w: 76, h: 74, food: true },
+    { type: 'perfume_bottle', name: 'Perfume Mágico ✨', w: 48, h: 58, gadget: 'perfume', toy: true },
+    { type: 'hair_dryer', name: 'Secador de Pelo 💨', w: 54, h: 52, gadget: 'dryer', toy: true },
     { type: 'cloud_throne', name: 'Trono de Nubes ⭐', w: 92, h: 110, seat: true, rewardId: 'reward_cloud_throne' },
     { type: 'ice_cream_fountain', name: 'Copa Helada ⭐', w: 68, h: 78, food: true, rewardId: 'reward_ice_cream_fountain' }
   ];
@@ -185,10 +187,13 @@
           { id: 'jukebox_cafe', type: 'music_box', name: 'Radio', x: 880, y: 392, w: 86, h: 110, state: false }
         ],
         bedroom: [
-          { id: 'cloud_bed', type: 'cloud_bed', name: 'Cama nube', x: 235, y: 418, w: 230, h: 125, seat: true, sleep: true, state: false, fixed: true },
-          { id: 'vanity', type: 'vanity', name: 'Tocador', x: 545, y: 392, w: 145, h: 145, wardrobe: true, fixed: true },
-          { id: 'moon_lamp', type: 'moon_lamp', name: 'Lámpara de luna', x: 745, y: 388, w: 78, h: 145, light: true, state: true },
-          { id: 'plush_rug', type: 'rug', name: 'Alfombra', x: 530, y: 492, w: 240, h: 58, seat: true, flat: true }
+          { id: 'cloud_bed', type: 'cloud_bed', name: 'Cama Dosel 2.5D', x: 235, y: 428, w: 236, h: 145, seat: true, sleep: true, hasFrontCover: true, state: true, fixed: true },
+          { id: 'vanity', type: 'vanity', name: 'Tocador Hollywood', x: 548, y: 404, w: 156, h: 148, state: false, fixed: true },
+          { id: 'moon_lamp', type: 'moon_lamp', name: 'Planetario Lunar', x: 760, y: 402, w: 86, h: 152, light: true, state: true },
+          { id: 'bedroom_Closet', type: 'bookshelf', name: 'Ropero & Librería', x: 895, y: 398, w: 112, h: 158, wardrobe: true, state: false, fixed: true },
+          { id: 'bed_perfume', type: 'perfume_bottle', name: 'Perfume Mágico', x: 505, y: 352, w: 44, h: 52, gadget: 'perfume', custom: true, state: false },
+          { id: 'bed_dryer', type: 'hair_dryer', name: 'Secador de Pelo', x: 590, y: 352, w: 48, h: 48, gadget: 'dryer', custom: true, state: false },
+          { id: 'plush_rug', type: 'rug', name: 'Alfombra Tejida', x: 530, y: 498, w: 250, h: 64, seat: true, flat: true }
         ],
         garden: [
           { id: 'sakura_swing', type: 'swing', name: 'Columpio', x: 230, y: 398, w: 165, h: 185, seat: true, swingAngle: 0, fixed: true },
@@ -203,7 +208,7 @@
           { id: 'surf_board', type: 'surf_board', name: 'Tabla de Surf', x: 635, y: 492, w: 125, h: 50, seat: true, toy: true }
         ],
         spa: [
-          { id: 'bubble_tub', type: 'bubble_tub', name: 'Tina de Burbujas', x: 245, y: 432, w: 210, h: 118, seat: true, state: true, fixed: true },
+          { id: 'bubble_tub', type: 'bubble_tub', name: 'Tina de Burbujas', x: 245, y: 432, w: 210, h: 118, seat: true, hasFrontCover: true, state: true, fixed: true },
           { id: 'pet_house', type: 'pet_house', name: 'Casita de Mascotas', x: 530, y: 412, w: 155, h: 122, toy: true, state: true, fixed: true },
           { id: 'salon_mirror', type: 'vanity', name: 'Tocador de Spa', x: 795, y: 392, w: 145, h: 145, wardrobe: true, fixed: true },
           { id: 'aroma_lamp', type: 'fairy_lamp', name: 'Aroma Relajante', x: 660, y: 410, w: 54, h: 92, light: true, state: true }
@@ -959,8 +964,16 @@
     sitOn(av, obj, sleep) {
       av.sittingOn = obj;
       av.sleeping = sleep;
-      av.x = obj.x;
-      av.y = obj.y - (sleep ? 12 : 8);
+      if (obj.type === 'cloud_bed') {
+        av.x = obj.x - 28 + (av.slot - 1) * 34;
+        av.y = obj.y - 26;
+      } else if (obj.type === 'bubble_tub') {
+        av.x = obj.x + (av.slot - 1) * 32;
+        av.y = obj.y - 18;
+      } else {
+        av.x = obj.x;
+        av.y = obj.y - (sleep ? 12 : 8);
+      }
       if (sleep) {
         av.exprId = 'sleepy';
         this.showEmotionBubble(av, 'zzz');
@@ -1015,7 +1028,28 @@
       if (A()) A().unlock();
       obj.wiggle = 1;
 
-      if (obj.wardrobe) { this.openWardrobe(av?.slot || 1); return; }
+      if (obj.gadget === 'perfume') {
+        obj.state = !obj.state;
+        if (A()) A().sparkleChime();
+        this.spawnBurst(obj.x - 18, obj.y - 38, '#f472b6', 20);
+        if (av) { av.hop = 1; av.exprId = 'love'; this.showEmotionBubble(av, 'heart'); }
+        return;
+      }
+      if (obj.gadget === 'dryer') {
+        obj.state = !obj.state;
+        if (A()) A().bubblePop(2);
+        this.spawnBurst(obj.x + 24, obj.y - 28, '#38bdf8', 18);
+        if (av) { av.earVel = 1.8; av.hop = 0.8; av.exprId = 'starry'; this.showEmotionBubble(av, 'sparkle'); }
+        return;
+      }
+      if (obj.type === 'vanity') {
+        obj.state = !obj.state; // Abre/cierra el cajón 2.5D con joyas
+        if (A()) A().sparkleChime();
+        this.spawnBurst(obj.x, obj.y - 45, '#f472b6', 14);
+        if (obj.state) this.openWardrobe(av?.slot || 1);
+        return;
+      }
+      if (obj.wardrobe) { obj.state = !obj.state; this.openWardrobe(av?.slot || 1); return; }
       if (obj.light) { obj.state = !obj.state; if (A()) A().sparkleChime(); this.spawnBurst(obj.x, obj.y - obj.h + 10, '#fef08a', 12); return; }
       if (obj.food && av && !obj.seat) { this.feedAvatar(av, obj); return; }
       if (obj.toy && av) {
@@ -1284,14 +1318,24 @@
       this.drawRoomBackdrop(ctx, room, W, H);
 
       const renderList = [];
-      for (const obj of this.getRoomItems()) renderList.push({ sortY: obj.flat ? -1 : obj.y, kind: 'object', item: obj });
+      for (const obj of this.getRoomItems()) {
+        // Si es un accesorio sobre otro mueble (ej. perfume sobre el tocador), se dibuja delante del mueble
+        const surfaceBoost = obj.gadget ? 65 : 0;
+        renderList.push({ sortY: obj.flat ? -1 : obj.y + surfaceBoost, kind: 'object', item: obj });
+        if (obj.hasFrontCover) {
+          renderList.push({ sortY: obj.y + 18, kind: 'object_front', item: obj });
+        }
+      }
       for (const s of [1, 2, 3]) {
         const av = this.avatars[s];
-        if (av.active) renderList.push({ sortY: av.y + (av.sittingOn ? 6 : 0) + (av.lifted ? 400 : 0), kind: 'avatar', item: av });
+        if (!av.active) continue;
+        const sortY = av.sittingOn ? av.sittingOn.y + 8 : av.y + (av.lifted ? 400 : 0);
+        renderList.push({ sortY, kind: 'avatar', item: av });
       }
       renderList.sort((a, b) => a.sortY - b.sortY);
       for (const entry of renderList) {
         if (entry.kind === 'object') this.drawInteractiveObject(ctx, entry.item);
+        else if (entry.kind === 'object_front') this.drawObjectFrontLayer(ctx, entry.item);
         else this.drawVectorAvatar(ctx, entry.item);
       }
 
@@ -1848,9 +1892,29 @@
           this.drawFlower(c, 0, 2, 12, '#2dd4bf');
         });
       } else {
+        // Esquinas arquitectónicas 2.5D (Caja de Habitación con paredes laterales en escorzo)
+        ctx.save();
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.14)';
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(78, 36); ctx.lineTo(78, fy - 58); ctx.lineTo(0, fy); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(W, 0); ctx.lineTo(W - 78, 36); ctx.lineTo(W - 78, fy - 58); ctx.lineTo(W, fy); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(92, 61, 46, 0.18)'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(78, 36); ctx.lineTo(78, fy - 58); ctx.lineTo(0, fy);
+        ctx.moveTo(W - 78, 36); ctx.lineTo(W - 78, fy - 58); ctx.lineTo(W, fy);
+        ctx.moveTo(78, 36); ctx.lineTo(W - 78, 36);
+        ctx.stroke();
+        ctx.restore();
+
         this.drawWindow(ctx, 490, 175, 210, 165);
-        this.drawFrame(ctx, 250, 140, 90, 72, (c) => { c.fillStyle = '#fef08a'; starPath(c, 0, 0, 22); c.fill(); c.strokeStyle = OUT; c.lineWidth = 2.4; c.stroke(); });
-        this.drawFrame(ctx, 760, 150, 74, 62, (c) => { c.fillStyle = '#f9a8d4'; heartPath(c, 0, 2, 14); c.fill(); c.strokeStyle = OUT; c.lineWidth = 2.4; c.stroke(); });
+        // Repisa aérea sobre el tocador con plantas colgantes y libros
+        this.drawShelf(ctx, 685, 148);
+        // Cuadro ilustrado paisaje nocturno con luna creciente y nubes
+        this.drawFrame(ctx, 330, 132, 96, 76, (c) => {
+          c.fillStyle = '#1e1b4b'; roundRect(c, -38, -28, 76, 56, 5); c.fill();
+          c.fillStyle = '#fde047'; c.beginPath(); c.arc(12, -6, 14, 0, TAU); c.fill();
+          c.fillStyle = '#1e1b4b'; c.beginPath(); c.arc(18, -10, 12, 0, TAU); c.fill();
+          c.fillStyle = '#fbcfe8'; c.beginPath(); c.arc(-16, 18, 16, Math.PI, TAU); c.arc(4, 20, 14, Math.PI, TAU); c.fill();
+        });
       }
 
       // Guirnalda de banderines festivos
@@ -2304,71 +2368,228 @@
         this.drawTeacup(ctx, x + 42, y - 62, 0.82);
 
       } else if (obj.type === 'cloud_bed') {
-        // Cama Real con Dosel de Nubes 2.5D, respaldo capitoné, 3 almohadas y peluche
-        // Cortinas de dosel translúcidas detrás
+        // CUERPO DIGITAL 2.5D: Cama con Dosel, Postes Torneados, Respaldo Capitoné y Capas (BackLayer)
+        // 1. Dosel superior con cortinas recogidas por lazos dorados
         ctx.save();
-        ctx.fillStyle = 'rgba(224, 242, 254, 0.55)';
         ctx.beginPath();
-        ctx.moveTo(x - 95, y - 145); ctx.quadraticCurveTo(x - 115, y - 80, x - 105, y - 20);
-        ctx.lineTo(x - 65, y - 20); ctx.quadraticCurveTo(x - 75, y - 85, x, y - 140);
-        ctx.quadraticCurveTo(x + 75, y - 85, x + 65, y - 20);
-        ctx.lineTo(x + 105, y - 20); ctx.quadraticCurveTo(x + 115, y - 80, x + 95, y - 145);
+        ctx.moveTo(x - 88, y - 166);
+        ctx.bezierCurveTo(x - 122, y - 118, x - 118, y - 62, x - 104, y - 18);
+        ctx.lineTo(x - 76, y - 18);
+        ctx.bezierCurveTo(x - 84, y - 78, x - 52, y - 135, x, y - 156);
+        ctx.bezierCurveTo(x + 52, y - 135, x + 84, y - 78, x + 76, y - 18);
+        ctx.lineTo(x + 104, y - 18);
+        ctx.bezierCurveTo(x + 118, y - 62, x + 122, y - 118, x + 88, y - 166);
         ctx.closePath();
-        ctx.fill();
+        fillStroke(ctx, 'rgba(253, 242, 248, 0.82)', 2.2);
+        this.drawBowShape(ctx, x - 94, y - 78, 0.52, '#facc15');
+        this.drawBowShape(ctx, x + 94, y - 78, 0.52, '#facc15');
+        // Corona tallada del dosel
+        ctx.beginPath();
+        ctx.moveTo(x - 56, y - 162); ctx.quadraticCurveTo(x, y - 184, x + 56, y - 162);
+        ctx.lineTo(x + 48, y - 150); ctx.lineTo(x - 48, y - 150); ctx.closePath();
+        fillStroke(ctx, '#fde047', 2.4);
+        ctx.fillStyle = '#f472b6'; heartPath(ctx, x, y - 162, 6); ctx.fill();
         ctx.restore();
-        // Corona del dosel
-        roundRect(ctx, x - 48, y - 154, 96, 16, 8); fillStroke(ctx, '#fde047', 2.4);
-        // Respaldo nube capitoné
-        roundRect(ctx, x - 112, y - 114, 224, 74, 36); fillStroke(ctx, '#ffffff', 2.8);
-        for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(x - 80 + i * 52, y - 114, 22, Math.PI, TAU); fillStroke(ctx, '#ffffff', 2.6); }
-        // Base y colchón acolchado
-        roundRect(ctx, x - 110, y - 68, 220, 68, 24); fillStroke(ctx, '#bae6fd', 2.8);
-        roundRect(ctx, x - 62, y - 64, 170, 62, 22); fillStroke(ctx, '#f9a8d4', 2.8);
-        // Costuras del acolchado y estrellas bordadas
-        ctx.fillStyle = 'rgba(255,255,255,0.75)';
-        for (let i = 0; i < 4; i++) { starPath(ctx, x - 26 + i * 36, y - 34 + (i % 2) * 10, 6.5); ctx.fill(); }
-        // Almohadas mullidas
-        roundRect(ctx, x - 98, y - 82, 56, 36, 16); fillStroke(ctx, '#fef9c3', 2.6);
-        roundRect(ctx, x - 64, y - 78, 46, 32, 14); fillStroke(ctx, '#e0f2fe', 2.4);
+
+        // 2. Respaldo Capitoné 2.5D con extrusión lateral y botones acolchados
+        ctx.beginPath();
+        ctx.moveTo(x - 106, y - 62);
+        ctx.lineTo(x - 106, y - 118);
+        ctx.quadraticCurveTo(x - 80, y - 146, x - 38, y - 132);
+        ctx.quadraticCurveTo(x, y - 154, x + 38, y - 132);
+        ctx.quadraticCurveTo(x + 80, y - 146, x + 106, y - 118);
+        ctx.lineTo(x + 106, y - 62);
+        ctx.closePath();
+        fillStroke(ctx, '#ffffff', 2.8);
+        // Rombo de costuras capitoné en el respaldo
+        ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.8;
+        for (const bx of [-64, -22, 22, 64]) {
+          ctx.beginPath(); ctx.moveTo(x + bx - 14, y - 98); ctx.lineTo(x + bx, y - 112); ctx.lineTo(x + bx + 14, y - 98); ctx.lineTo(x + bx, y - 84); ctx.closePath(); ctx.stroke();
+          ctx.fillStyle = '#f9a8d4'; ctx.beginPath(); ctx.arc(x + bx, y - 98, 3.2, 0, TAU); ctx.fill();
+        }
+
+        // 3. Patas de madera torneadas y estructura inferior 2.5D (3 caras)
+        for (const lx of [-98, 92, 108]) {
+          roundRect(ctx, x + lx - 7, y - 16, 14, 20, 6);
+          fillStroke(ctx, '#d97706', 2.2);
+        }
+        // Cara lateral derecha en perspectiva 2.5D
+        ctx.beginPath();
+        ctx.moveTo(x + 98, y - 68); ctx.lineTo(x + 116, y - 82);
+        ctx.lineTo(x + 116, y - 22); ctx.lineTo(x + 98, y - 6);
+        ctx.closePath();
+        fillStroke(ctx, '#7dd3fc', 2.4);
+
+        // Cara superior del colchón en escorzo (sábana bajera donde se acuesta el personaje)
+        ctx.beginPath();
+        ctx.moveTo(x - 108, y - 68); ctx.lineTo(x - 88, y - 84);
+        ctx.lineTo(x + 116, y - 82); ctx.lineTo(x + 98, y - 68);
+        ctx.closePath();
+        fillStroke(ctx, '#e0f2fe', 2.4);
+
+        // 4. Almohadas ergonómicas con volantes (donde apoya la cabeza Amanda)
+        for (const [px, py, col] of [[-64, -76, '#fef9c3'], [-12, -78, '#fce7f3'], [42, -75, '#e0f2fe']]) {
+          ctx.save();
+          ctx.translate(x + px, y + py);
+          ctx.rotate(-0.06);
+          roundRect(ctx, -26, -15, 52, 30, 13);
+          fillStroke(ctx, col, 2.4);
+          ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2;
+          roundRect(ctx, -20, -10, 40, 20, 9); ctx.stroke();
+          ctx.restore();
+        }
+
+        // (Nota: El edredón frontal que tapa al personaje se dibuja en drawObjectFrontLayer para que quede ENCIMA de quien duerme)
 
       } else if (obj.type === 'vanity') {
-        // Tocador Hollywood 2.5D con focos luminosos, perfumes y taburete acolchado
-        ctx.beginPath(); ctx.ellipse(x, y - 94, 48, 54, 0, 0, TAU); fillStroke(ctx, '#f5d0fe', 2.8);
-        ctx.beginPath(); ctx.ellipse(x, y - 94, 37, 43, 0, 0, TAU);
-        const mg = ctx.createLinearGradient(x - 30, y - 130, x + 30, y - 50);
-        mg.addColorStop(0, '#f0f9ff'); mg.addColorStop(1, '#bae6fd');
+        // CUERPO DIGITAL 2.5D: Tocador con Espejo Biselado, Taburete Acolchado, 3 Caras y Cajón Abrible
+        // 1. Taburete acolchado debajo del tocador
+        roundRect(ctx, x - 26, y - 22, 8, 24, 3); fillStroke(ctx, '#d97706', 2);
+        roundRect(ctx, x + 18, y - 22, 8, 24, 3); fillStroke(ctx, '#d97706', 2);
+        roundRect(ctx, x - 32, y - 32, 64, 16, 8); fillStroke(ctx, '#f472b6', 2.4);
+
+        // 2. Espejo tríptico biselado con marco 3D e iluminación Hollywood
+        roundRect(ctx, x - 52, y - 146, 104, 92, [52, 52, 14, 14]);
+        fillStroke(ctx, '#f5d0fe', 2.8);
+        roundRect(ctx, x - 42, y - 136, 84, 74, [42, 42, 10, 10]);
+        const mg = ctx.createLinearGradient(x - 36, y - 134, x + 36, y - 60);
+        mg.addColorStop(0, '#e0f2fe'); mg.addColorStop(0.5, '#f0f9ff'); mg.addColorStop(1, '#bae6fd');
         ctx.fillStyle = mg; ctx.fill();
-        // Focos Hollywood alrededor del espejo
+        ctx.strokeStyle = OUT; ctx.lineWidth = 2.2; ctx.stroke();
+        // Reflejo cristal
+        ctx.strokeStyle = 'rgba(255,255,255,0.92)'; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(x - 22, y - 114); ctx.lineTo(x - 6, y - 130); ctx.moveTo(x - 24, y - 98); ctx.lineTo(x + 4, y - 126); ctx.stroke();
         for (let i = 0; i < 7; i++) {
-          const a = Math.PI * 0.8 + (i / 6) * Math.PI * 1.4;
-          const bx = x + Math.cos(a) * 43;
-          const by = y - 94 + Math.sin(a) * 48;
-          ctx.beginPath(); ctx.arc(bx, by, 4.5, 0, TAU);
-          fillStroke(ctx, '#fef08a', 1.6);
+          const a = Math.PI * 0.85 + (i / 6) * Math.PI * 1.3;
+          const bx = x + Math.cos(a) * 47;
+          const by = y - 98 + Math.sin(a) * 44;
+          ctx.beginPath(); ctx.arc(bx, by, 4.8, 0, TAU);
+          fillStroke(ctx, '#fde047', 1.8);
         }
-        ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 5;
-        ctx.beginPath(); ctx.moveTo(x - 16, y - 112); ctx.lineTo(x - 4, y - 124); ctx.moveTo(x - 18, y - 98); ctx.lineTo(x + 4, y - 120); ctx.stroke();
-        this.drawBowShape(ctx, x, y - 148, 0.9, '#f472b6');
-        roundRect(ctx, x - 64, y - 54, 128, 54, 14); fillStroke(ctx, '#ffffff', 2.8);
-        roundRect(ctx, x - 52, y - 40, 104, 14, 7); fillStroke(ctx, '#fbcfe8', 2);
-        // Frasco de perfume con atomizador + labial
-        roundRect(ctx, x - 48, y - 72, 16, 18, 5); fillStroke(ctx, '#38bdf8', 2);
-        ctx.beginPath(); ctx.arc(x - 40, y - 76, 4, 0, TAU); fillStroke(ctx, '#fde047', 1.6);
-        this.drawLipstick(ctx, x - 22, y - 54, 0.82);
-        this.drawHanger(ctx, x + 32, y - 54, 0.72);
+        this.drawBowShape(ctx, x, y - 148, 0.92, '#ec4899');
+
+        // 3. Patas Cabriole curvadas del tocador
+        for (const side of [-1, 1]) {
+          ctx.beginPath();
+          ctx.moveTo(x + side * 58, y - 42);
+          ctx.quadraticCurveTo(x + side * 68, y - 20, x + side * 56, y);
+          ctx.lineTo(x + side * 48, y);
+          ctx.quadraticCurveTo(x + side * 56, y - 20, x + side * 48, y - 42);
+          ctx.closePath();
+          fillStroke(ctx, '#fce7f3', 2.4);
+        }
+
+        // 4. Cuerpo de la mesa 2.5D (Cara lateral + Cara superior en perspectiva + Frente)
+        ctx.beginPath();
+        ctx.moveTo(x + 64, y - 56); ctx.lineTo(x + 78, y - 68);
+        ctx.lineTo(x + 78, y - 38); ctx.lineTo(x + 64, y - 26);
+        ctx.closePath();
+        fillStroke(ctx, '#fbcfe8', 2.4);
+
+        // Tapa superior en escorzo donde se apoyan el perfume y el secador
+        ctx.beginPath();
+        ctx.moveTo(x - 68, y - 56); ctx.lineTo(x - 52, y - 68);
+        ctx.lineTo(x + 78, y - 68); ctx.lineTo(x + 64, y - 56);
+        ctx.closePath();
+        fillStroke(ctx, '#fff1f2', 2.6);
+
+        // Frente del tocador
+        roundRect(ctx, x - 66, y - 56, 130, 32, 10);
+        fillStroke(ctx, '#ffffff', 2.8);
+
+        // 5. Cajón Articulado 2.5D (se desliza hacia afuera cuando obj.state === true)
+        const pullY = obj.state ? 14 : 0;
+        const pullX = obj.state ? -6 : 0;
+        if (obj.state) {
+          // Interior del cajón abierto con collar de perlas y cosméticos
+          roundRect(ctx, x - 46 + pullX, y - 48 + pullY - 8, 92, 16, 5);
+          fillStroke(ctx, '#be185d', 2);
+          ctx.fillStyle = '#fef08a';
+          for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.arc(x + k * 10 + pullX, y - 42 + pullY - 6, 3, 0, TAU); ctx.fill(); }
+        }
+        roundRect(ctx, x - 48 + pullX, y - 48 + pullY, 96, 18, 7);
+        fillStroke(ctx, '#f9a8d4', 2.2);
+        // Tirador de cristal en forma de corazón
+        ctx.fillStyle = '#fde047';
+        heartPath(ctx, x + pullX, y - 39 + pullY, 5);
+        fillStroke(ctx, '#fde047', 1.6);
 
       } else if (obj.type === 'moon_lamp') {
-        roundRect(ctx, x - 22, y - 10, 44, 10, 5); fillStroke(ctx, '#e9d5ff', 2.4);
-        ctx.strokeStyle = OUT; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(x, y - 8); ctx.lineTo(x, y - 90); ctx.stroke();
-        if (obj.state) {
-          const glow = ctx.createRadialGradient(x, y - 110, 6, x, y - 110, 75);
-          glow.addColorStop(0, 'rgba(254, 240, 138, 0.85)'); glow.addColorStop(1, 'rgba(254, 240, 138, 0)');
-          ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y - 110, 75, 0, TAU); ctx.fill();
+        // CUERPO DIGITAL 2.5D: Planetario & Lámpara de Luna Esculpida con Trípode y Cordón Físico
+        // 1. Base trípode torneada 2.5D
+        ctx.beginPath();
+        ctx.moveTo(x, y - 24); ctx.lineTo(x - 28, y); ctx.lineTo(x - 18, y); ctx.lineTo(x, y - 14);
+        ctx.lineTo(x + 18, y); ctx.lineTo(x + 28, y); ctx.closePath();
+        fillStroke(ctx, '#d97706', 2.4);
+        roundRect(ctx, x - 18, y - 16, 36, 10, 5); fillStroke(ctx, '#f59e0b', 2.2);
+
+        // 2. Columna torneada con anillos de bronce
+        roundRect(ctx, x - 4, y - 92, 8, 70, 4); fillStroke(ctx, '#fcd34d', 2.2);
+        for (const ry of [-36, -62, -86]) {
+          roundRect(ctx, x - 8, y + ry, 16, 6, 3); fillStroke(ctx, '#f59e0b', 1.8);
         }
-        ctx.beginPath(); ctx.arc(x, y - 110, 24, 0, TAU); fillStroke(ctx, obj.state ? '#fde047' : '#fef9c3', 2.8);
-        ctx.fillStyle = 'rgba(250,204,21,0.45)';
-        ctx.beginPath(); ctx.arc(x - 8, y - 116, 5, 0, TAU); ctx.arc(x + 8, y - 102, 4, 0, TAU); ctx.fill();
+
+        // 3. Cordón colgante con estrellita (Pull-Chain interactivo)
+        const chainSwing = Math.sin(this.time * 3.5) * 2.5;
+        ctx.strokeStyle = OUT; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x + 12, y - 88); ctx.quadraticCurveTo(x + 14 + chainSwing, y - 68, x + 12 + chainSwing, y - 54); ctx.stroke();
+        ctx.fillStyle = '#fde047';
+        starPath(ctx, x + 12 + chainSwing, y - 50, 6.5); fillStroke(ctx, '#fde047', 1.6);
+
+        // 4. Halo de luz nocturna/diurna
+        if (obj.state) {
+          const glow = ctx.createRadialGradient(x, y - 116, 8, x, y - 116, 84);
+          glow.addColorStop(0, 'rgba(254, 240, 138, 0.9)');
+          glow.addColorStop(0.5, 'rgba(253, 224, 71, 0.35)');
+          glow.addColorStop(1, 'rgba(254, 240, 138, 0)');
+          ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y - 116, 84, 0, TAU); ctx.fill();
+        }
+
+        // 5. Cuna de medialuna esculpida abrazando el globo lunar + anillo planetario
+        ctx.beginPath();
+        ctx.arc(x, y - 116, 30, 0.2 * Math.PI, 1.45 * Math.PI);
+        ctx.quadraticCurveTo(x - 16, y - 116, x + 18, y - 96);
+        ctx.closePath();
+        fillStroke(ctx, '#c084fc', 2.4);
+
+        // Esfera lunar texturizada
+        ctx.beginPath(); ctx.arc(x + 2, y - 116, 22, 0, TAU);
+        fillStroke(ctx, obj.state ? '#fde047' : '#fef9c3', 2.6);
+        ctx.fillStyle = 'rgba(217, 119, 6, 0.25)';
+        ctx.beginPath(); ctx.arc(x - 5, y - 122, 5, 0, TAU); ctx.arc(x + 9, y - 110, 4, 0, TAU); ctx.arc(x + 4, y - 125, 2.5, 0, TAU); ctx.fill();
+
+        // Anillo orbital inclinado alrededor de la lámpara
+        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.ellipse(x + 2, y - 116, 34, 8, -0.28, -0.2, Math.PI + 0.2); ctx.stroke();
+
+      } else if (obj.type === 'bookshelf') {
+        // CUERPO DIGITAL 2.5D: Armario & Librería en Escorzo con Vestidos Colgados y Libros
+        // Cara lateral 2.5D
+        ctx.beginPath();
+        ctx.moveTo(x + 44, y - 148); ctx.lineTo(x + 58, y - 158);
+        ctx.lineTo(x + 58, y - 12); ctx.lineTo(x + 44, y);
+        ctx.closePath();
+        fillStroke(ctx, '#93c5fd', 2.4);
+        // Cuerpo principal con cornisa arqueada
+        roundRect(ctx, x - 48, y - 152, 92, 152, [36, 36, 10, 10]);
+        fillStroke(ctx, '#e0f2fe', 2.8);
+        roundRect(ctx, x - 40, y - 138, 76, 128, [28, 28, 6, 6]);
+        fillStroke(ctx, '#ffffff', 2.2);
+        // Barra de colgar ropa arriba con 2 vestiditos en perchas
+        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(x - 34, y - 118); ctx.lineTo(x + 30, y - 118); ctx.stroke();
+        this.drawHanger(ctx, x - 16, y - 92, 0.72);
+        this.drawHanger(ctx, x + 14, y - 92, 0.72);
+        // Repisa media con libros inclinados y bola de cristal
+        roundRect(ctx, x - 38, y - 68, 72, 8, 4); fillStroke(ctx, '#bae6fd', 2);
+        for (const [bx, col, h] of [[-30, '#f472b6', 26], [-18, '#fde047', 28], [-6, '#a78bfa', 24]]) {
+          roundRect(ctx, x + bx, y - 68 - h, 10, h, 2); fillStroke(ctx, col, 1.8);
+        }
+        ctx.beginPath(); ctx.arc(x + 18, y - 80, 10, 0, TAU); fillStroke(ctx, '#bae6fd', 1.8);
+        roundRect(ctx, x + 10, y - 72, 16, 5, 2); fillStroke(ctx, '#f472b6', 1.6);
+        // Cajón inferior con manillas
+        roundRect(ctx, x - 36, y - 38, 68, 24, 6); fillStroke(ctx, '#fbcfe8', 2);
+        ctx.fillStyle = '#fde047'; ctx.beginPath(); ctx.arc(x - 14, y - 26, 3.5, 0, TAU); ctx.arc(x + 10, y - 26, 3.5, 0, TAU); ctx.fill();
 
       } else if (obj.type === 'swing') {
         ctx.save();
@@ -2428,9 +2649,17 @@
         }
 
       } else if (obj.type === 'rug') {
-        ctx.beginPath(); ctx.ellipse(x, y - 6, 114, 30, 0, 0, TAU); fillStroke(ctx, '#fbcfe8', 2.8);
-        ctx.beginPath(); ctx.ellipse(x, y - 6, 95, 21, 0, 0, TAU); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 3; ctx.setLineDash([8, 7]); ctx.stroke(); ctx.setLineDash([]);
-        ctx.fillStyle = '#f9a8d4'; heartPath(ctx, x, y - 8, 10); ctx.fill();
+        // Alfombra Tejida 2.5D con flecos laterales, relieve trenzado y bordado central
+        for (let f = -2; f <= 2; f++) {
+          roundRect(ctx, x - 126, y - 8 + f * 5, 14, 4, 2); fillStroke(ctx, '#fff1f2', 1.6);
+          roundRect(ctx, x + 112, y - 8 + f * 5, 14, 4, 2); fillStroke(ctx, '#fff1f2', 1.6);
+        }
+        ctx.beginPath(); ctx.ellipse(x, y - 3, 116, 31, 0, 0, TAU); fillStroke(ctx, '#f472b6', 2.6);
+        ctx.beginPath(); ctx.ellipse(x, y - 7, 114, 29, 0, 0, TAU); fillStroke(ctx, '#fbcfe8', 2.6);
+        ctx.beginPath(); ctx.ellipse(x, y - 7, 94, 21, 0, 0, TAU); fillStroke(ctx, '#fdf2f8', 2);
+        ctx.beginPath(); ctx.ellipse(x, y - 7, 76, 15, 0, 0, TAU);
+        ctx.strokeStyle = '#f9a8d4'; ctx.lineWidth = 2.5; ctx.setLineDash([8, 6]); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#f472b6'; heartPath(ctx, x, y - 9, 10); ctx.fill();
 
       } else if (obj.type === 'music_box') {
         // Rockola Wurlitzer Kawaii con arco de neón y vinilo giratorio
@@ -2571,8 +2800,119 @@
       ctx.restore();
     }
 
-    // Objetos del baúl de juguetes (también usados en las miniaturas)
+    /* ---------- CAPA FRONTAL DE CUERPOS DIGITALES (Arropa a los personajes en la cama o bañera) ---------- */
+    drawObjectFrontLayer(ctx, obj) {
+      ctx.save();
+      const x = obj.x;
+      const drop = obj.drop > 0 ? -Math.pow(obj.drop, 2) * 220 : 0;
+      const wig = obj.wiggle > 0 ? Math.sin(obj.wiggle * 18) * obj.wiggle * 0.06 : 0;
+      const y = obj.y;
+      ctx.translate(x, y + drop);
+      ctx.rotate(wig);
+      ctx.translate(-x, -y);
+      ctx.lineWidth = 2.8;
+      ctx.strokeStyle = OUT;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+
+      if (obj.type === 'cloud_bed') {
+        // Edredón Acolchado 2.5D con Solapa Doblada de Encaje (Cubre físicamente al personaje acostado)
+        // Frente del colchón celeste
+        roundRect(ctx, x - 108, y - 58, 208, 54, [12, 12, 22, 22]);
+        fillStroke(ctx, '#bae6fd', 2.8);
+
+        // Cobertor acolchado rosa con caída orgánica y solapa blanca superior
+        ctx.beginPath();
+        ctx.moveTo(x - 68, y - 62);
+        ctx.quadraticCurveTo(x + 15, y - 68, x + 98, y - 62);
+        ctx.lineTo(x + 98, y - 10);
+        ctx.quadraticCurveTo(x + 98, y - 2, x + 84, y - 2);
+        ctx.lineTo(x - 54, y - 2);
+        ctx.quadraticCurveTo(x - 68, y - 2, x - 68, y - 14);
+        ctx.closePath();
+        fillStroke(ctx, '#f9a8d4', 2.8);
+
+        // Solapa doblada hacia afuera (donde asoman los hombros del personaje)
+        ctx.beginPath();
+        ctx.moveTo(x - 70, y - 62);
+        ctx.quadraticCurveTo(x + 14, y - 70, x + 100, y - 62);
+        ctx.lineTo(x + 96, y - 48);
+        ctx.quadraticCurveTo(x + 14, y - 54, x - 66, y - 48);
+        ctx.closePath();
+        fillStroke(ctx, '#fff1f2', 2.4);
+
+        // Costuras acolchadas y estrellas bordadas sobre el cobertor
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x - 24, y - 46); ctx.lineTo(x - 24, y - 6);
+        ctx.moveTo(x + 28, y - 46); ctx.lineTo(x + 28, y - 6);
+        ctx.moveTo(x + 72, y - 46); ctx.lineTo(x + 72, y - 6);
+        ctx.stroke();
+        ctx.fillStyle = '#fef08a';
+        for (const [sx, sy] of [[-44, -28], [2, -24], [50, -30]]) {
+          starPath(ctx, x + sx, y + sy, 6.5); fillStroke(ctx, '#fef08a', 1.6);
+        }
+      } else if (obj.type === 'bubble_tub') {
+        // Borde frontal de porcelana de la bañera + espuma burbujeante cubriendo al personaje adentro
+        for (let i = -3; i <= 3; i++) {
+          const by = y - 66 - Math.abs(Math.sin(this.time * 2.4 + i)) * 8;
+          ctx.beginPath(); ctx.arc(x + i * 24, by, 15, 0, TAU); fillStroke(ctx, '#e0f2fe', 2);
+        }
+        roundRect(ctx, x - 94, y - 60, 188, 54, [12, 12, 28, 28]); fillStroke(ctx, '#ffffff', 2.8);
+        roundRect(ctx, x - 100, y - 68, 200, 14, 7); fillStroke(ctx, '#99f6e4', 2.4);
+        roundRect(ctx, x - 36, y - 8, 72, 11, 5); fillStroke(ctx, '#fed7aa', 2.2);
+      }
+      ctx.restore();
+    }
+
+    // Objetos del baúl de juguetes y accesorios con uso propio (también usados en las miniaturas)
     drawDecorShape(ctx, type, x, y, on = true) {
+      if (type === 'perfume_bottle') {
+        ctx.save();
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        // Frasco de cristal tallado 2.5D con perilla atomizadora y spray de corazones
+        ctx.beginPath();
+        ctx.moveTo(x - 12, y - 30); ctx.lineTo(x + 12, y - 30);
+        ctx.lineTo(x + 17, y - 14); ctx.lineTo(x + 13, y);
+        ctx.lineTo(x - 13, y); ctx.lineTo(x - 17, y - 14);
+        ctx.closePath();
+        fillStroke(ctx, '#f472b6', 2.4);
+        // Líquido interior brillante y faceta de cristal
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.beginPath(); ctx.moveTo(x - 6, y - 28); ctx.lineTo(x + 2, y - 28); ctx.lineTo(x - 2, y - 3); ctx.lineTo(x - 9, y - 3); ctx.closePath(); ctx.fill();
+        roundRect(ctx, x - 6, y - 38, 12, 8, 3); fillStroke(ctx, '#fde047', 2);
+        // Bombilla pulverizadora con borla
+        ctx.strokeStyle = OUT; ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.moveTo(x + 6, y - 34); ctx.quadraticCurveTo(x + 16, y - 36, x + 18, y - 28); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x + 19, y - 24, 6, 0, TAU); fillStroke(ctx, '#ec4899', 2);
+        if (on) {
+          ctx.fillStyle = '#f9a8d4';
+          heartPath(ctx, x - 18, y - 42 - Math.sin(this.time * 6) * 4, 5); ctx.fill();
+          heartPath(ctx, x - 28, y - 34 - Math.cos(this.time * 6) * 4, 3.8); ctx.fill();
+        }
+        ctx.restore();
+        return;
+      }
+      if (type === 'hair_dryer') {
+        ctx.save();
+        ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+        // Secador de pelo profesional 2.5D con boquilla y ondas de aire
+        ctx.translate(x, y - 18);
+        ctx.rotate(-0.18);
+        roundRect(ctx, -6, 0, 11, 20, 5); fillStroke(ctx, '#f472b6', 2.2);
+        roundRect(ctx, -18, -16, 30, 20, 10); fillStroke(ctx, '#38bdf8', 2.4);
+        roundRect(ctx, 10, -13, 10, 14, 3); fillStroke(ctx, '#fde047', 2);
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(-6, -6, 4.5, 0, TAU); ctx.fill();
+        if (on) {
+          ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 2.4;
+          for (let w = 0; w < 2; w++) {
+            const wx = 24 + w * 8 + ((this.time * 24) % 8);
+            ctx.beginPath(); ctx.moveTo(wx, -10 + w * 6); ctx.quadraticCurveTo(wx + 5, -14 + w * 6, wx + 10, -10 + w * 6); ctx.stroke();
+          }
+        }
+        ctx.restore();
+        return;
+      }
       ctx.save();
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
@@ -2852,11 +3192,13 @@
       }
       ctx.restore();
 
-      // Piernas, calcetines con vuelitos y Zapatitos Bicolor 2.5D (Estilo Pazu Avatar World)
+      // Piernas Articuladas (Rig 2D: dobladas hacia adelante al sentarse, o caminando)
       const legSwing = isMoving ? Math.sin(av.walkPhase) * 7.5 : 0;
+      const isSitting = !!av.sittingOn && !av.sleeping;
       for (const [side, lx] of [[-1, -13 + legSwing], [1, 13 - legSwing]]) {
         ctx.save();
-        ctx.translate(lx, -7);
+        ctx.translate(lx, isSitting ? -11 : -7);
+        if (isSitting) ctx.rotate(side * -0.25);
         // Calcetín blanco con borde superior
         roundRect(ctx, -8, -9, 16, 10, 4); fillStroke(ctx, '#ffffff', 2.2);
         // Zapatito kawaii con suela y puntera brillante
@@ -3301,10 +3643,21 @@
 
     drawArmsAndProp(ctx, base, av, outfit) {
       ctx.save();
-      ctx.beginPath(); ctx.ellipse(-24, -33, 8.5, 6.2, -0.3, 0, TAU); fillStroke(ctx, base.bodyColor, 2.6);
+      const armWave = av.danceTimer > 0 ? Math.sin(this.time * 12) * 8 : 0;
+      const eatingLift = av.chewTimer > 0 ? Math.abs(Math.sin(this.time * 10)) * 14 : 0;
+      // Brazo izquierdo articulado
+      ctx.beginPath();
+      ctx.ellipse(-24, -33 - armWave, 8.5, 6.2, -0.3 + armWave * 0.04, 0, TAU);
+      fillStroke(ctx, base.bodyColor, 2.6);
+      // Prop sostenido en la mano derecha (se acerca a la boca al comer/beber)
       const prop = av.propId;
-      if (prop && prop !== 'none') this.drawPropShape(ctx, prop, 30, -34);
-      ctx.beginPath(); ctx.ellipse(24, -33, 8.5, 6.2, 0.3, 0, TAU); fillStroke(ctx, base.bodyColor, 2.6);
+      const px = av.chewTimer > 0 ? 16 : 30;
+      const py = -34 - eatingLift - armWave * 0.5;
+      if (prop && prop !== 'none') this.drawPropShape(ctx, prop, px, py);
+      // Brazo derecho articulado
+      ctx.beginPath();
+      ctx.ellipse(av.chewTimer > 0 ? 15 : 24, -33 - eatingLift * 0.7, 8.5, 6.2, av.chewTimer > 0 ? -0.4 : 0.3, 0, TAU);
+      fillStroke(ctx, base.bodyColor, 2.6);
       ctx.restore();
     }
 

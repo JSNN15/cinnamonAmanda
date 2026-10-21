@@ -346,3 +346,22 @@ A partir de las referencias visuales oficiales de *Avatar World* (Pazu Games) pr
 3. **Mapa Interactivo de Ciudad Cinnamoroll (`openMap`, `toggleMap`, `drawTownMap`):**
    - Nuevo botón superior izquierdo **`🗺️ Ciudad` (`#btnAwMap`)** en pantalla y en el mando remoto (`#btnRemoteAvatarMap`), además de indicadores de habitación clicables (`.aw-dot`).
    - Vista panorámica isométrica de la ciudad con el sol sonriente asomándose tras las colinas, calles pavimentadas con pasos de cebra, plaza central con fuente y los **5 edificios 2.5D interactivos** (*Pastelería & Súper*, *Casa de Nubes*, *Parque Sakura*, *Spa & Mascotas* y *Bahía Helada*) que permiten viajar con un toque a cualquier escenario.
+
+
+---
+
+## 15. Especificación Senior Multi-Agente (`v39+`): Motor de "Cuerpos Digitales" 2.5D, Objetos con Uso Propio y Rigging 2D
+
+Ante la auditoría visual de la escena del Dormitorio (`v38`), el usuario identificó con total precisión que los objetos basados en primitivas geométricas planas de Canvas (`roundRect`, `arc`, `ellipse`) siguen viéndose como bloques planos sin volumen ni comportamiento físico real frente a *Avatar World* (Pazu Games).
+
+Se creó y registró en la raíz del repositorio el documento maestro de arquitectura para desarrollo asistido por múltiples agentes:
+- 📄 **[`ARQUITECTURA_AVATAR_WORLD_PRO_CUERPOS_DIGITALES.md`](file:///c:/Users/Juli%C3%A1nNeiraNova/OneDrive%20-%20CEIBO%20TECH/Documentos/Cinamonroll/ARQUITECTURA_AVATAR_WORLD_PRO_CUERPOS_DIGITALES.md)**
+
+### Resumen de los 4 Workstreams Registrados para Agentes Colaboradores:
+1. **WS-1 (`RoomBox 2.5D` y `SnapSockets`):** Caja arquitectónica con paredes laterales en escorzo (`x: 0..95` y `x: 905..1000`), sombras de rincón, techo en perspectiva y superficies de anclaje (`sockets`) donde los objetos sueltos se posan físicamente sobre mesas, tocadores y repisas.
+2. **WS-2 (`DigitalBody` Multicapa con `drawBack` + `Occupant` + `drawFront`):**
+   - Prohibición de primitivas planas: cada mueble tiene proyección 2.5D de 3 caras (tapa superior en perspectiva, frente con relieve y cara lateral extruida con sombra) + patas torneadas.
+   - **Capas Intercaladas Reales:** Cuando un personaje se acuesta en la cama (`cloud_bed`) o entra a la bañera (`bubble_tub`), se dibuja **entre** la capa trasera (`colchón/almohadas` o `agua`) y la capa delantera (`edredón acolchado doblado` o `borde de porcelana + espuma`), quedando físicamente *adentro* del objeto.
+   - **Sub-partes Articuladas:** Cajones de tocador que se abren (`drawerOpen`), puertas de horno abatibles, cordón colgante con estrella (`pullChain`) en la lámpara de luna y cortinas móviles.
+3. **WS-3 (`Grabbable Props` con Acción Propia):** Objetos independientes con comportamiento activo (secador de pelo con ondas de aire, perfume que rocía bruma aromática, tetera que se inclina y sirve té en la taza, comida que se consume por bocados).
+4. **WS-4 (`AvatarRig 2D` y `Dynamic Eye Gaze`):** Piernas que se doblan al sentarse, brazo articulado que acerca la comida/bebida a la boca al comer (`chewTimer`), y pupilas con seguimiento ocular dinámico (`eyeGaze`) hacia el objeto o acción cercana.
