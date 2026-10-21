@@ -55,16 +55,16 @@
   ];
 
   const HAND_PROPS = [
+    { id: 'none', name: 'Soltar' },
     { id: 'wand', name: 'Varita' },
-    { id: 'boba_tea', name: 'Boba Tea 🧋' },
-    { id: 'shop_basket', name: 'Canasta 🧺' },
+    { id: 'boba_tea', name: 'Boba Tea' },
+    { id: 'shop_basket', name: 'Canasta' },
     { id: 'teacup', name: 'Tacita' },
     { id: 'teddy', name: 'Osito' },
     { id: 'roll', name: 'Rollito' },
     { id: 'mic', name: 'Micrófono' },
     { id: 'balloon', name: 'Globo' },
-    { id: 'ice_cream_cone', name: 'Helado Triple ⭐', rewardId: 'reward_ice_cream_cone' },
-    { id: 'none', name: 'Manos libres' }
+    { id: 'ice_cream_cone', name: 'Helado ⭐', rewardId: 'reward_ice_cream_cone' }
   ];
 
   const EXPRESSIONS = [
@@ -118,7 +118,7 @@
     { id: 'outfit', name: 'Ropa', list: OUTFITS, key: 'outfitId', zoom: 'body' },
     { id: 'hat', name: 'Gorro', list: HATS, key: 'hatId', zoom: 'face' },
     { id: 'glasses', name: 'Lentes', list: GLASSES, key: 'glassesId', zoom: 'face' },
-    { id: 'prop', name: 'En la mano', list: HAND_PROPS, key: 'propId', zoom: 'body' },
+    { id: 'prop', name: 'En la mano', list: HAND_PROPS, key: 'propId', zoom: 'prop' },
     { id: 'expr', name: 'Carita', list: EXPRESSIONS, key: 'exprId', zoom: 'face' }
   ];
 
@@ -243,6 +243,78 @@
     get characters() { return [this.avatars[1], this.avatars[2], this.avatars[3]]; }
     set characters(val) { if (Array.isArray(val)) { if (val[0]) this.avatars[1] = val[0]; if (val[1]) this.avatars[2] = val[1]; if (val[2]) this.avatars[3] = val[2]; } }
 
+    setTempReaction(av, exprId, duration = 2.2) {
+      if (!av) return;
+      if (!av.baseExprId) av.baseExprId = 'happy';
+      av.exprId = exprId;
+      av.reactTimer = Math.max(av.reactTimer || 0, duration);
+    }
+
+    dropHeldItem(slot = 1, spawnInRoom = true) {
+      const av = this.avatars[slot] || this.avatars[1];
+      if (!av) return null;
+      const held = av.heldItem || (av.propId && av.propId !== 'none' ? av.propId : null);
+      av.heldItem = null;
+      av.propId = 'none';
+      av.chewTimer = 0;
+      av.hop = 0.7;
+      if (A()) { A().unlock(); A().softBoing(); }
+      let droppedObj = null;
+      if (held && spawnInRoom) {
+        const items = this.getRoomItems();
+        const dropX = Math.max(95, Math.min(this.logicalW - 95, av.x + (av.facing || 1) * 58));
+        const dropY = Math.max(this.floorY + 18, Math.min(this.logicalH - 22, av.y + 8));
+        const existingGadget = items.find(o => o.draggable && (o.gadget === held || o.type === held));
+        if (existingGadget) {
+          existingGadget.x = dropX;
+          existingGadget.y = dropY;
+          existingGadget.drop = 0.45;
+          existingGadget.state = false;
+          droppedObj = existingGadget;
+        } else {
+          const propMeta = HAND_PROPS.find(p => p.id === held) || CATALOG_DECOR.find(d => d.type === held);
+          droppedObj = {
+            id: `dropped_${held}_${Date.now()}`,
+            type: held,
+            name: propMeta?.name || 'Objeto',
+            x: dropX,
+            y: dropY,
+            w: 52,
+            h: 52,
+            toy: true,
+            draggable: true,
+            custom: true,
+            state: true,
+            drop: 0.45
+          };
+          items.push(droppedObj);
+        }
+        this.spawnBurst(dropX, dropY - 22, '#f9a8d4', 12);
+      }
+      this.saveState();
+      this.updateDropButtonUI();
+      if (this.sheet === 'closet') this.renderSheet();
+      return droppedObj;
+    }
+
+    updateDropButtonUI() {
+      const btn = this.container?.querySelector('#btnAwDrop');
+      if (!btn) return;
+      if (this.mapOpen) {
+        btn.classList.add('hidden');
+        return;
+      }
+      const targetAv = this.avatars[this.wardrobeTargetSlot] || this.avatars[1];
+      const p1 = this.avatars[1];
+      const holder = (p1.active && (p1.heldItem || (p1.propId && p1.propId !== 'none'))) ? p1
+        : (targetAv.active && (targetAv.heldItem || (targetAv.propId && targetAv.propId !== 'none'))) ? targetAv
+        : Object.values(this.avatars).find(a => a.active && (a.heldItem || (a.propId && a.propId !== 'none')));
+      btn.classList.toggle('hidden', !holder);
+      if (holder) {
+        btn.dataset.slot = String(holder.slot);
+      }
+    }
+
     dropItemOnAvatar(av, obj) {
       if (!av || !obj) return;
       if (obj.food) {
@@ -252,6 +324,7 @@
         av.propId = obj.gadget || obj.type;
         this.triggerObjectInteraction(obj, av);
       }
+      this.updateDropButtonUI();
     }
     handleDropOnAvatar(av, obj) {
       return this.dropItemOnAvatar(av, obj);
@@ -260,6 +333,7 @@
     createAvatar(slot, baseId, x, y, outfitId, hatId, glassesId, propId, exprId, active) {
       return {
         slot, active, baseId, outfitId, hatId, glassesId, propId, exprId,
+        baseExprId: exprId || 'happy', reactTimer: 0,
         heldItem: null,
         x, y, targetX: null, targetY: null, pendingObj: null, vx: 0, vy: 0,
         facing: slot === 2 ? -1 : 1,
@@ -283,6 +357,7 @@
           for (const cat of WARDROBE_CATS) {
             if (saved[cat.key] && cat.list.some(o => o.id === saved[cat.key])) this.avatars[s][cat.key] = saved[cat.key];
           }
+          this.avatars[s].baseExprId = this.avatars[s].exprId || 'happy';
         }
         if (parsed.decor) {
           for (const room of ROOMS) {
@@ -389,6 +464,7 @@
             </div>
 
             <button class="aw-fab aw-fab-toys" id="btnAwToys" aria-label="Juguetes">${icon('toybox')}</button>
+            <button class="aw-drop-btn hidden" id="btnAwDrop" aria-label="Soltar objeto de la mano" title="Soltar objeto de la mano"><span class="aw-drop-ico">✋</span><span>Soltar</span></button>
             <button class="aw-fab aw-fab-closet" id="btnAwCloset" aria-label="Ropa">${icon('hanger')}</button>
 
             <div class="aw-trash hidden" id="awTrash" aria-hidden="true">
@@ -466,6 +542,11 @@
         if (this.sheet === 'toys') this.closeSheet();
         else this.openToys();
       });
+      this.container.querySelector('#btnAwDrop')?.addEventListener('click', (e) => {
+        const slot = parseInt(e.currentTarget.dataset.slot || this.wardrobeTargetSlot || '1', 10);
+        this.dropHeldItem(slot, true);
+      });
+      this.updateDropButtonUI();
       this.bindCanvasPointerEvents();
     }
 
@@ -538,7 +619,10 @@
             <button class="aw-sheet-done" aria-label="Listo">${done}</button>
           </div>
           <div class="aw-tiles">
-            ${cat.list.map(o => `<button class="aw-tile ${av[cat.key] === o.id ? 'active' : ''}" data-val="${o.id}" aria-label="${o.name}"><canvas width="104" height="104"></canvas></button>`).join('')}
+            ${cat.list.map(o => {
+              const currentVal = cat.id === 'prop' ? (av.heldItem || av.propId || 'none') : av[cat.key];
+              return `<button class="aw-tile ${currentVal === o.id ? 'active' : ''}" data-val="${o.id}" aria-label="${o.name}"><canvas width="104" height="104"></canvas></button>`;
+            }).join('')}
           </div>
           </div>
           </div>`;
@@ -554,12 +638,13 @@
               this.spawnBurst(this.avatars[s].x, this.avatars[s].y - 60, SLOT_COLORS[s], 16);
             }
             this.wardrobeTargetSlot = s;
+            this.updateDropButtonUI();
             this.renderSheet();
           });
         });
         el.querySelectorAll('.aw-cat').forEach(btn => {
           if (btn.dataset.cat === 'base') {
-            this.paintAvatarThumb(btn.querySelector('canvas'), Object.assign({}, av, { hatId: 'none', glassesId: 'none', propId: 'none', exprId: 'happy', isBlinking: false, facing: 1 }), 'face');
+            this.paintAvatarThumb(btn.querySelector('canvas'), Object.assign({}, av, { hatId: 'none', glassesId: 'none', propId: 'none', heldItem: null, exprId: 'happy', isBlinking: false, facing: 1 }), 'face');
           } else this.paintCategoryIcon(btn.querySelector('canvas'), btn.dataset.cat);
           btn.addEventListener('click', () => {
             if (A()) { A().unlock(); A().bubblePop(1); }
@@ -568,7 +653,7 @@
           });
         });
         el.querySelectorAll('.aw-tile').forEach(tile => {
-          const preview = Object.assign({}, av, { [cat.key]: tile.dataset.val, isBlinking: false, chewTimer: 0, sleeping: false, danceTimer: 0, vx: 0, vy: 0, facing: 1 });
+          const preview = Object.assign({}, av, { [cat.key]: tile.dataset.val, heldItem: null, isBlinking: false, chewTimer: 0, sleeping: false, danceTimer: 0, vx: 0, vy: 0, facing: 1 });
           this.paintAvatarThumb(tile.querySelector('canvas'), preview, cat.zoom);
           tile.addEventListener('click', () => {
             this.applyCustomization(this.wardrobeTargetSlot, cat.id, tile.dataset.val);
@@ -598,6 +683,69 @@
       const { ctx, w, h } = this.prepThumb(canvas);
       const copy = Object.assign({}, av, { x: 0, y: 0, emotionBubble: null, hop: 0, lifted: false });
       ctx.save();
+      if (zoom === 'prop') {
+        const propId = copy.propId || 'none';
+        const propMeta = HAND_PROPS.find(p => p.id === propId);
+        // Pedestal circular pastel para destacar cada objeto de mano
+        ctx.beginPath();
+        ctx.arc(w / 2, h / 2 - 7, 34, 0, TAU);
+        ctx.fillStyle = propId === 'none' ? 'rgba(254, 226, 226, 0.75)' : 'rgba(255, 255, 255, 0.82)';
+        ctx.fill();
+        ctx.lineWidth = 2.2;
+        ctx.strokeStyle = propId === 'none' ? '#f43f5e' : 'rgba(244, 114, 182, 0.45)';
+        if (propId === 'none') ctx.setLineDash([5, 4]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (propId === 'none') {
+          // Icono claro de "Soltar / Manos libres": manita abierta liberando el objeto
+          const base = CHARACTER_BASES.find(b => b.id === copy.baseId) || CHARACTER_BASES[0];
+          ctx.save();
+          ctx.translate(w / 2, h / 2 - 6);
+          ctx.beginPath();
+          ctx.ellipse(-6, 4, 13, 10, -0.25, 0, TAU);
+          fillStroke(ctx, base.bodyColor || '#ffffff', 2.6);
+          ctx.beginPath();
+          ctx.ellipse(8, 6, 11, 8.5, 0.25, 0, TAU);
+          fillStroke(ctx, base.bodyColor || '#ffffff', 2.4);
+          // Destello de manos libres
+          ctx.strokeStyle = '#f43f5e';
+          ctx.lineWidth = 2.6;
+          ctx.beginPath();
+          ctx.moveTo(0, -8); ctx.lineTo(0, -20);
+          ctx.moveTo(-6, -14); ctx.lineTo(0, -20); ctx.lineTo(6, -14);
+          ctx.stroke();
+          ctx.restore();
+        } else {
+          ctx.save();
+          ctx.translate(w / 2, h / 2 - 6);
+          const offsets = {
+            wand: { x: 0, y: 18, s: 1.55 },
+            boba_tea: { x: -6, y: 14, s: 1.65 },
+            shop_basket: { x: -9, y: 6, s: 1.65 },
+            teacup: { x: -5, y: 6, s: 1.85 },
+            teddy: { x: -9, y: 14, s: 1.65 },
+            roll: { x: -8, y: 8, s: 1.85 },
+            mic: { x: 0, y: 12, s: 1.65 },
+            balloon: { x: -5, y: 38, s: 1.05 },
+            ice_cream_cone: { x: 0, y: 15, s: 1.6 }
+          };
+          const cfg = offsets[propId] || { x: 0, y: 10, s: 1.5 };
+          ctx.scale(cfg.s, cfg.s);
+          this.drawPropShape(ctx, propId, cfg.x, cfg.y);
+          ctx.restore();
+        }
+        // Etiqueta inferior legible con el nombre del objeto
+        if (propMeta?.name) {
+          ctx.font = '800 12px "Baloo 2", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = propId === 'none' ? '#be123c' : '#5c3d2e';
+          ctx.fillText(propMeta.name, w / 2, h - 13);
+        }
+        ctx.restore();
+        return;
+      }
       if (zoom === 'face') {
         const s = w / 112;
         ctx.translate(w / 2, h * 0.5 + 76 * s);
@@ -675,13 +823,21 @@
       const cat = WARDROBE_CATS.find(c => c.id === category);
       if (!cat || !cat.list.some(o => o.id === value)) return;
       av[cat.key] = value;
+      if (category === 'prop') {
+        // Limpiar cualquier objeto agarrado temporalmente para que cambie o suelte de inmediato
+        av.heldItem = null;
+        av.chewTimer = 0;
+      }
       if (category === 'expr') {
+        av.baseExprId = value;
+        av.reactTimer = 0;
         const found = EXPRESSIONS.find(e => e.id === value);
         if (found) this.showEmotionBubble(av, found.bubble);
       }
       av.hop = 1;
       this.spawnBurst(av.x, av.y - 60, '#f472b6', 14);
       this.saveState();
+      this.updateDropButtonUI();
       this.rewardOnce('dress', 1);
     }
 
@@ -735,6 +891,7 @@
         d.style.opacity = this.mapOpen ? '0' : '1';
         d.style.pointerEvents = this.mapOpen ? 'none' : 'auto';
       });
+      this.updateDropButtonUI();
     }
 
     getMapBuildings() {
@@ -758,6 +915,7 @@
         const av = this.avatars[s];
         av.sittingOn = null;
         av.sleeping = false;
+        if (av.exprId === 'sleepy' && av.baseExprId !== 'sleepy') av.exprId = av.baseExprId || 'happy';
         av.targetX = av.targetY = null;
         av.pendingObj = null;
         if (changed) {
@@ -867,9 +1025,16 @@
           }
         }
 
-        // 1B. Amigos: se pueden tomar y arrastrar (sin levantarse del asiento hasta que realmente se arrastren)
+        // 1B. Amigos: si tocan el objeto en su mano lo sueltan; o se pueden tomar y arrastrar
         const activeAvs = Object.values(this.avatars).filter(a => a.active).sort((a, b) => b.y - a.y);
         for (const av of activeAvs) {
+          const held = av.heldItem || (av.propId && av.propId !== 'none' ? av.propId : null);
+          const handX = av.x + (av.facing || 1) * 30;
+          const handY = av.y - 34;
+          if (held && Math.hypot(pt.x - handX, pt.y - handY) < 22) {
+            this.dropHeldItem(av.slot, true);
+            return;
+          }
           if (Math.abs(pt.x - av.x) < 38 && pt.y >= av.y - 102 && pt.y <= av.y + 14) {
             av.targetX = av.targetY = null;
             av.pendingObj = null;
@@ -899,16 +1064,17 @@
             const p1 = this.avatars[1];
             const shelfRow = pt.y < 252 ? 'boba_tea' : (pt.y < 312 ? 'roll' : 'shop_basket');
             p1.propId = shelfRow;
-            p1.heldItem = shelfRow;
+            p1.heldItem = null;
             if (shelfRow !== 'shop_basket') {
               p1.chewTimer = 2.4;
-              p1.exprId = 'yummy';
+              this.setTempReaction(p1, 'yummy', 2.4);
               this.showEmotionBubble(p1, 'yum');
             } else {
-              p1.exprId = 'starry';
+              this.setTempReaction(p1, 'starry', 2.2);
               this.showEmotionBubble(p1, 'star');
             }
             p1.hop = 1;
+            this.updateDropButtonUI();
             if (A()) A().sparkleChime();
             this.spawnBurst(pt.x, pt.y, '#fde047', 18);
             return;
@@ -917,10 +1083,11 @@
           if (Math.abs(pt.x - 695) < 52 && Math.abs(pt.y - 195) < 46) {
             const p1 = this.avatars[1];
             p1.propId = 'boba_tea';
-            p1.heldItem = 'boba_tea';
+            p1.heldItem = null;
             p1.chewTimer = 2.4;
-            p1.exprId = 'yummy';
+            this.setTempReaction(p1, 'yummy', 2.4);
             p1.hop = 1;
+            this.updateDropButtonUI();
             this.showEmotionBubble(p1, 'yum');
             if (A()) A().celebrate();
             this.spawnBurst(pt.x, pt.y, '#f472b6', 18);
@@ -984,6 +1151,9 @@
           if (ds.kind === 'avatar') {
             ds.target.sittingOn = null;
             ds.target.sleeping = false;
+            if (ds.target.exprId === 'sleepy' && ds.target.baseExprId !== 'sleepy') {
+              ds.target.exprId = ds.target.baseExprId || 'happy';
+            }
           }
           if (ds.kind === 'object' && ds.target.custom && trash) trash.classList.remove('hidden');
         }
@@ -1005,8 +1175,8 @@
               const av = this.avatars[s];
               if (av.active && Math.hypot(av.x - obj.x, (av.y - 55) - (obj.y - 20)) < 75) {
                 if (obj.gadget === 'dryer') av.earVel = (Math.random() - 0.5) * 1.8;
-                if (obj.gadget === 'perfume') av.exprId = 'love';
-                if (obj.gadget === 'brush') av.exprId = 'starry';
+                if (obj.gadget === 'perfume') this.setTempReaction(av, 'love', 1.8);
+                if (obj.gadget === 'brush') this.setTempReaction(av, 'starry', 1.8);
               }
             }
           }
@@ -1094,6 +1264,7 @@
       av.active = true;
       av.sittingOn = null;
       av.sleeping = false;
+      if (av.exprId === 'sleepy' && av.baseExprId !== 'sleepy') av.exprId = av.baseExprId || 'happy';
       av.targetX = Math.max(85, Math.min(this.logicalW - 85, x));
       av.targetY = Math.max(this.floorY - 5, Math.min(this.logicalH - 28, y));
       av.pendingObj = obj;
@@ -1123,21 +1294,26 @@
         av.x = obj.x + side * 56;
         av.y = obj.y - 14;
         av.facing = -side;
+      } else if (obj.type === 'swing') {
+        const angle = obj.swingAngle || 0;
+        av.x = obj.x - Math.sin(angle) * 132;
+        av.y = (obj.y - 165) + Math.cos(angle) * 132 + 10;
+        obj.swingBoost = 1.0;
       } else {
         av.x = obj.x;
         av.y = obj.y - (sleep ? 12 : 8);
       }
       if (sleep) {
-        av.exprId = 'sleepy';
         this.showEmotionBubble(av, 'zzz');
         if (A()) A().softBoing();
       } else if (obj.type === 'stage') {
         av.danceTimer = 4.0;
-        av.exprId = 'party';
+        this.setTempReaction(av, 'party', 4.0);
         this.showEmotionBubble(av, 'mic');
         if (A()) A().celebrate();
         this.spawnBurst(obj.x, obj.y - 50, '#fef08a', 15);
       } else {
+        if (av.exprId === 'sleepy' && av.baseExprId !== 'sleepy') av.exprId = av.baseExprId || 'happy';
         this.showEmotionBubble(av, 'heart');
         if (A()) A().bubblePop(2);
       }
@@ -1146,9 +1322,10 @@
     feedAvatar(av, foodObj) {
       av.heldItem = foodObj.type;
       av.chewTimer = 2.6;
-      av.exprId = 'yummy';
+      this.setTempReaction(av, 'yummy', 2.6);
       av.sleeping = false;
       av.hop = 1;
+      this.updateDropButtonUI();
       this.showEmotionBubble(av, 'yum');
       if (A()) A().celebrate();
       this.spawnBurst(av.x, av.y - 65, '#fda4af', 18);
@@ -1186,14 +1363,14 @@
         obj.state = !obj.state;
         if (A()) A().sparkleChime();
         this.spawnBurst(obj.x - 18, obj.y - 38, '#f472b6', 20);
-        if (av) { av.hop = 1; av.exprId = 'love'; this.showEmotionBubble(av, 'heart'); }
+        if (av) { av.hop = 1; this.setTempReaction(av, 'love', 2.2); this.showEmotionBubble(av, 'heart'); }
         return;
       }
       if (obj.gadget === 'dryer') {
         obj.state = !obj.state;
         if (A()) A().bubblePop(2);
         this.spawnBurst(obj.x + 24, obj.y - 28, '#38bdf8', 18);
-        if (av) { av.earVel = 1.8; av.hop = 0.8; av.exprId = 'starry'; this.showEmotionBubble(av, 'sparkle'); }
+        if (av) { av.earVel = 1.8; av.hop = 0.8; this.setTempReaction(av, 'starry', 2.2); this.showEmotionBubble(av, 'sparkle'); }
         return;
       }
       if (obj.gadget === 'teapot' || obj.type === 'cafe_teapot') {
@@ -1207,7 +1384,7 @@
             r: 5 + i * 2, color: 'rgba(255, 255, 255, 0.75)', life: 0.9, shape: 'ring'
           });
         }
-        if (av) { av.hop = 0.8; av.exprId = 'yummy'; this.showEmotionBubble(av, 'yum'); }
+        if (av) { av.hop = 0.8; this.setTempReaction(av, 'yummy', 2.2); this.showEmotionBubble(av, 'yum'); }
         return;
       }
       if (obj.gadget === 'watering' || obj.type === 'watering_can') {
@@ -1221,14 +1398,14 @@
             r: 3 + Math.random() * 2, color: '#38bdf8', life: 0.7, shape: 'dot'
           });
         }
-        if (av) { av.hop = 0.8; av.exprId = 'happy'; this.showEmotionBubble(av, 'sun'); }
+        if (av) { av.hop = 0.8; this.setTempReaction(av, 'happy', 2.0); this.showEmotionBubble(av, 'sun'); }
         return;
       }
       if (obj.gadget === 'picnic' || obj.type === 'picnic_basket') {
         obj.state = !obj.state;
         if (A()) A().celebrate();
         this.spawnBurst(obj.x, obj.y - 35, '#f43f5e', 18);
-        if (av) { av.hop = 1; av.exprId = 'starry'; this.showEmotionBubble(av, 'star'); }
+        if (av) { av.hop = 1; this.setTempReaction(av, 'starry', 2.2); this.showEmotionBubble(av, 'star'); }
         return;
       }
       if (obj.gadget === 'pet_bowl' || obj.type === 'spa_pet_bowl') {
@@ -1241,7 +1418,7 @@
           petHouse.ping = 1;
           this.spawnBurst(petHouse.x, petHouse.y - 40, '#f472b6', 12);
         }
-        if (av) { av.hop = 0.8; av.exprId = 'love'; this.showEmotionBubble(av, 'heart'); }
+        if (av) { av.hop = 0.8; this.setTempReaction(av, 'love', 2.2); this.showEmotionBubble(av, 'heart'); }
         return;
       }
       if (obj.gadget === 'brush' || obj.type === 'spa_brush') {
@@ -1256,7 +1433,7 @@
             life: 0.8 + Math.random() * 0.4, shape: 'ring'
           });
         }
-        if (av) { av.earVel = 2.0; av.hop = 0.8; av.exprId = 'starry'; this.showEmotionBubble(av, 'sparkle'); }
+        if (av) { av.earVel = 2.0; av.hop = 0.8; this.setTempReaction(av, 'starry', 2.2); this.showEmotionBubble(av, 'sparkle'); }
         return;
       }
       if (obj.type === 'vanity') {
@@ -1265,21 +1442,35 @@
         this.spawnBurst(obj.x, obj.y - 45, '#f472b6', 14);
         const tappedDrawerOnly = this._lastTapPt && Math.abs(this._lastTapPt.x - obj.x) < 75 && this._lastTapPt.y > obj.y - 68;
         this._lastTapPt = null;
-        if (av) { av.hop = 0.8; av.exprId = 'starry'; this.showEmotionBubble(av, 'sparkle'); }
+        if (av) { av.hop = 0.8; this.setTempReaction(av, 'starry', 2.2); this.showEmotionBubble(av, 'sparkle'); }
         if (obj.state && !tappedDrawerOnly) this.openWardrobe(av?.slot || 1);
         return;
       }
       if (obj.wardrobe) { obj.state = !obj.state; this.openWardrobe(av?.slot || 1); return; }
       if (obj.light) { obj.state = !obj.state; if (A()) A().sparkleChime(); this.spawnBurst(obj.x, obj.y - obj.h + 10, '#fef08a', 12); return; }
       if (obj.food && av && !obj.seat) { this.feedAvatar(av, obj); return; }
-      if (obj.toy && av) {
-        av.danceTimer = 2.5; av.exprId = 'starry'; this.showEmotionBubble(av, 'star');
+      if (obj.toy && !obj.seat && av) {
+        if (obj.custom && HAND_PROPS.some(p => p.id === obj.type)) {
+          // Si es un objeto de mano que estaba suelto en el piso, el avatar lo vuelve a agarrar
+          av.propId = obj.type;
+          av.heldItem = null;
+          const list = this.getRoomItems();
+          if (list.includes(obj)) list.splice(list.indexOf(obj), 1);
+          av.hop = 0.9;
+          this.setTempReaction(av, 'starry', 2.0);
+          this.showEmotionBubble(av, 'star');
+          this.updateDropButtonUI();
+          this.saveState();
+          if (A()) A().sparkleChime();
+          return;
+        }
+        av.danceTimer = 2.5; this.setTempReaction(av, 'starry', 2.5); this.showEmotionBubble(av, 'star');
         if (A()) A().celebrate(); this.spawnBurst(obj.x, obj.y - 40, '#c4b5fd', 16);
         return;
       }
       if (obj.sleep && av) {
         if (av.sittingOn === obj && av.sleeping) {
-          av.sleeping = false; av.sittingOn = null; av.exprId = 'happy';
+          av.sleeping = false; av.sittingOn = null; av.exprId = av.baseExprId || 'happy';
           this.showEmotionBubble(av, 'sun');
         } else this.sitOn(av, obj, true);
         return;
@@ -1317,7 +1508,8 @@
         for (const s of [1, 2, 3]) {
           if (this.avatars[s].active) {
             this.avatars[s].danceTimer = obj.state ? 6.0 : 0;
-            this.avatars[s].exprId = 'party';
+            if (obj.state) this.setTempReaction(this.avatars[s], 'party', 6.0);
+            else this.avatars[s].exprId = this.avatars[s].baseExprId || 'happy';
           }
         }
         if (A()) A().celebrate();
@@ -1410,7 +1602,9 @@
       for (const obj of items) {
         if (obj.type === 'swing') {
           const hasRider = Object.values(this.avatars).some(a => a.active && a.sittingOn === obj);
-          obj.swingAngle = Math.sin(this.time * 3.2) * (hasRider ? 0.22 : 0.05);
+          if (obj.swingBoost > 0) obj.swingBoost = Math.max(0, obj.swingBoost - dt * 0.45);
+          const amp = hasRider ? (0.24 + (obj.swingBoost || 0) * 0.1) : 0.04;
+          obj.swingAngle = Math.sin(this.time * 3.2) * amp;
         }
         if (obj.type === 'music_box' && obj.state && Math.random() < dt * 3.5) {
           this.floatingNotes.push({ x: obj.x + (Math.random() - 0.5) * 30, y: obj.y - 90, vy: -45 - Math.random() * 20, life: 1.5, hue: Math.random() < 0.5 ? '#ec4899' : '#8b5cf6' });
@@ -1475,8 +1669,11 @@
             if (av.x >= this.logicalW - 71 && av.vx > 40) { this.changeRoom(1, av); continue; }
           }
         } else if (av.sittingOn?.type === 'swing') {
-          av.x = av.sittingOn.x + Math.sin(av.sittingOn.swingAngle) * 26;
-          av.y = av.sittingOn.y - 14;
+          const angle = av.sittingOn.swingAngle || 0;
+          const pivotY = av.sittingOn.y - 165;
+          const ropeL = 132;
+          av.x = av.sittingOn.x - Math.sin(angle) * ropeL;
+          av.y = pivotY + Math.cos(angle) * ropeL + 10;
         }
 
         const speed = Math.hypot(av.vx, av.vy);
@@ -1497,11 +1694,28 @@
           av.blinkTimer = av.isBlinking ? 0.14 : (2.4 + Math.random() * 3.2);
         }
         if (av.hop > 0) av.hop = Math.max(0, av.hop - dt * 2.8);
+        if (av.reactTimer > 0) {
+          av.reactTimer = Math.max(0, av.reactTimer - dt);
+          if (av.reactTimer === 0 && !av.sleeping && av.chewTimer <= 0 && av.danceTimer <= 0) {
+            av.exprId = av.baseExprId || 'happy';
+          }
+        }
         if (av.chewTimer > 0) {
           av.chewTimer = Math.max(0, av.chewTimer - dt);
-          if (av.chewTimer === 0 && av.exprId === 'yummy') av.exprId = 'happy';
+          if (av.chewTimer === 0) {
+            av.exprId = av.baseExprId || 'happy';
+            if (av.heldItem && CATALOG_DECOR.some(d => d.type === av.heldItem && d.food)) {
+              av.heldItem = null;
+              this.updateDropButtonUI();
+            }
+          }
         }
-        if (av.danceTimer > 0) av.danceTimer = Math.max(0, av.danceTimer - dt);
+        if (av.danceTimer > 0) {
+          av.danceTimer = Math.max(0, av.danceTimer - dt);
+          if (av.danceTimer === 0 && !av.sleeping && (!av.reactTimer || av.reactTimer <= 0)) {
+            av.exprId = av.baseExprId || 'happy';
+          }
+        }
         if (av.emotionTimer > 0) {
           av.emotionTimer = Math.max(0, av.emotionTimer - dt);
           if (av.emotionTimer === 0) av.emotionBubble = null;
@@ -1526,7 +1740,7 @@
     }
 
     /* ============================================================
-       DIBUJO HD · ESTILO AVATAR WORLD PAZU GAMES (v38)
+       DIBUJO HD · ESTILO AVATAR WORLD PAZU GAMES (v42)
        ============================================================ */
     draw() {
       const ctx = this.ctx;
@@ -1548,17 +1762,31 @@
 
       const renderList = [];
       for (const obj of this.getRoomItems()) {
-        // Si es un accesorio sobre otro mueble (ej. perfume sobre el tocador), se dibuja delante del mueble
-        const surfaceBoost = obj.gadget ? 65 : 0;
-        renderList.push({ sortY: obj.flat ? -1 : obj.y + surfaceBoost, kind: 'object', item: obj });
-        if (obj.hasFrontCover) {
-          renderList.push({ sortY: obj.y + 18, kind: 'object_front', item: obj });
+        const isOccupied = Object.values(this.avatars).some(a => a.active && a.sittingOn === obj);
+        const isBeingDragged = this.dragState?.kind === 'object' && this.dragState.target === obj && this.dragState.moved;
+        if (isBeingDragged) {
+          renderList.push({ sortY: 1650, kind: 'object', item: obj });
+          if (obj.hasFrontCover) renderList.push({ sortY: 1655, kind: 'object_front', item: obj });
+        } else if (isOccupied) {
+          // Z-Sandwich para asiento ocupado: base (1000+y) < avatar (1000+y+8) < front (1000+y+18), siempre delante de muebles no ocupados
+          renderList.push({ sortY: 1000 + obj.y, kind: 'object', item: obj });
+          if (obj.hasFrontCover) {
+            renderList.push({ sortY: 1000 + obj.y + 18, kind: 'object_front', item: obj });
+          }
+        } else {
+          const surfaceBoost = obj.gadget ? 55 : 0;
+          const baseSortY = obj.flat ? -1 : obj.y + surfaceBoost;
+          renderList.push({ sortY: baseSortY, kind: 'object', item: obj });
+          if (obj.hasFrontCover) {
+            renderList.push({ sortY: baseSortY + 1, kind: 'object_front', item: obj });
+          }
         }
       }
       for (const s of [1, 2, 3]) {
         const av = this.avatars[s];
         if (!av.active) continue;
-        const sortY = av.sittingOn ? av.sittingOn.y + 8 : av.y + (av.lifted ? 400 : 0);
+        // Los personajes siempre se dibujan en la banda frontal (>= 1000) para que ningún objeto o mueble los tape
+        const sortY = av.sittingOn ? 1000 + av.sittingOn.y + 8 : 1000 + av.y + (av.lifted ? 400 : 0);
         renderList.push({ sortY, kind: 'avatar', item: av });
       }
       renderList.sort((a, b) => a.sortY - b.sortY);
@@ -2906,23 +3134,37 @@
 
       } else if (obj.type === 'swing') {
         // CUERPO DIGITAL 2.5D: Columpio de Jardín con viga rústica superior, postes laterales y asiento
-        roundRect(ctx, x - 76, y - 180, 152, 16, 8); fillStroke(ctx, '#b07a4a', 2.8);
+        roundRect(ctx, x - 78, y - 180, 156, 16, 8); fillStroke(ctx, '#b07a4a', 2.8);
         ctx.strokeStyle = '#9c6644'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(x - 68, y - 172); ctx.lineTo(x + 68, y - 172); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x - 70, y - 172); ctx.lineTo(x + 70, y - 172); ctx.stroke();
         // Postes laterales en A
-        ctx.strokeStyle = '#b07a4a'; ctx.lineWidth = 6;
+        ctx.strokeStyle = '#b07a4a'; ctx.lineWidth = 6.5;
         ctx.beginPath();
-        ctx.moveTo(x - 68, y - 172); ctx.lineTo(x - 82, y);
-        ctx.moveTo(x + 68, y - 172); ctx.lineTo(x + 82, y);
+        ctx.moveTo(x - 70, y - 172); ctx.lineTo(x - 84, y);
+        ctx.moveTo(x + 70, y - 172); ctx.lineTo(x + 84, y);
         ctx.stroke();
-        // Cuerdas traseras y asiento oscilante
+        // Cuerdas con lianas florales (en capa trasera amplia ±48 para no tapar el rostro ni las orejas del personaje)
         ctx.save();
         ctx.translate(x, y - 165);
         ctx.rotate(obj.swingAngle || 0);
-        ctx.strokeStyle = '#d97706'; ctx.lineWidth = 3.2;
-        ctx.beginPath(); ctx.moveTo(-42, 0); ctx.lineTo(-42, 134); ctx.moveTo(42, 0); ctx.lineTo(42, 134); ctx.stroke();
-        roundRect(ctx, -56, 128, 112, 18, 9); fillStroke(ctx, '#b07a4a', 2.6);
-        roundRect(ctx, -48, 122, 96, 10, 5); fillStroke(ctx, '#f9a8d4', 2.2);
+        ctx.strokeStyle = '#b07a4a'; ctx.lineWidth = 3.6;
+        ctx.beginPath(); ctx.moveTo(-48, 0); ctx.lineTo(-48, 134); ctx.moveTo(48, 0); ctx.lineTo(48, 134); ctx.stroke();
+        ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 2.8;
+        for (const rx of [-48, 48]) {
+          ctx.beginPath();
+          ctx.moveTo(rx, 8);
+          for (let i = 0; i <= 5; i++) {
+            const sy = 14 + i * 20;
+            ctx.quadraticCurveTo(rx + (i % 2 === 0 ? 6 : -6), sy - 10, rx, sy);
+          }
+          ctx.stroke();
+        }
+        for (let i = 0; i < 3; i++) {
+          this.drawFlower(ctx, -48, 22 + i * 32, 5.5, '#f472b6');
+          this.drawFlower(ctx, 48, 18 + i * 32, 5.5, '#fbcfe8');
+        }
+        roundRect(ctx, -58, 128, 116, 18, 9); fillStroke(ctx, '#b07a4a', 2.6);
+        roundRect(ctx, -50, 122, 100, 10, 5); fillStroke(ctx, '#f9a8d4', 2.2);
         ctx.restore();
 
       } else if (obj.type === 'fountain') {
@@ -3358,30 +3600,27 @@
         this.drawCakeSlice(ctx, x + 2, y - 60, 0.85);
         this.drawTeacup(ctx, x + 44, y - 60, 0.82);
       } else if (obj.type === 'swing') {
-        // Multi-layer front cover: Front floral vine ropes wrapping in front of character's hands
+        // Multi-layer front cover: Solo el agarre inferior de lianas a la altura de las manos (y: 98..132) y borde del asiento para nunca tapar la cara
         ctx.save();
         ctx.translate(x, y - 165);
         ctx.rotate(obj.swingAngle || 0);
         ctx.strokeStyle = '#b07a4a'; ctx.lineWidth = 3.6;
         ctx.beginPath();
-        ctx.moveTo(-42, 0); ctx.lineTo(-42, 135);
-        ctx.moveTo(42, 0); ctx.lineTo(42, 135);
+        ctx.moveTo(-48, 98); ctx.lineTo(-48, 134);
+        ctx.moveTo(48, 98); ctx.lineTo(48, 134);
         ctx.stroke();
-        // Lianas florales verdes envolviendo cada cuerda lateralmente sin cruzar el rostro
         ctx.strokeStyle = '#4ade80'; ctx.lineWidth = 3;
-        for (const rx of [-42, 42]) {
+        for (const rx of [-48, 48]) {
           ctx.beginPath();
-          ctx.moveTo(rx, 8);
-          for (let i = 0; i <= 6; i++) {
-            const sy = 14 + i * 18;
-            ctx.quadraticCurveTo(rx + (i % 2 === 0 ? 7 : -7), sy - 9, rx, sy);
-          }
+          ctx.moveTo(rx, 100);
+          ctx.quadraticCurveTo(rx + 6, 110, rx, 118);
+          ctx.quadraticCurveTo(rx - 6, 126, rx, 132);
           ctx.stroke();
         }
-        for (let i = 0; i < 4; i++) {
-          this.drawFlower(ctx, -42, 28 + i * 30, 6, '#f472b6');
-          this.drawFlower(ctx, 42, 18 + i * 30, 6, '#fbcfe8');
-        }
+        this.drawFlower(ctx, -48, 114, 6, '#f472b6');
+        this.drawFlower(ctx, 48, 114, 6, '#fbcfe8');
+        // Borde frontal biselado de la tabla del asiento bajo las rodillas
+        roundRect(ctx, -56, 134, 112, 10, 5); fillStroke(ctx, '#9c6644', 2.2);
         ctx.restore();
       } else if (obj.type === 'beach_lounger') {
         // Multi-layer front cover: Front wooden slats & striped beach towel lapel over character waist
@@ -3743,6 +3982,14 @@
           ctx.beginPath(); ctx.arc(x + dx, y + dy, 13, 0, TAU); fillStroke(ctx, c, 2.2);
         }
         this.drawStrawberry(ctx, x, y - 74, 0.75);
+      } else if (HAND_PROPS.some(p => p.id === type && p.id !== 'none')) {
+        // Objeto de mano soltado en el cuarto (se puede tocar para volver a agarrarlo)
+        ctx.beginPath(); ctx.ellipse(x, y - 3, 22, 6, 0, 0, TAU); ctx.fillStyle = 'rgba(71, 85, 105, 0.18)'; ctx.fill();
+        ctx.save();
+        ctx.translate(x, y - 14);
+        ctx.scale(1.25, 1.25);
+        this.drawPropShape(ctx, type, 0, 0);
+        ctx.restore();
       } else {
         roundRect(ctx, x - 32, y - 58, 64, 56, 18); fillStroke(ctx, '#ffffff', 2.6);
         ctx.fillStyle = '#fde047'; starPath(ctx, x, y - 30, 14); fillStroke(ctx, '#fde047', 2);
@@ -3882,10 +4129,13 @@
       ctx.save();
       const speed = Math.hypot(av.vx || 0, av.vy || 0);
       const isMoving = !opts.still && ((speed > 10 && !av.sittingOn) || av.danceTimer > 0);
+      const isSwinging = !opts.still && av.sittingOn?.type === 'swing';
       const hopY = av.hop > 0 ? -Math.sin(av.hop * Math.PI) * 26 : 0;
       const liftY = av.lifted ? -18 + Math.sin(this.time * 8) * 3 : 0;
-      const bobY = (isMoving ? Math.abs(Math.sin(av.walkPhase)) * -9 : Math.sin(t * 2.2 + av.slot) * -2.5) + hopY + liftY;
-      const danceTilt = av.danceTimer > 0 && !opts.still ? Math.sin(av.walkPhase) * 0.14 : (av.lifted ? Math.sin(this.time * 6) * 0.08 : 0);
+      const idleBob = isSwinging ? 0 : (isMoving ? Math.abs(Math.sin(av.walkPhase)) * -9 : Math.sin(t * 2.2 + av.slot) * -2.5);
+      const bobY = idleBob + hopY + liftY;
+      const swingTilt = isSwinging ? (av.sittingOn.swingAngle || 0) * 0.65 : 0;
+      const danceTilt = (av.danceTimer > 0 && !opts.still ? Math.sin(av.walkPhase) * 0.14 : (av.lifted ? Math.sin(this.time * 6) * 0.08 : 0)) + swingTilt;
 
       if (!opts.noShadow) {
         const shadowScale = 1 - Math.abs(bobY) * 0.012;
@@ -4169,21 +4419,12 @@
       }
 
       // 2. Ojos multicapa con esclerótica, iris degradado, pupila, doble brillo especular y pestañas superiores
-      if (expr === 'party') {
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(-21, -66); ctx.lineTo(-15, -73); ctx.lineTo(-9, -66); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(9, -66); ctx.lineTo(15, -73); ctx.lineTo(21, -66); ctx.stroke();
-      } else if (av.isBlinking || expr === 'sleepy' || expr === 'love') {
+      if (av.isBlinking || av.sleeping || expr === 'sleepy') {
         ctx.lineWidth = 2.8;
         for (const side of [-1, 1]) {
           ctx.beginPath(); ctx.arc(side * 15, -69, 6.5, 0.12 * Math.PI, 0.88 * Math.PI); ctx.stroke();
           // Pestañita lateral al cerrar los ojos
           ctx.beginPath(); ctx.moveTo(side * 21, -67); ctx.lineTo(side * 23.5, -65.5); ctx.stroke();
-        }
-        if (expr === 'love') {
-          ctx.fillStyle = '#f472b6';
-          heartPath(ctx, -26, -82, 4.5); ctx.fill();
-          heartPath(ctx, 26, -84, 3.8); ctx.fill();
         }
       } else {
         // Ojos grandes Pazu HD (para 'happy', 'yummy', 'starry')
@@ -4277,10 +4518,14 @@
           ctx.arc(ex + 2.0 + gazeX * 0.25, ey + 2.4 + gazeY * 0.25, 1.25, 0, TAU);
           ctx.fill();
 
-          // Si está en modo 'starry', estrellita dorada brillante dentro del ojo
-          if (expr === 'starry') {
+          // Brillos especiales dentro del iris según la emoción sin perder los ojos HD Pazu
+          if (expr === 'starry' || expr === 'party') {
             ctx.fillStyle = '#fef08a';
             starPath(ctx, ex + 0.5 + gazeX, ey + 0.5 + gazeY, 3.8);
+            ctx.fill();
+          } else if (expr === 'love') {
+            ctx.fillStyle = '#fbcfe8';
+            heartPath(ctx, ex + 0.4 + gazeX, ey + 0.6 + gazeY, 3.6);
             ctx.fill();
           }
 

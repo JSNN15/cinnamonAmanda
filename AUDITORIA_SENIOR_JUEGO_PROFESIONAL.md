@@ -486,3 +486,22 @@ TOTAL:  44/44 passed (100.0%)
 La versión `v40` alcanza la calificación máxima de excelencia técnica y fidelidad estética, satisfaciendo de manera estricta los 10 criterios de aceptación de `ORIGINAL_REQUEST.md`, cumpliendo el estándar de arte volumétrico 2.5D tipo *Avatar World* (Pazu Games), y manteniendo una tasa de regresión de exactamente **0.0%** en toda la plataforma Cinnamoroll.
 
 **Certificación Otorgada:** 🏆 **GRADO ESTUDIO PROFESIONAL — VERSIÓN 40 CERTIFICADA PARA PRODUCCIÓN**
+
+
+---
+
+## 17. Evolución `v42`: UX real en tablet — Soltar objetos, pestaña "En la mano", columpio sincronizado, profundidad y caritas temporales
+
+**Origen:** prueba de la usuaria sobre `v41` desplegada (columpio que no acompaña, personajes ocultos tras objetos, caritas que quedaban cambiadas, pestaña de la varita con opciones idénticas y pedido de poder soltar el objeto de la mano).
+
+| Área | Estado | Detalle |
+| :-- | :-- | :-- |
+| Pestaña "En la mano" | ✅ | Miniaturas por objeto (pedestal + nombre), "Soltar" primero. |
+| Soltar objeto | ✅ | Botón flotante `✋ Soltar`, tocar la mano, opción "Soltar" del vestidor; el objeto queda en el piso y se puede volver a agarrar. |
+| Columpio | ✅ | Avatar sigue el péndulo exacto (error < 0.5 px medido). |
+| Profundidad | ✅ | Avatares siempre por delante de muebles/gadgets libres; sandwich solo con el asiento propio. |
+| Caritas | ✅ | Reacciones temporales (`setTempReaction`) que vuelven a la carita elegida; ojos HD conservados en `love`/`party`. |
+
+**Verificación:** `tools/test_digital_bodies_e2e.py` **44/44** · `tools/test_v42_ux_regressions.py` **13/13** · 0 errores de runtime · caché `v42` (`sw.js`, `index.html`, `controller.html`).
+
+**Detalle técnico y reglas para agentes:** ver §6 de `ARQUITECTURA_AVATAR_WORLD_PRO_CUERPOS_DIGITALES.md`.

@@ -354,3 +354,34 @@ El motor de Cuerpos Digitales 2.5D se encuentra respaldado por dos baterías de 
    - Verificación de los 9 juegos, puente WebRTC de mando remoto con 3 jugadores concurrentes (`P1 🌸`, `P2 🩵`, `P3 💛`), personalización de avatares, decoración remota y transiciones continuas.
    - **Resultado:** **Exit Code 0 — 100% Verificado**.
 
+
+
+---
+
+## 6. `v42` · Correcciones de UX real (prueba de la usuaria en tablet) y reglas NUEVAS obligatorias
+
+> Fuente: reporte de la usuaria tras jugar la build desplegada `v41`. Verificado con `tools/test_v42_ux_regressions.py` (13/13) y `tools/test_digital_bodies_e2e.py` (44/44).
+
+### 6.1 Bugs corregidos (causa raíz → solución)
+
+| # | Síntoma reportado | Causa raíz | Solución `v42` (`js/avatar-world.js`) |
+| :-- | :-- | :-- | :-- |
+| 1 | Pestaña **"En la mano"** (varita): todas las opciones se veían iguales | `drawArmsAndProp` usa `av.heldItem \|\| av.propId`; `heldItem` (comida/gadget) nunca se limpiaba y pisaba al `propId` de cada miniatura. Además la miniatura dibujaba el cuerpo entero a escala chica. | Nuevo `zoom: 'prop'` en `WARDROBE_CATS`: `paintAvatarThumb` dibuja **solo el objeto ampliado sobre un pedestal + su nombre**. Las previews fuerzan `heldItem: null`. |
+| 2 | No se podía **soltar** el objeto agarrado | `heldItem` nunca se vaciaba; `'none'` estaba al final de la lista. | `HAND_PROPS[0] = { id: 'none', name: 'Soltar' }`. Nuevo método **`dropHeldItem(slot, spawnInRoom)`**: vacía la mano y deja el objeto en el piso (o reubica el gadget original). Botón flotante **`#btnAwDrop` "✋ Soltar"** (visible solo si alguien sostiene algo, `updateDropButtonUI()`), y **tocar la mano** del avatar también suelta. Tocar un objeto de mano en el piso lo vuelve a agarrar. `applyCustomization('prop', …)` limpia `heldItem`. La comida se suelta sola al terminar `chewTimer`. |
+| 3 | El **columpio** no se movía con el personaje | El péndulo del asiento (`ctx.rotate`) desplaza en `x - sin(a)·L`, pero el avatar usaba `x + sin(a)·26` (signo y radio incorrectos). | `update()`: `av.x = swing.x - sin(a)·132`, `av.y = (swing.y-165) + cos(a)·132 + 10`; inclinación del cuerpo `swingAngle·0.65`; impulso `swingBoost` al subir. |
+| 4 | Personajes **ocultos detrás de objetos** | Gadgets con `surfaceBoost` 65 y capas `object_front` de muebles vacíos ordenaban por delante del avatar. Las cuerdas/flores frontales del columpio tapaban la cara. | Bandas de profundidad en `draw()`: muebles/gadgets libres `< 1000`; **avatares y su asiento ocupado `≥ 1000`** (sandwich `1000+y` < avatar `1000+y+8` < front `1000+y+18`); objeto arrastrado `1650`. La capa frontal del columpio ahora solo dibuja el agarre a la altura de manos (y 98–144 local), cuerdas a `±48`. |
+| 5 | **La carita cambiaba** al usar objetos y quedaba así | `triggerObjectInteraction`, `sitOn`, hover de gadgets, radio, etc. escribían `av.exprId` de forma permanente; `'love'`/`'party'` cerraban los ojos HD. | Nuevo `av.baseExprId` (lo elige solo el vestidor) + `av.reactTimer`. Helper **`setTempReaction(av, expr, secs)`**; al expirar `reactTimer`/`chewTimer`/`danceTimer` se restaura `baseExprId`. Dormir ya no pisa `exprId` (los ojos cerrados salen de `av.sleeping`). `'love'` = ojos HD con corazón en el iris; `'party'` = ojos HD con estrella. |
+
+### 6.2 Reglas obligatorias nuevas para cualquier agente
+
+1. **Nunca asignar `av.exprId` directo** fuera del vestidor: usar `this.setTempReaction(av, id, segundos)`.
+2. **Nunca dejar `av.heldItem` colgado**: toda ruta que lo setee debe tener salida (timer, `dropHeldItem`, cambio en vestidor) y llamar `this.updateDropButtonUI()`.
+3. **Profundidad**: no tocar las bandas `<1000 / ≥1000 / 1650` de `draw()`. Un objeto nuevo con `hasFrontCover` debe dibujar en `drawObjectFrontLayer` **solo** lo que va por debajo del cuello del personaje sentado.
+4. **Asientos que se mueven** (columpio, flotador, etc.): la posición del avatar se calcula en `update()` con la **misma matemática** de la transformación de dibujo.
+5. Correr `python tools/test_digital_bodies_e2e.py` **y** `python tools/test_v42_ux_regressions.py` antes de cada commit.
+
+### 6.3 Backlog sugerido (siguiente agente)
+- Persistir en `localStorage` los objetos de mano soltados en el piso (hoy son de sesión porque no están en `CATALOG_DECOR`).
+- Exponer "Soltar" en el mando del celular (`controller.html`, botón contextual cuando `propId !== 'none'`).
+- Sonido/animación de "caída" al soltar (rebote con `obj.drop`) más marcado y sombra dinámica.
+- Revisar con la usuaria la percepción de profundidad cuando un amigo camina "detrás" de un mueble alto (hoy siempre se dibuja delante por decisión de UX infantil).

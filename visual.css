@@ -807,3 +807,40 @@ button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
   opacity: 0.9;
   transform: scale(1.18);
 }
+
+/* Botón flotante para soltar el objeto que el avatar tiene en la mano */
+.aw-drop-btn {
+  position: absolute;
+  bottom: 22px;
+  right: clamp(92px, 21cqh, 126px);
+  height: clamp(44px, 10.5cqh, 58px);
+  padding: 0 15px 0 12px;
+  border-radius: 999px;
+  border: 4px solid #ffffff;
+  background: linear-gradient(145deg, #fff1f2 0%, #fecdd3 55%, #fda4af 100%);
+  color: #881337;
+  font-family: 'Baloo 2', 'Fredoka', 'Nunito', sans-serif;
+  font-size: clamp(13px, 3cqh, 17px);
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #e11d48, 0 10px 20px rgba(225, 29, 72, 0.26);
+  transition: transform 0.18s var(--pop), opacity 0.2s, box-shadow 0.18s;
+  z-index: 4;
+}
+.aw-drop-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+}
+.aw-drop-btn:active {
+  transform: translateY(3px) scale(0.95);
+  box-shadow: 0 2px 0 #e11d48;
+}
+.aw-drop-btn.hidden {
+  display: none !important;
+}
+.aw-drop-ico {
+  font-size: clamp(17px, 4cqh, 22px);
+  line-height: 1;
+}
