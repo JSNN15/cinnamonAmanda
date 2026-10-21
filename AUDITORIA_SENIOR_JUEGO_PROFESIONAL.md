@@ -328,3 +328,21 @@ Se ejecutó una **auditoría QA exhaustiva e interactiva juego por juego (los 9 
   5. 🍨 **Copa Fuente de Helado (`ice_cream_fountain`, 30 ⭐)**
 - Con un solo toque en **`💖 ¡Usar en Casa!`** (`claimReward` / `equipReward`), el traje, corona, helado o mueble real se equipa o aparece inmediatamente en *Cinnamoroll World* sin restar estrellas al niño.
 
+
+
+---
+
+## 14. Evolución v38: Rediseño Visual HD Estilo Avatar World (Pazu Games) y Mapa Interactivo de Ciudad Cinnamoroll
+
+A partir de las referencias visuales oficiales de *Avatar World* (Pazu Games) proporcionadas por el usuario (escena interior de Pastelería/Supermercado, arte de interfaz e insignias con volumen, y mapa isométrico de ciudad), se ejecutó una reingeniería integral de dirección de arte y estructura en [`js/avatar-world.js`](file:///c:/Users/Juli%C3%A1nNeiraNova/OneDrive%20-%20CEIBO%20TECH/Documentos/Cinamonroll/js/avatar-world.js), [`js/icons.js`](file:///c:/Users/Juli%C3%A1nNeiraNova/OneDrive%20-%20CEIBO%20TECH/Documentos/Cinamonroll/js/icons.js), [`visual.css`](file:///c:/Users/Juli%C3%A1nNeiraNova/OneDrive%20-%20CEIBO%20TECH/Documentos/Cinamonroll/visual.css), [`controller.html`](file:///c:/Users/Juli%C3%A1nNeiraNova/OneDrive%20-%20CEIBO%20TECH/Documentos/Cinamonroll/controller.html) y [`js/controller-bridge.js`](file:///c:/Users/Juli%C3%A1nNeiraNova/OneDrive%20-%20CEIBO%20TECH/Documentos/Cinamonroll/js/controller-bridge.js):
+
+1. **Renderizado HD de Personajes Estilo Pazu (`drawVectorAvatar`, `drawFacialExpression`, `drawOutfit`, `drawPropShape`):**
+   - **Ojos Multicapa Expresivos:** Esclerótica blanca definida, iris grande con gradiente vertical de 3 paradas cromáticas (`#0369a1 -> #0ea5e9 -> #7dd3fc` o tonos ámbar/cacao), pupila profunda, **doble brillo especular (`catchlights`)**, **párpado superior grueso curvado con pestaña exterior** y **cejas expresivas arqueadas**.
+   - **Volumen Cel-Shaded y Calzado:** Sombra suave bajo el mentón, destello crescent en la frente, orejas con gradiente interior y pliegue 3D, mejillas aerografiadas con puntos de luz y **calcetines con vuelitos + zapatitos bicolor con suela y puntera**.
+   - **Ropa en Capas y Nuevos Accesorios (`boba_tea`, `shop_basket`):** Cuellos Peter Pan, mangas abullonadas, cinturones, delantal con bolsillo, jardinera denim con botones de bronce y nuevos props de mano inspirados en Pazu (*Vaso de Boba Tea con perlas de tapioca y domo* y *Canasta de Supermercado*).
+2. **Escenarios Interiores y Exteriores 2.5D de Alta Densidad (`drawRoomBackdrop`, `drawInteractiveObject`):**
+   - **Pastelería & Supermercado Dulce (`cafe`):** Piso dividido en baldosas cerámicas isométricas con reflejos + madera cálida, **Lámparas Colgantes de Flor (`drawFlowerPendantLamp`)** desde el techo con haz de luz cálido, **Góndola de Supermercado (`drawSupermarketShelves`)** de 3 niveles repleta de productos etiquetados (`LECHE`, `FRESA`, `MIEL`, `UVA`, `TÉ`, frascos y precios `$2`), **Caja Registradora Electrónica con visor LED `$2.00`**, lector POS, bolsas de regalo con moño y **Vitrina Freezer con cubitos de hielo**, paletas frutales y cupcakes.
+   - **Cuarto de Nubes (`bedroom`), Jardín Sakura (`garden`), Playa (`beach`) y Spa & Mascotas (`spa`):** Cama con dosel translúcido y respaldo capitoné, Tocador Hollywood con focos luminosos y perfumes, Jacuzzi con patito de hule y grifo dorado, **Mansión de Mascotas (`pet_house`) con perrito bebé animado** asomándose en la puerta, y Playa con isla de faro, velero en el mar y palmera con cocos.
+3. **Mapa Interactivo de Ciudad Cinnamoroll (`openMap`, `toggleMap`, `drawTownMap`):**
+   - Nuevo botón superior izquierdo **`🗺️ Ciudad` (`#btnAwMap`)** en pantalla y en el mando remoto (`#btnRemoteAvatarMap`), además de indicadores de habitación clicables (`.aw-dot`).
+   - Vista panorámica isométrica de la ciudad con el sol sonriente asomándose tras las colinas, calles pavimentadas con pasos de cebra, plaza central con fuente y los **5 edificios 2.5D interactivos** (*Pastelería & Súper*, *Casa de Nubes*, *Parque Sakura*, *Spa & Mascotas* y *Bahía Helada*) que permiten viajar con un toque a cualquier escenario.

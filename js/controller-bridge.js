@@ -611,6 +611,10 @@
         window.Cinnamo?.avatarWorldGame?.cycleLighting?.();
         return;
       }
+      if (data.type === 'avatarMap') {
+        window.Cinnamo?.avatarWorldGame?.toggleMap?.();
+        return;
+      }
 
       // Selección directa de Ciudad en Super Cinnamoroll Run
       if (data.type === 'selectCity') {

@@ -747,3 +747,63 @@ button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
   .aw-sheet-toys .aw-sheet-row { flex-direction: column-reverse; align-items: stretch; }
   .aw-sheet-toys .aw-sheet-done { align-self: flex-end; }
 }
+
+
+/* ============================================================
+   v38 · CINNAMOROLL WORLD HD (Estilo Pazu Avatar World + Mapa Ciudad)
+   ============================================================ */
+.aw-map-btn {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  height: clamp(46px, 11cqh, 62px);
+  padding: 0 14px 0 10px;
+  border-radius: 999px;
+  border: 4px solid #ffffff;
+  background: linear-gradient(145deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+  color: #0c4a6e;
+  font-family: 'Fredoka', 'Nunito', sans-serif;
+  font-size: clamp(14px, 3.2cqh, 19px);
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #0284c7, 0 10px 20px rgba(2, 132, 199, 0.28);
+  transition: transform 0.18s var(--pop), box-shadow 0.18s, background 0.2s;
+  z-index: 4;
+}
+.aw-map-btn .ci {
+  font-size: clamp(22px, 5.2cqh, 30px);
+  color: #0369a1;
+}
+.aw-map-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+.aw-map-btn:active {
+  transform: translateY(3px) scale(0.95);
+  box-shadow: 0 2px 0 #0284c7, 0 5px 12px rgba(2, 132, 199, 0.25);
+}
+.aw-map-btn.active {
+  background: linear-gradient(145deg, #fef08a 0%, #facc15 55%, #eab308 100%);
+  color: #713f12;
+  box-shadow: 0 5px 0 #ca8a04, 0 0 0 4px rgba(250, 204, 21, 0.4), 0 10px 22px rgba(202, 138, 4, 0.32);
+}
+.aw-map-btn.active .ci {
+  color: #854d0e;
+}
+.aw-room-dots {
+  pointer-events: auto;
+  padding: 6px 14px;
+  border: 3px solid #ffffff;
+  background: rgba(255, 255, 255, 0.9);
+}
+.aw-dot {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 8px;
+}
+.aw-dot:hover {
+  opacity: 0.9;
+  transform: scale(1.18);
+}

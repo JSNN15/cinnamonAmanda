@@ -709,6 +709,7 @@
 
         <!-- Controles remotos de Cinnamoroll World: Casa de Sueños (Habitaciones + Vestidor + Decoración + Luz) -->
         <div class="remote-mini-pills hidden aw-remote-strip" id="avatarActionStrip">
+          <button class="aw-remote-btn" id="btnRemoteAvatarMap" aria-label="Mapa de Ciudad"><i class="ci" data-icon="map"></i></button>
           <button class="aw-remote-btn" data-av-step="-1" aria-label="Cuarto anterior"><i class="ci" data-icon="arrow-left"></i></button>
           <button class="aw-remote-btn" data-av-custom="outfit" aria-label="Cambiar ropa"><i class="ci" data-icon="hanger"></i></button>
           <button class="aw-remote-btn" data-av-custom="hat" aria-label="Cambiar gorro"><i class="ci" data-icon="star"></i></button>
@@ -920,8 +921,8 @@
     </footer>
   </div>
 
-  <script src="js/icons.js?v=37"></script>
-  <script src="js/avatar-world.js?v=37"></script>
+  <script src="js/icons.js?v=38"></script>
+  <script src="js/avatar-world.js?v=38"></script>
   <script src="js/peerjs.min.js"></script>
   <script>
     (function () {
@@ -1240,6 +1241,13 @@
         btnRemoteAvatarLight.addEventListener('click', () => {
           playHapticBeep(580);
           sendData({ type: 'avatarLight', player: playerSlot });
+        });
+      }
+      const btnRemoteAvatarMap = document.getElementById('btnRemoteAvatarMap');
+      if (btnRemoteAvatarMap) {
+        btnRemoteAvatarMap.addEventListener('click', () => {
+          playHapticBeep(620);
+          sendData({ type: 'avatarMap', player: playerSlot });
         });
       }
 

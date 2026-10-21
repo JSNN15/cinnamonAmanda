@@ -38,6 +38,7 @@
     heart: '<path class="f" d="M12 20s-7.6-4.6-7.6-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.6 2.6C19.6 15.4 12 20 12 20z"/>',
     star: '<path class="f" d="m12 3.4 2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.8l-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"/>',
     sparkle: '<path class="f" d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"/><path d="M19 16.5v4M17 18.5h4"/>',
+    spark: '<path class="f" d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"/><path d="M19 16.5v4M17 18.5h4"/>',
     wing: '<path class="f" d="M3.6 16.4c4.2.6 9-1 12.4-4.6 2-2.1 3.4-4.8 4.4-7.8-5.6 1-11.2 3.4-14.6 8.4z"/><path d="M8 15.2c2.6-1.6 5-3.6 6.8-6M6.4 12.6c2-1 3.8-2.4 5.2-4.2"/>',
     cupcake: '<path class="f" d="M5.6 12.4h12.8l-1.8 7.2a1.4 1.4 0 0 1-1.4 1H8.8a1.4 1.4 0 0 1-1.4-1z"/><path class="f" d="M5 12.4a3.2 3.2 0 0 1 1.4-5.8A5.6 5.6 0 0 1 17 6.2a3.2 3.2 0 0 1 2 6.2z"/><path d="M10 15v3.8M14 15v3.8"/><circle class="dot" cx="12" cy="3.6" r="1.2"/>',
     brush: '<path class="f" d="M14.4 4.6 19.4 9.6 11 18a3.5 3.5 0 0 1-5 0 3.5 3.5 0 0 1 0-5z"/><path d="M7.6 16.4c-1 1.4-2.4 2.4-4.2 2.8.4-1.8 1.4-3.2 2.8-4.2"/><path d="M13 6l5 5"/>',
@@ -52,7 +53,10 @@
     voice: '<rect class="f" x="9" y="3.2" width="6" height="11" rx="3"/><path d="M5.8 11.4a6.2 6.2 0 0 0 12.4 0M12 17.6v3"/>',
     refresh: '<path d="M19.4 12a7.4 7.4 0 1 1-2.2-5.2"/><path d="M19.6 4.4v4.2h-4.2"/>',
     pause: '<rect class="f" x="6.4" y="5" width="4" height="14" rx="1.6"/><rect class="f" x="13.6" y="5" width="4" height="14" rx="1.6"/>',
-    hand: '<path class="f" d="M7.4 12.2V6.6a1.5 1.5 0 0 1 3 0v4.6V4.8a1.5 1.5 0 0 1 3 0v6.4V6.2a1.5 1.5 0 0 1 3 0v7.6l1.4-2a1.5 1.5 0 0 1 2.4 1.8l-3.4 5a5.2 5.2 0 0 1-4.3 2.3h-.8A4.3 4.3 0 0 1 7.4 16.6z"/>'
+    hand: '<path class="f" d="M7.4 12.2V6.6a1.5 1.5 0 0 1 3 0v4.6V4.8a1.5 1.5 0 0 1 3 0v6.4V6.2a1.5 1.5 0 0 1 3 0v7.6l1.4-2a1.5 1.5 0 0 1 2.4 1.8l-3.4 5a5.2 5.2 0 0 1-4.3 2.3h-.8A4.3 4.3 0 0 1 7.4 16.6z"/>',
+    map: '<path class="f" d="M3.6 6.2 9 4l6 2.4L20.4 4v13.8L15 20l-6-2.4L3.6 20z"/><path d="M9 4v13.6M15 6.4V20"/><circle class="dot" cx="12" cy="11.5" r="1.6"/>',
+    eye: '<circle class="f" cx="7.2" cy="12.5" r="3.6"/><circle class="f" cx="16.8" cy="12.5" r="3.6"/><path d="M10.8 12.2h2.4M3.6 12l-1.2-.8M20.4 12l1.2-.8"/>',
+    wand: '<path d="M4.5 19.5 14 10"/><path class="f" d="m16 3.8 1.4 3 3.2.5-2.3 2.2.5 3.2-2.8-1.5-2.8 1.5.5-3.2-2.3-2.2 3.2-.5z"/>'
   };
 
   // Colores de relleno por defecto para cada ícono (tono pastel de su tema)
@@ -60,9 +64,10 @@
     home: '#ffd7e8', medal: '#ffe08a', gamepad: '#d6e8ff', music: '#ffd0e6', 'music-off': '#e2e8f0',
     touch: '#ffe4cf', phone: '#dbeafe', play: '#ffffff', hanger: '#ffd0e6', toybox: '#ffe7a8',
     sun: '#ffe066', moon: '#fff1a8', sunset: '#ffb38a', friends: '#cdeaff', heart: '#ff9ec4',
-    star: '#ffe066', sparkle: '#fff3a8', wing: '#ffffff', cupcake: '#ffc2dc', brush: '#ffe08a',
+    star: '#ffe066', sparkle: '#fff3a8', spark: '#fff3a8', wing: '#ffffff', cupcake: '#ffc2dc', brush: '#ffe08a',
     cards: '#e3d6ff', flag: '#a7f3c4', gift: '#ffc59e', pencil: '#ffd0e6', puzzle: '#bfe6ff',
-    house: '#ffd0e6', flower: '#ffc2dc', cup: '#ffe7d1', voice: '#e3d6ff', pause: '#ffffff', hand: '#ffe4cf'
+    house: '#ffd0e6', flower: '#ffc2dc', cup: '#ffe7d1', voice: '#e3d6ff', pause: '#ffffff', hand: '#ffe4cf',
+    map: '#bae6fd', eye: '#dbeafe', wand: '#fde68a'
   };
 
   function svg(name, opts = {}) {
@@ -76,7 +81,7 @@
   function set(el, name, opts) {
     if (!el) return;
     el.dataset.icon = name;
-    el.innerHTML = svg(name, opts);
+    el.innerHTML = svg(el.dataset.icon, opts);
   }
 
   function hydrate(root = document) {
