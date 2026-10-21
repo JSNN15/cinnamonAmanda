@@ -78,7 +78,10 @@ def locate_chrome():
         r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
         os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
         shutil.which("chrome"),
-        shutil.which("google-chrome")
+        shutil.which("google-chrome"),
+        os.environ.get("CHROME_PATH"),
+        shutil.which("chromium"),
+        shutil.which("chromium-browser")
     ]
     for path in candidates:
         if path and os.path.exists(path):
@@ -258,6 +261,8 @@ class DigitalBodiesE2ETestRunner:
         ]
         if self.headless:
             args.insert(1, "--headless=new")
+        if hasattr(os, "geteuid") and os.geteuid() == 0:
+            args.insert(1, "--no-sandbox")
 
         self.chrome_proc = subprocess.Popen(args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
