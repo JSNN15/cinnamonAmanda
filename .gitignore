@@ -5,3 +5,4 @@ Thumbs.db
 scratch/
 tools/__pycache__/
 tools/*.png
+tools/test_digital_bodies_results.json

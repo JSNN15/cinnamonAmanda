@@ -4,6 +4,8 @@ Una suite de juegos web liviana, interactiva, relajante y de alta calidad pensad
 
 > **Aviso:** proyecto de fans, familiar y sin fines comerciales. No está afiliado, patrocinado ni aprobado por Sanrio. Cinnamoroll y sus personajes son marcas y obras de © Sanrio Co., Ltd. La licencia Apache-2.0 de este repositorio cubre solo el código; **no** cubre las imágenes de personajes de `assets/` ni los archivos `cinnamoroll_*.png`.
 
+**Registro de cambios:** cada versión, por qué se hizo y cómo se probó está en [`CHANGELOG.md`](./CHANGELOG.md). Desde la v43, todo cambio entra por Pull Request.
+
 **Sitio en Vivo (GitHub Pages):** [https://jsnn15.github.io/cinnamonAmanda/](https://jsnn15.github.io/cinnamonAmanda/)
 
 ---
