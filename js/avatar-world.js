@@ -192,38 +192,38 @@
           { id: 'oven', type: 'oven', name: 'Horno', x: 145, y: 382, w: 135, h: 130, state: false, fixed: true },
           { id: 'kitchen_mixer', type: 'mixer', name: 'Batidora de Recetas', x: 278, y: 390, w: 88, h: 98, state: false, fixed: true },
           { id: 'counter', type: 'counter', name: 'Vitrina', x: 445, y: 392, w: 190, h: 105, state: false, fixed: true },
-          { id: 'tea_table', type: 'tea_table', name: 'Mesa de té', x: 700, y: 438, w: 170, h: 86, seat: true, food: true, hasFrontCover: true },
-          { id: 'cafe_teapot', type: 'cafe_teapot', name: 'Tetera Humeante', x: 700, y: 395, w: 48, h: 46, gadget: 'teapot', custom: true, state: false },
-          { id: 'jukebox_cafe', type: 'music_box', name: 'Radio', x: 880, y: 392, w: 86, h: 110, state: false }
+          { id: 'tea_table', type: 'tea_table', name: 'Mesa de té', x: 700, y: 438, w: 170, h: 86, seat: true, food: true, hasFrontCover: true, fixed: true },
+          { id: 'cafe_teapot', type: 'cafe_teapot', name: 'Tetera Humeante', x: 772, y: 394, w: 52, h: 50, gadget: 'teapot', draggable: true, state: false },
+          { id: 'jukebox_cafe', type: 'music_box', name: 'Radio', x: 880, y: 392, w: 86, h: 110, state: false, fixed: true }
         ],
         bedroom: [
           { id: 'cloud_bed', type: 'cloud_bed', name: 'Cama Dosel 2.5D', x: 235, y: 428, w: 236, h: 145, seat: true, sleep: true, hasFrontCover: true, state: true, fixed: true },
           { id: 'vanity', type: 'vanity', name: 'Tocador Hollywood', x: 548, y: 404, w: 156, h: 148, state: false, fixed: true },
           { id: 'moon_lamp', type: 'moon_lamp', name: 'Planetario Lunar', x: 760, y: 402, w: 86, h: 152, light: true, state: true },
           { id: 'bedroom_Closet', type: 'bookshelf', name: 'Ropero & Librería', x: 895, y: 398, w: 112, h: 158, wardrobe: true, state: false, fixed: true },
-          { id: 'bed_perfume', type: 'perfume_bottle', name: 'Perfume Mágico', x: 505, y: 352, w: 44, h: 52, gadget: 'perfume', custom: true, state: false },
-          { id: 'bed_dryer', type: 'hair_dryer', name: 'Secador de Pelo', x: 590, y: 352, w: 48, h: 48, gadget: 'dryer', custom: true, state: false },
+          { id: 'bed_perfume', type: 'perfume_bottle', name: 'Perfume Mágico', x: 505, y: 352, w: 48, h: 56, gadget: 'perfume', draggable: true, state: false },
+          { id: 'bed_dryer', type: 'hair_dryer', name: 'Secador de Pelo', x: 590, y: 352, w: 52, h: 52, gadget: 'dryer', draggable: true, state: false },
           { id: 'plush_rug', type: 'rug', name: 'Alfombra Tejida', x: 530, y: 498, w: 250, h: 64, seat: true, flat: true }
         ],
         garden: [
           { id: 'swing', type: 'swing', name: 'Columpio', x: 230, y: 398, w: 165, h: 185, seat: true, swingAngle: 0, fixed: true, hasFrontCover: true },
           { id: 'fountain', type: 'fountain', name: 'Fuente', x: 525, y: 420, w: 175, h: 125, state: true, fixed: true },
           { id: 'party_stage', type: 'stage', name: 'Escenario', x: 805, y: 408, w: 200, h: 130, seat: true, state: false, fixed: true },
-          { id: 'watering_can', type: 'watering_can', name: 'Regadera Jardín', x: 375, y: 450, w: 56, h: 52, gadget: 'watering', custom: true, state: false },
-          { id: 'picnic_basket', type: 'picnic_basket', name: 'Canasta de Picnic', x: 485, y: 488, w: 72, h: 64, gadget: 'picnic', custom: true, state: false }
+          { id: 'watering_can', type: 'watering_can', name: 'Regadera Jardín', x: 375, y: 450, w: 58, h: 54, gadget: 'watering', draggable: true, state: false },
+          { id: 'picnic_basket', type: 'picnic_basket', name: 'Canasta de Picnic', x: 485, y: 488, w: 74, h: 64, gadget: 'picnic', draggable: true, state: false }
         ],
         beach: [
           { id: 'sand_castle', type: 'sand_castle', name: 'Castillo de Arena', x: 215, y: 452, w: 145, h: 105, toy: true, state: false, fixed: true },
           { id: 'ice_cream_cart', type: 'ice_cream_cart', name: 'Carrito de Helados', x: 495, y: 412, w: 175, h: 135, state: false, fixed: true },
           { id: 'beach_lounger', type: 'beach_lounger', name: 'Reposera de Playa', x: 785, y: 445, w: 180, h: 115, seat: true, sleep: true, state: false, fixed: true, hasFrontCover: true },
-          { id: 'flamingo_ring', type: 'flamingo_ring', name: 'Flotador Flamenco', x: 360, y: 485, w: 84, h: 80, seat: true, hasFrontCover: true, toy: true, custom: true, state: false },
+          { id: 'flamingo_ring', type: 'flamingo_ring', name: 'Flotador Flamenco', x: 360, y: 485, w: 88, h: 80, seat: true, hasFrontCover: true, toy: true, draggable: true, state: false },
           { id: 'surf_board', type: 'surf_board', name: 'Tabla de Surf', x: 635, y: 492, w: 125, h: 50, seat: true, toy: true }
         ],
         spa: [
           { id: 'bubble_tub', type: 'bubble_tub', name: 'Tina de Burbujas', x: 245, y: 432, w: 210, h: 118, seat: true, hasFrontCover: true, state: true, fixed: true },
           { id: 'pet_house', type: 'pet_house', name: 'Casita de Mascotas', x: 530, y: 412, w: 155, h: 122, toy: true, state: true, fixed: true },
-          { id: 'spa_pet_bowl', type: 'spa_pet_bowl', name: 'Plato de Comida Cachorro', x: 645, y: 450, w: 46, h: 36, gadget: 'pet_bowl', custom: true, state: false },
-          { id: 'spa_brush', type: 'spa_brush', name: 'Cepillo de Burbujas', x: 410, y: 435, w: 48, h: 48, gadget: 'brush', custom: true, state: false },
+          { id: 'spa_pet_bowl', type: 'spa_pet_bowl', name: 'Plato de Comida Cachorro', x: 645, y: 450, w: 50, h: 40, gadget: 'pet_bowl', draggable: true, state: false },
+          { id: 'spa_brush', type: 'spa_brush', name: 'Cepillo de Burbujas', x: 410, y: 435, w: 52, h: 52, gadget: 'brush', draggable: true, state: false },
           { id: 'salon_mirror', type: 'vanity', name: 'Tocador de Spa', x: 795, y: 392, w: 145, h: 145, wardrobe: true, fixed: true },
           { id: 'aroma_lamp', type: 'fairy_lamp', name: 'Aroma Relajante', x: 710, y: 410, w: 54, h: 92, light: true, state: true }
         ]
@@ -274,7 +274,7 @@
     /* ---------- Guardado: ropa de cada amigo y la decoración de cada cuarto ---------- */
     loadSavedState() {
       try {
-        const raw = localStorage.getItem('cinna_avatar_world_v1');
+        const raw = localStorage.getItem('cinna_avatar_world_v2');
         if (!raw) return;
         const parsed = JSON.parse(raw);
         for (const s of [1, 2, 3]) {
@@ -306,7 +306,7 @@
         for (const room of ROOMS) {
           decor[room.id] = this.roomObjects[room.id].filter(o => o.custom).map(o => ({ type: o.type, x: Math.round(o.x), y: Math.round(o.y) }));
         }
-        localStorage.setItem('cinna_avatar_world_v1', JSON.stringify({ avatars, decor }));
+        localStorage.setItem('cinna_avatar_world_v2', JSON.stringify({ avatars, decor }));
       } catch (_) {}
     }
 
@@ -856,12 +856,21 @@
           return;
         }
 
-        // 1. Amigos: se pueden tomar y arrastrar
+        this._lastTapPt = pt;
+
+        // 1A. Prioridad máxima: Gadgets interactivos y comida suelta sobre muebles (ej. perfume/secador sobre tocador, tetera sobre mesa)
+        const priorityGadgets = this.getRoomItems().filter(o => o.gadget || (o.food && !o.seat));
+        for (const obj of priorityGadgets) {
+          if (Math.abs(pt.x - obj.x) < obj.w / 2 + 14 && pt.y >= obj.y - obj.h - 8 && pt.y <= obj.y + 18) {
+            this.dragState = { kind: 'object', target: obj, pointerId: e.pointerId, offsetX: obj.x - pt.x, offsetY: obj.y - pt.y, startX: pt.x, startY: pt.y, moved: false };
+            return;
+          }
+        }
+
+        // 1B. Amigos: se pueden tomar y arrastrar (sin levantarse del asiento hasta que realmente se arrastren)
         const activeAvs = Object.values(this.avatars).filter(a => a.active).sort((a, b) => b.y - a.y);
         for (const av of activeAvs) {
-          if (Math.abs(pt.x - av.x) < 52 && pt.y >= av.y - 140 && pt.y <= av.y + 18) {
-            av.sittingOn = null;
-            av.sleeping = false;
+          if (Math.abs(pt.x - av.x) < 38 && pt.y >= av.y - 102 && pt.y <= av.y + 14) {
             av.targetX = av.targetY = null;
             av.pendingObj = null;
             this.dragState = { kind: 'avatar', target: av, pointerId: e.pointerId, offsetX: av.x - pt.x, offsetY: av.y - pt.y, startX: pt.x, startY: pt.y, moved: false };
@@ -870,18 +879,89 @@
           }
         }
 
-        // 2. Objetos: tocar = usar, arrastrar = mover
-        const objs = [...this.getRoomItems()].sort((a, b) => b.y - a.y);
+        // 2. Objetos y muebles de la habitación (ordenados priorizando objetos no fijos primero, luego por profundidad Y)
+        const objs = [...this.getRoomItems()].sort((a, b) => {
+          if (!!a.fixed !== !!b.fixed) return a.fixed ? 1 : -1;
+          return b.y - a.y;
+        });
         for (const obj of objs) {
-          const top = obj.flat ? obj.y - obj.h : obj.y - obj.h;
+          const top = obj.y - obj.h;
           if (Math.abs(pt.x - obj.x) < obj.w / 2 + 12 && pt.y >= top && pt.y <= obj.y + 18) {
             this.dragState = { kind: 'object', target: obj, pointerId: e.pointerId, offsetX: obj.x - pt.x, offsetY: obj.y - pt.y, startX: pt.x, startY: pt.y, moved: false };
             return;
           }
         }
 
-        // 3. La ventana (o el sol del jardín) cambia el momento del día
-        const sky = room.outdoor ? { x: 860, y: 96, r: 54 } : { x: 490, y: 175, r: 100 };
+        // 3A. Elementos interactivos del escenario en Pastelería & Súper (Góndola de Supermercado, Póster Boba 2x1, Repisa de Frascos, Lámparas Colgantes)
+        if (room.id === 'cafe') {
+          // Góndola del Supermercado ("★ SÚPER CINNA $1 ★" en x: 210, y: 290)
+          if (pt.x >= 104 && pt.x <= 318 && pt.y >= 160 && pt.y <= 380) {
+            const p1 = this.avatars[1];
+            const shelfRow = pt.y < 252 ? 'boba_tea' : (pt.y < 312 ? 'roll' : 'shop_basket');
+            p1.propId = shelfRow;
+            p1.heldItem = shelfRow;
+            if (shelfRow !== 'shop_basket') {
+              p1.chewTimer = 2.4;
+              p1.exprId = 'yummy';
+              this.showEmotionBubble(p1, 'yum');
+            } else {
+              p1.exprId = 'starry';
+              this.showEmotionBubble(p1, 'star');
+            }
+            p1.hop = 1;
+            if (A()) A().sparkleChime();
+            this.spawnBurst(pt.x, pt.y, '#fde047', 18);
+            return;
+          }
+          // Póster 2x1 BOBA (x: 695, y: 195)
+          if (Math.abs(pt.x - 695) < 52 && Math.abs(pt.y - 195) < 46) {
+            const p1 = this.avatars[1];
+            p1.propId = 'boba_tea';
+            p1.heldItem = 'boba_tea';
+            p1.chewTimer = 2.4;
+            p1.exprId = 'yummy';
+            p1.hop = 1;
+            this.showEmotionBubble(p1, 'yum');
+            if (A()) A().celebrate();
+            this.spawnBurst(pt.x, pt.y, '#f472b6', 18);
+            return;
+          }
+          // Estante de frascos de dulces (x: 815, y: 232)
+          if (Math.abs(pt.x - 815) < 88 && Math.abs(pt.y - 222) < 38) {
+            const p1 = this.avatars[1];
+            p1.hop = 0.9;
+            this.showEmotionBubble(p1, 'sparkle');
+            if (A()) A().bubblePop(3);
+            this.spawnBurst(pt.x, pt.y, '#60a5fa', 16);
+            return;
+          }
+          // Lámparas de flor colgantes (x: 360 o 680, y < 85)
+          if (pt.y < 88 && (Math.abs(pt.x - 360) < 48 || Math.abs(pt.x - 680) < 48)) {
+            if (A()) A().sparkleChime();
+            this.spawnBurst(pt.x, 62, '#fef08a', 16);
+            return;
+          }
+        }
+
+        // 3B. Elementos interactivos del escenario en Spa (Estante de Sales de Baño, Cuadro Flor, Lámpara Colgante)
+        if (room.id === 'spa') {
+          if (Math.abs(pt.x - 260) < 88 && Math.abs(pt.y - 222) < 38) {
+            const p1 = this.avatars[1];
+            p1.hop = 0.9;
+            this.showEmotionBubble(p1, 'sparkle');
+            if (A()) A().bubblePop(3);
+            this.spawnBurst(pt.x, pt.y, '#99f6e4', 16);
+            return;
+          }
+          if (pt.y < 88 && Math.abs(pt.x - 500) < 48) {
+            if (A()) A().sparkleChime();
+            this.spawnBurst(pt.x, 62, '#99f6e4', 16);
+            return;
+          }
+        }
+
+        // 3C. La ventana (o el sol del jardín/playa) cambia el momento del día
+        const sky = room.outdoor ? { x: 860, y: 96, r: 58 } : { x: 490, y: 175, r: 100 };
         if (Math.hypot(pt.x - sky.x, (pt.y - sky.y) * (room.outdoor ? 1 : 1.25)) < sky.r) {
           this.cycleLighting();
           return;
@@ -898,7 +978,13 @@
         e.preventDefault();
         const pt = toLogical(e);
         if (!ds.moved && Math.hypot(pt.x - ds.startX, pt.y - ds.startY) > 10) {
+          // Los muebles arquitectónicos fijos (fixed: true) no se desplazan por accidente al tocarlos
+          if (ds.kind === 'object' && ds.target.fixed) return;
           ds.moved = true;
+          if (ds.kind === 'avatar') {
+            ds.target.sittingOn = null;
+            ds.target.sleeping = false;
+          }
           if (ds.kind === 'object' && ds.target.custom && trash) trash.classList.remove('hidden');
         }
         if (!ds.moved) return;
@@ -909,8 +995,21 @@
         } else {
           const obj = ds.target;
           obj.x = Math.max(60, Math.min(this.logicalW - 60, pt.x + ds.offsetX));
-          obj.y = Math.max(obj.fixed ? this.floorY - 20 : this.floorY - 40, Math.min(this.logicalH - 16, pt.y + ds.offsetY));
+          obj.y = Math.max(this.floorY - 120, Math.min(this.logicalH - 16, pt.y + ds.offsetY));
           if (trash) trash.classList.toggle('hot', overTrash(e));
+
+          // Reacción en vivo al pasar un gadget cerca de un personaje o mascota mientras se arrastra
+          if (obj.gadget) {
+            obj.state = true;
+            for (const s of [1, 2, 3]) {
+              const av = this.avatars[s];
+              if (av.active && Math.hypot(av.x - obj.x, (av.y - 55) - (obj.y - 20)) < 75) {
+                if (obj.gadget === 'dryer') av.earVel = (Math.random() - 0.5) * 1.8;
+                if (obj.gadget === 'perfume') av.exprId = 'love';
+                if (obj.gadget === 'brush') av.exprId = 'starry';
+              }
+            }
+          }
         }
       };
 
@@ -925,8 +1024,14 @@
         if (ds.kind === 'avatar') {
           ds.target.lifted = false;
           if (!ds.moved) {
-            // Tocar a un amigo: salta feliz y abre su ropa si se toca de nuevo
             const av = ds.target;
+            // Si está sentado en la mesa de té y lo tocan, toma el té/pastel; si está durmiendo en la cama, se despierta
+            if (av.sittingOn?.food && this._lastTapAv !== av) {
+              this.feedAvatar(av, av.sittingOn);
+              this._lastTapAv = av;
+              this._lastTapAt = performance.now();
+              return;
+            }
             av.hop = 1;
             this.showEmotionBubble(av, 'heart');
             if (A()) A().kawaiiChirp?.('happy');
@@ -969,12 +1074,15 @@
           return;
         }
 
-        // Toque simple: lámparas responden al instante; lo demás, P1 camina y lo usa
+        // Toque simple: todos los electrodomésticos, cajones, puertas, juguetes, lámparas y gadgets responden AL INSTANTE al tocarlos;
+        // los asientos/camas hacen caminar al personaje hasta ahí para sentarse o acostarse.
         const p1 = this.avatars[1];
-        if (obj.light || Math.hypot(p1.x - obj.x, p1.y - obj.y) < 110) {
+        if (!obj.seat && !obj.sleep) {
+          this.triggerObjectInteraction(obj, p1);
+        } else if (Math.hypot(p1.x - obj.x, p1.y - obj.y) < 135) {
           this.triggerObjectInteraction(obj, p1);
         } else {
-          this.walkTo(p1, obj.x + (p1.x < obj.x ? -1 : 1) * Math.min(70, obj.w / 2), Math.max(obj.y + 10, this.floorY + 10), obj);
+          this.walkTo(p1, obj.x + (p1.x < obj.x ? -1 : 1) * Math.min(60, obj.w / 2), Math.max(obj.y + 6, this.floorY + 6), obj);
         }
       };
 
@@ -1010,6 +1118,11 @@
       } else if (obj.type === 'bubble_tub') {
         av.x = obj.x + (av.slot - 1) * 32;
         av.y = obj.y - 18;
+      } else if (obj.type === 'tea_table') {
+        const side = av.slot === 2 ? 1 : -1;
+        av.x = obj.x + side * 56;
+        av.y = obj.y - 14;
+        av.facing = -side;
       } else {
         av.x = obj.x;
         av.y = obj.y - (sleep ? 12 : 8);
@@ -1150,7 +1263,10 @@
         obj.state = !obj.state; // Abre/cierra el cajón 2.5D con joyas
         if (A()) A().sparkleChime();
         this.spawnBurst(obj.x, obj.y - 45, '#f472b6', 14);
-        if (obj.state) this.openWardrobe(av?.slot || 1);
+        const tappedDrawerOnly = this._lastTapPt && Math.abs(this._lastTapPt.x - obj.x) < 75 && this._lastTapPt.y > obj.y - 68;
+        this._lastTapPt = null;
+        if (av) { av.hop = 0.8; av.exprId = 'starry'; this.showEmotionBubble(av, 'sparkle'); }
+        if (obj.state && !tappedDrawerOnly) this.openWardrobe(av?.slot || 1);
         return;
       }
       if (obj.wardrobe) { obj.state = !obj.state; this.openWardrobe(av?.slot || 1); return; }
@@ -3237,10 +3353,10 @@
         ctx.quadraticCurveTo(x - 60, y - 48, x - 76, y - 56);
         ctx.closePath();
         fillStroke(ctx, '#fce7f3', 2.2);
-        // Vajilla en primer plano sobre la cintura del avatar sentado
-        this.drawTeapot(ctx, x - 38, y - 62, 0.78);
+        // Vajilla en primer plano sobre la cintura del avatar sentado (2 tazas laterales y pastel central; la tetera es el gadget interactivo cafe_teapot)
+        this.drawTeacup(ctx, x - 44, y - 60, 0.82);
         this.drawCakeSlice(ctx, x + 2, y - 60, 0.85);
-        this.drawTeacup(ctx, x + 42, y - 62, 0.82);
+        this.drawTeacup(ctx, x + 44, y - 60, 0.82);
       } else if (obj.type === 'swing') {
         // Multi-layer front cover: Front floral vine ropes wrapping in front of character's hands
         ctx.save();
