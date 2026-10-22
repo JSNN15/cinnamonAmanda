@@ -17,6 +17,25 @@ Al publicar una versión, subir `?v=NN` en `index.html` y `controller.html` y `C
 
 ---
 
+## v44 · 2026-10-22 · Personajes de World parecidos a los PNG oficiales
+
+**Por qué:** Julian ve los PNG oficiales (inicio, vuelo, run) más fieles que el dibujo de World.
+Poner los PNG en World quitaría la ropa y las poses, así que se ajustó el dibujo para que se
+parezca a ellos (comparación en `visual-v44/propuesta/`).
+
+**Qué cambió** (`js/avatar-world.js`):
+- **Colores planos**: sin degradados ni brillos en cabeza, orejas, ojos y mejillas.
+- **Contorno** café más suave solo en los personajes (`CHAR_OUT`).
+- **Cara** más ancha; ojos más grandes y separados; boca en "v" más grande; mejillas afuera.
+- **Orejas** más largas y anchas, saliendo desde arriba de la cabeza.
+- **Colores** más cercanos a los oficiales en Mocha, Chiffon y Pompompurin.
+- Nuevo traje **"Como es"**: sin ropa, con cuerpo y patitas del color del personaje.
+- Lentes reubicados a la nueva posición de los ojos.
+
+**Probado:** 44/44 + 13/13 pruebas automáticas; capturas del vestidor y de los 3 amigos.
+
+---
+
 ## v43 · 2026-10-21 · Caritas fieles a Cinnamoroll y sus amigos
 
 **Por qué:** la v38 cambió los ojos de los personajes de World por ojos de anime humano

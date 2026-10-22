@@ -12,18 +12,22 @@
 (function () {
   const A = () => window.Cinnamo?.audio;
   const OUT = '#5c3d2e'; // contorno cálido de todo el juego
+  // Contorno de los personajes: café más suave, como en el arte oficial de Sanrio
+  const CHAR_OUT = '#6b4636';
+  let activeOut = OUT;
   const TAU = Math.PI * 2;
 
   const CHARACTER_BASES = [
     { id: 'cinna', name: 'Cinnamoroll', bodyColor: '#ffffff', shadowTint: '#e0f2fe', earType: 'long_floppy', earColor: '#ffffff', innerEar: '#ffd6e7', cheekColor: '#ff9ebb', eyeColor: '#4aa8e8', tailType: 'cinnamon_roll' },
     { id: 'milk', name: 'Milk', bodyColor: '#fffdf9', shadowTint: '#e0f2fe', earType: 'short_floppy', earColor: '#fffdf9', innerEar: '#ffd6e7', cheekColor: '#ffb3c6', eyeColor: '#3b2416', tailType: 'curl', hasPacifier: true, topCurl: true },
-    { id: 'mocha', name: 'Mocha', bodyColor: '#c69c72', shadowTint: '#9c734b', earType: 'long_wavy', earColor: '#c69c72', innerEar: '#f5cba7', cheekColor: '#ff8da1', eyeColor: '#4a2c11', tailType: 'fluffy', earFlowers: true },
-    { id: 'chiffon', name: 'Chiffon', bodyColor: '#fdebd0', shadowTint: '#f5cba7', earType: 'fluffy_cloud', earColor: '#ecc79b', innerEar: '#fadbd8', cheekColor: '#ff85a2', eyeColor: '#5c3d2e', tailType: 'fluffy_poof' },
-    { id: 'purin', name: 'Pompompurin', bodyColor: '#fde68a', shadowTint: '#f5c451', earType: 'round_droop', earColor: '#f2cd6b', innerEar: '#fde047', cheekColor: '#fca5a5', eyeColor: '#5c3d2e', tailType: 'fluffy', defaultBeret: true },
+    { id: 'mocha', name: 'Mocha', bodyColor: '#dcae86', shadowTint: '#b98a60', earType: 'long_wavy', earColor: '#dcae86', innerEar: '#f5cba7', cheekColor: '#ff8da1', eyeColor: '#4a2c11', tailType: 'fluffy', earFlowers: true },
+    { id: 'chiffon', name: 'Chiffon', bodyColor: '#fdf1cf', shadowTint: '#f3d9a8', earType: 'fluffy_cloud', earColor: '#efcf9a', innerEar: '#fadbd8', cheekColor: '#ff85a2', eyeColor: '#5c3d2e', tailType: 'fluffy_poof' },
+    { id: 'purin', name: 'Pompompurin', bodyColor: '#fdeea6', shadowTint: '#f5d77a', earType: 'round_droop', earColor: '#fae38f', innerEar: '#fde047', cheekColor: '#fca5a5', eyeColor: '#5c3d2e', tailType: 'fluffy', defaultBeret: true },
     { id: 'cappuccino', name: 'Cappuccino', bodyColor: '#e6ccb2', shadowTint: '#ddb892', earType: 'short_floppy', earColor: '#b08968', innerEar: '#f5ebe0', cheekColor: '#fca5a5', eyeColor: '#5c3d2e', tailType: 'fluffy', mouthCream: true }
   ];
 
   const OUTFITS = [
+    { id: 'natural', name: 'Como es', primary: '#ffffff', style: 'natural' },
     { id: 'sky_dress', name: 'Vestido Nube', primary: '#7dd3fc', secondary: '#e0f2fe', ribbon: '#f472b6', style: 'dress' },
     { id: 'chef_apron', name: 'Chef Pastelera', primary: '#fda4af', secondary: '#ffffff', ribbon: '#e11d48', style: 'apron' },
     { id: 'star_pajama', name: 'Pijama Estelar', primary: '#c4b5fd', secondary: '#fef08a', ribbon: '#8b5cf6', style: 'pajama' },
@@ -133,7 +137,7 @@
   const fillStroke = (ctx, fill, lw = 2.6) => {
     if (fill) { ctx.fillStyle = fill; ctx.fill(); }
     ctx.lineWidth = lw;
-    ctx.strokeStyle = OUT;
+    ctx.strokeStyle = activeOut;
     ctx.stroke();
   };
   const starPath = (ctx, x, y, r, inner = 0.45, points = 5) => {
@@ -4125,6 +4129,12 @@
 
     /* ---------- PERSONAJES HD · ESTILO AVATAR WORLD PAZU GAMES ---------- */
     drawVectorAvatar(ctx, av, opts = {}) {
+      const prevOut = activeOut;
+      activeOut = CHAR_OUT;
+      try { this.drawVectorAvatarBody(ctx, av, opts); } finally { activeOut = prevOut; }
+    }
+
+    drawVectorAvatarBody(ctx, av, opts = {}) {
       const base = CHARACTER_BASES.find(b => b.id === av.baseId) || CHARACTER_BASES[0];
       const outfit = OUTFITS.find(o => o.id === av.outfitId) || OUTFITS[0];
       const t = opts.still ? 0 : this.time;
@@ -4173,7 +4183,7 @@
       }
 
       ctx.scale(av.facing || 1, 1);
-      ctx.strokeStyle = OUT;
+      ctx.strokeStyle = activeOut;
       ctx.lineWidth = 2.8;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -4200,6 +4210,12 @@
         ctx.save();
         ctx.translate(lx, isSitting ? -11 : -7);
         if (isSitting) ctx.rotate(side * -0.25);
+        if (outfit.style === 'natural') {
+          // Patitas cortas del mismo color del cuerpo, como en el arte oficial
+          roundRect(ctx, -9, -12, 18, 16, 8); fillStroke(ctx, base.bodyColor, 2.6);
+          ctx.restore();
+          continue;
+        }
         // Calcetín blanco con borde superior
         roundRect(ctx, -8, -9, 16, 10, 4); fillStroke(ctx, '#ffffff', 2.2);
         // Zapatito kawaii con suela y puntera brillante
@@ -4214,8 +4230,17 @@
         ctx.restore();
       }
 
-      // Vestuario en capas
-      this.drawOutfit(ctx, outfit);
+      // Vestuario en capas (o el cuerpito tal cual)
+      if (outfit.style === 'natural') {
+        ctx.beginPath();
+        ctx.moveTo(-21, -46); ctx.quadraticCurveTo(-29, -16, -24, -8);
+        ctx.quadraticCurveTo(0, -3, 24, -8);
+        ctx.quadraticCurveTo(29, -16, 21, -46);
+        ctx.closePath();
+        fillStroke(ctx, base.bodyColor, 2.8);
+      } else {
+        this.drawOutfit(ctx, outfit);
+      }
 
       // Sombra suave bajo el mentón sobre el cuello
       ctx.fillStyle = 'rgba(92, 61, 46, 0.14)';
@@ -4225,15 +4250,8 @@
       this.drawArticulatedEars(ctx, base, av.earAngle || 0);
 
       // Cabeza "mochi": más ancha que alta, como los personajes reales, con sombreado suave
-      const headGrad = ctx.createLinearGradient(0, -98, 0, -38);
-      headGrad.addColorStop(0, base.bodyColor);
-      headGrad.addColorStop(0.62, base.bodyColor);
-      headGrad.addColorStop(1, base.shadowTint);
-      ctx.beginPath(); ctx.ellipse(0, -68, 43, 31, 0, 0, TAU); fillStroke(ctx, headGrad, 2.9);
-
-      // Brillo suave en la frente
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-      ctx.beginPath(); ctx.ellipse(-14, -88, 13, 4, -0.18, 0, TAU); ctx.fill();
+      // Relleno plano, sin brillos: así se ven los personajes en el arte oficial
+      ctx.beginPath(); ctx.ellipse(0, -68, 46, 30.5, 0, 0, TAU); fillStroke(ctx, base.bodyColor, 2.9);
 
       if (base.topCurl) {
         // Rulito de Milk: una línea en espiral sobre la cabeza
@@ -4251,14 +4269,10 @@
 
       // Mejillas rosadas planas y difuminadas, como en el arte oficial
       ctx.save();
-      for (const cx of [-27, 27]) {
-        const blushG = ctx.createRadialGradient(cx, -58, 1, cx, -58, 10);
-        blushG.addColorStop(0, base.cheekColor);
-        blushG.addColorStop(0.55, base.cheekColor);
-        blushG.addColorStop(1, 'rgba(255, 158, 187, 0)');
-        ctx.fillStyle = blushG;
-        ctx.globalAlpha = 0.6;
-        ctx.beginPath(); ctx.ellipse(cx, -58, 10, 6.5, 0, 0, TAU); ctx.fill();
+      for (const cx of [-30, 30]) {
+        ctx.fillStyle = base.cheekColor;
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath(); ctx.ellipse(cx, -58, 8.5, 5.2, 0, 0, TAU); ctx.fill();
       }
       ctx.restore();
       this.drawFacialExpression(ctx, base, av, t);
@@ -4348,7 +4362,7 @@
         ctx.fillStyle = '#facc15';
         ctx.beginPath(); ctx.arc(-12, -34, 2.8, 0, TAU); ctx.arc(12, -34, 2.8, 0, TAU); ctx.fill();
       } else if (style === 'kimono') {
-        ctx.beginPath(); ctx.moveTo(-14, -46); ctx.lineTo(4, -24); ctx.moveTo(14, -46); ctx.lineTo(-4, -24); ctx.lineWidth = 2.4; ctx.strokeStyle = OUT; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-14, -46); ctx.lineTo(4, -24); ctx.moveTo(14, -46); ctx.lineTo(-4, -24); ctx.lineWidth = 2.4; ctx.strokeStyle = activeOut; ctx.stroke();
         roundRect(ctx, -24, -28, 48, 10, 4); fillStroke(ctx, outfit.secondary, 2.2);
         this.drawBowShape(ctx, 0, -23, 0.35, outfit.ribbon);
         this.drawFlower(ctx, 13, -16, 3.5, '#ffffff');
@@ -4384,17 +4398,17 @@
     drawArticulatedEars(ctx, base, earAngle) {
       ctx.save();
       const SHAPES = {
-        long_floppy: { len: 58, root: 9, tip: 15, tilt: 1.2, inner: false },
-        long_wavy: { len: 56, root: 9, tip: 15, tilt: 1.15, inner: false },
-        short_floppy: { len: 36, root: 9, tip: 12, tilt: 1.0, inner: false },
-        round_droop: { len: 30, root: 10, tip: 13, tilt: 0.12, inner: false },
+        long_floppy: { len: 76, root: 12, tip: 21, tilt: 1.42, inner: false },
+        long_wavy: { len: 74, root: 12, tip: 20, tilt: 1.3, inner: false },
+        short_floppy: { len: 46, root: 11, tip: 16, tilt: 1.15, inner: false },
+        round_droop: { len: 38, root: 12, tip: 15, tilt: 0.35, inner: false },
         fluffy_cloud: { len: 50, tilt: 1.12 }
       };
       const sh = SHAPES[base.earType] || SHAPES.short_floppy;
       for (const side of [-1, 1]) {
         ctx.save();
         if (base.earType === 'round_droop') ctx.translate(side * 36, -80);
-        else ctx.translate(side * 30, -84);
+        else ctx.translate(side * 27, -89);
         ctx.rotate(side * -(sh.tilt + earAngle));
         if (base.earType === 'fluffy_cloud') {
           const puffs = [[0, 8, 11], [-3, 20, 13], [4, 32, 14], [-1, 45, 13]];
@@ -4410,14 +4424,7 @@
           ctx.arc(0, len - tip, tip, Math.PI, 0, true);
           ctx.bezierCurveTo(tip + 1, len * 0.7, root + 2, len * 0.45, root, 0);
           ctx.closePath();
-          const earG = ctx.createLinearGradient(0, 0, 0, len);
-          earG.addColorStop(0, base.shadowTint);
-          earG.addColorStop(0.35, base.earColor);
-          earG.addColorStop(1, base.earColor);
-          fillStroke(ctx, earG, 2.8);
-          // Brillo suave a lo largo de la oreja
-          ctx.fillStyle = 'rgba(255,255,255,0.45)';
-          ctx.beginPath(); ctx.ellipse(side * 3, len * 0.6, tip * 0.25, len * 0.18, 0, 0, TAU); ctx.fill();
+          fillStroke(ctx, base.earColor, 2.8);
         }
         ctx.restore();
       }
@@ -4459,11 +4466,11 @@
     drawFacialExpression(ctx, base, av, t = this.time) {
       ctx.save();
       const expr = av.sleeping ? 'sleepy' : av.exprId;
-      const EX = 17, EY = -66;
+      const EX = 21, EY = -65;
+      const OUT = activeOut;
       const blue = (base.eyeColor || '').toLowerCase() === '#4aa8e8' || (base.eyeColor || '').toLowerCase() === '#38bdf8';
-      const eyeTop = blue ? '#2f80c9' : '#2a170c';
-      const eyeBottom = blue ? '#62b8f0' : '#4a2c1a';
-      ctx.strokeStyle = OUT;
+      const eyeBottom = blue ? '#4fb0ea' : '#3a2418';
+      ctx.strokeStyle = activeOut;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
@@ -4489,11 +4496,8 @@
           ctx.beginPath(); ctx.arc(ex - 1.8, ey - 1.4, 1.1, 0, TAU); ctx.fill();
         } else {
           const big = expr === 'starry' ? 1.12 : 1;
-          const rx = 4.1 * big, ry = 5.9 * big;
-          const eg = ctx.createLinearGradient(ex, ey - ry, ex, ey + ry);
-          eg.addColorStop(0, eyeTop);
-          eg.addColorStop(1, eyeBottom);
-          ctx.fillStyle = eg;
+          const rx = 4.4 * big, ry = 6.3 * big;
+          ctx.fillStyle = eyeBottom;
           ctx.beginPath(); ctx.ellipse(ex, ey, rx, ry, 0, 0, TAU); ctx.fill();
           // Brillo blanco arriba (y una chispa extra cuando está emocionada)
           ctx.fillStyle = '#ffffff';
@@ -4533,8 +4537,8 @@
         ctx.restore();
       } else {
         // Boquita abierta: borde superior casi recto y fondo redondo, con lengüita rosada
-        const w = expr === 'party' || expr === 'starry' ? 4.6 : 3.8;
-        const d = expr === 'party' || expr === 'starry' ? 6.4 : 5.2;
+        const w = expr === 'party' || expr === 'starry' ? 6 : 5;
+        const d = expr === 'party' || expr === 'starry' ? 8.5 : 7;
         ctx.beginPath();
         ctx.moveTo(-w, -59);
         ctx.quadraticCurveTo(0, -58, w, -59);
@@ -4555,30 +4559,30 @@
       if (!glassesId || glassesId === 'none') return;
       ctx.save();
       ctx.lineWidth = 2.5;
-      ctx.strokeStyle = OUT;
+      ctx.strokeStyle = activeOut;
       if (glassesId === 'hearts') {
-        for (const dx of [-15.5, 15.5]) {
+        for (const dx of [-21, 21]) {
           heartPath(ctx, dx, -69, 9.5); fillStroke(ctx, 'rgba(244, 114, 182, 0.55)', 2.4);
           ctx.fillStyle = 'rgba(255,255,255,0.65)'; ctx.beginPath(); ctx.arc(dx - 3, -72, 2, 0, TAU); ctx.fill();
         }
-        ctx.beginPath(); ctx.moveTo(-6, -71); ctx.lineTo(6, -71); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-11, -71); ctx.lineTo(11, -71); ctx.stroke();
       } else if (glassesId === 'stars') {
-        for (const dx of [-15.5, 15.5]) { starPath(ctx, dx, -69, 11.5, 0.5); fillStroke(ctx, 'rgba(253, 224, 71, 0.65)', 2.2); }
-        ctx.beginPath(); ctx.moveTo(-5, -70); ctx.lineTo(5, -70); ctx.stroke();
+        for (const dx of [-21, 21]) { starPath(ctx, dx, -69, 11.5, 0.5); fillStroke(ctx, 'rgba(253, 224, 71, 0.65)', 2.2); }
+        ctx.beginPath(); ctx.moveTo(-10, -70); ctx.lineTo(10, -70); ctx.stroke();
       } else if (glassesId === 'round') {
-        for (const dx of [-15.5, 15.5]) {
+        for (const dx of [-21, 21]) {
           ctx.fillStyle = 'rgba(186,230,253,0.38)';
           ctx.beginPath(); ctx.arc(dx, -69, 9.5, 0, TAU); ctx.fill(); ctx.stroke();
           ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.moveTo(dx - 4, -73); ctx.lineTo(dx + 1, -67); ctx.stroke();
-          ctx.strokeStyle = OUT; ctx.lineWidth = 2.5;
+          ctx.strokeStyle = activeOut; ctx.lineWidth = 2.5;
         }
-        ctx.beginPath(); ctx.moveTo(-6, -69); ctx.lineTo(6, -69); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(-11, -69); ctx.lineTo(11, -69); ctx.stroke();
       } else if (glassesId === 'sleep_mask') {
-        roundRect(ctx, -28, -78, 56, 18, 9); fillStroke(ctx, '#c084fc', 2.4);
+        roundRect(ctx, -32, -78, 64, 18, 9); fillStroke(ctx, '#c084fc', 2.4);
         ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(-13, -71, 5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
-        ctx.beginPath(); ctx.arc(13, -71, 5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+        ctx.beginPath(); ctx.arc(-18, -71, 5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+        ctx.beginPath(); ctx.arc(18, -71, 5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
       }
       ctx.restore();
     }
@@ -4606,7 +4610,7 @@
         ctx.rotate(-0.15);
         ctx.beginPath(); ctx.ellipse(2, -4, 30, 11, 0, 0, TAU); fillStroke(ctx, c, 2.4);
         ctx.beginPath(); ctx.ellipse(4, -9, 24, 9, 0, Math.PI, TAU); ctx.fillStyle = 'rgba(255,255,255,0.22)'; ctx.fill();
-        ctx.strokeStyle = OUT; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(4, -14); ctx.lineTo(6, -21); ctx.stroke();
+        ctx.strokeStyle = activeOut; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(4, -14); ctx.lineTo(6, -21); ctx.stroke();
       } else if (id === 'bow') {
         this.drawBowShape(ctx, 18, 2, 0.95, '#f472b6');
       } else if (id === 'sakura') {
@@ -4614,7 +4618,7 @@
         ctx.beginPath(); ctx.ellipse(0, 6, 30, 9, 0, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
         for (const [dx, dy, c] of [[-24, 2, '#fbcfe8'], [-12, -4, '#f9a8d4'], [0, -6, '#fbcfe8'], [12, -4, '#f9a8d4'], [24, 2, '#fbcfe8']]) {
           ctx.save();
-          ctx.fillStyle = c; ctx.strokeStyle = OUT; ctx.lineWidth = 1.4;
+          ctx.fillStyle = c; ctx.strokeStyle = activeOut; ctx.lineWidth = 1.4;
           for (let k = 0; k < 5; k++) { const a = (k / 5) * TAU; ctx.beginPath(); ctx.arc(dx + Math.cos(a) * 4.5, dy + Math.sin(a) * 4.5, 3.6, 0, TAU); ctx.fill(); ctx.stroke(); }
           ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(dx, dy, 2.4, 0, TAU); ctx.fill();
           ctx.restore();
