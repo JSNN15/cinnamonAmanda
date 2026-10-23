@@ -11,6 +11,8 @@ const CORE_ASSETS = [
   './styles.css',
   './visual.css',
   './cinnamoroll_sprite.png',
+  './assets/sprites/cloud_bed_back.png',
+  './assets/sprites/cloud_bed_front.png',
   './assets/cinnamoroll_fly.png',
   './assets/milk_teddy.png',
   './assets/milk_sitting.png',

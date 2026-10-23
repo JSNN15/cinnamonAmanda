@@ -385,3 +385,27 @@ El motor de Cuerpos Digitales 2.5D se encuentra respaldado por dos baterías de 
 - Exponer "Soltar" en el mando del celular (`controller.html`, botón contextual cuando `propId !== 'none'`).
 - Sonido/animación de "caída" al soltar (rebote con `obj.drop`) más marcado y sombra dinámica.
 - Revisar con la usuaria la percepción de profundidad cuando un amigo camina "detrás" de un mueble alto (hoy siempre se dibuja delante por decisión de UX infantil).
+
+
+---
+
+## 7. `v43` · Prueba de Concepto de Ilustración Digital HD (Cama Dosel de Nubes)
+
+> **Hito:** Sustitución de la geometría procedural plana por ilustraciones pintadas a mano en capas transparentes (`assets/sprites/cloud_bed_back.png` y `cloud_bed_front.png`), conservando el Z-sandwiching, la interacción física y el fallback procedural.
+
+### 7.1 Arquitectura del Sprite Layering
+Para evitar que un PNG estático rompa la inmersión de arropar al personaje o interactuar con él, los objetos ilustrados se dividen en 2 capas complementarias:
+1. **`backLayer` (`cloud_bed_back.png`, 773x769):** Estructura del respaldo, postes torneados con estrellas doradas, cortinas de gasa traslúcidas, almohadas nube y base del colchón abierta.
+2. **Ocupante (`Avatar`):** El personaje se acuesta sobre el colchón (`y: obj.y - 26`) apoyando la cabeza en las almohadas.
+3. **`frontLayer` (`cloud_bed_front.png`, 770x399):** Edredón acolchado capitoné en rosa pastel con solapa de encaje superior y pie de cama nube, arropando físicamente al personaje por debajo de su cuello.
+
+### 7.2 Regla de Fallback Transparente
+```javascript
+const spr = this.sprites?.cloud_bed_back;
+if (spr && (spr._loaded || (spr.complete && spr.naturalWidth > 0))) {
+  ctx.drawImage(spr, renderX, renderY, renderW, renderH);
+} else {
+  // Geometría procedural vectorial como respaldo de carga/offline
+}
+```
+Esto garantiza cero parpadeos, cero pantallas en blanco y total compatibilidad offline en el Service Worker (`v43`).

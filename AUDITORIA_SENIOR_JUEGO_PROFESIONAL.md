@@ -505,3 +505,13 @@ La versión `v40` alcanza la calificación máxima de excelencia técnica y fide
 **Verificación:** `tools/test_digital_bodies_e2e.py` **44/44** · `tools/test_v42_ux_regressions.py` **13/13** · 0 errores de runtime · caché `v42` (`sw.js`, `index.html`, `controller.html`).
 
 **Detalle técnico y reglas para agentes:** ver §6 de `ARQUITECTURA_AVATAR_WORLD_PRO_CUERPOS_DIGITALES.md`.
+
+
+---
+
+## 18. Evolución `v43`: Prueba de Concepto de Ilustración Digital HD — Cama Dosel de Nubes en 2 Capas
+
+- **Implementación:** Carga y renderizado de sprites PNG de alta definición con transparencia (`assets/sprites/cloud_bed_back.png` y `assets/sprites/cloud_bed_front.png`).
+- **Look & Feel:** Estilo idéntico a *Avatar World* (Pazu Games) / Sanrio, con contornos cálidos `#5c3d2e`, cortinas de gasa etéreas, edredón acolchado con encaje y estrellas bordadas.
+- **Interacción:** El avatar duerme arropado dentro de la cama (Z-sandwich `backLayer < avatar < frontLayer`).
+- **Verificación:** `tools/test_digital_bodies_e2e.py` (44/44 PASS), `tools/test_v42_ux_regressions.py` (13/13 PASS), 0 errores de consola. Caché actualizada a `v43`.

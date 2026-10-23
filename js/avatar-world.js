@@ -190,6 +190,11 @@
         3: this.createAvatar(3, 'mocha', 690, 448, 'ballet_tutu', 'sakura', 'hearts', 'teacup', 'starry', false)
       };
 
+      this.sprites = {
+        cloud_bed_back: this.loadSprite('assets/sprites/cloud_bed_back.png'),
+        cloud_bed_front: this.loadSprite('assets/sprites/cloud_bed_front.png')
+      };
+
       this.roomObjects = {
         cafe: [
           { id: 'oven', type: 'oven', name: 'Horno', x: 145, y: 382, w: 135, h: 130, state: false, fixed: true },
@@ -233,6 +238,14 @@
       };
 
       this.loadSavedState();
+    }
+
+    loadSprite(src) {
+      if (typeof Image === 'undefined') return null;
+      const img = new Image();
+      img.src = src;
+      img.onload = () => { img._loaded = true; };
+      return img;
     }
 
     get players() { return this.avatars; }
@@ -2912,75 +2925,78 @@
         ctx.beginPath(); ctx.ellipse(x, y - 56, 82, 24, 0, 0, TAU); fillStroke(ctx, '#fed7aa', 2.2);
 
       } else if (obj.type === 'cloud_bed') {
-        // CUERPO DIGITAL 2.5D: Cama con Dosel, Postes Torneados, Respaldo Capitoné y Capas (BackLayer)
-        // 1. Dosel superior con cortinas recogidas por lazos dorados
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(x - 88, y - 166);
-        ctx.bezierCurveTo(x - 122, y - 118, x - 118, y - 62, x - 104, y - 18);
-        ctx.lineTo(x - 76, y - 18);
-        ctx.bezierCurveTo(x - 84, y - 78, x - 52, y - 135, x, y - 156);
-        ctx.bezierCurveTo(x + 52, y - 135, x + 84, y - 78, x + 76, y - 18);
-        ctx.lineTo(x + 104, y - 18);
-        ctx.bezierCurveTo(x + 118, y - 62, x + 122, y - 118, x + 88, y - 166);
-        ctx.closePath();
-        fillStroke(ctx, 'rgba(253, 242, 248, 0.82)', 2.2);
-        this.drawBowShape(ctx, x - 94, y - 78, 0.52, '#facc15');
-        this.drawBowShape(ctx, x + 94, y - 78, 0.52, '#facc15');
-        // Corona tallada del dosel
-        ctx.beginPath();
-        ctx.moveTo(x - 56, y - 162); ctx.quadraticCurveTo(x, y - 184, x + 56, y - 162);
-        ctx.lineTo(x + 48, y - 150); ctx.lineTo(x - 48, y - 150); ctx.closePath();
-        fillStroke(ctx, '#fde047', 2.4);
-        ctx.fillStyle = '#f472b6'; heartPath(ctx, x, y - 162, 6); ctx.fill();
-        ctx.restore();
-
-        // 2. Respaldo Capitoné 2.5D con extrusión lateral y botones acolchados
-        ctx.beginPath();
-        ctx.moveTo(x - 106, y - 62);
-        ctx.lineTo(x - 106, y - 118);
-        ctx.quadraticCurveTo(x - 80, y - 146, x - 38, y - 132);
-        ctx.quadraticCurveTo(x, y - 154, x + 38, y - 132);
-        ctx.quadraticCurveTo(x + 80, y - 146, x + 106, y - 118);
-        ctx.lineTo(x + 106, y - 62);
-        ctx.closePath();
-        fillStroke(ctx, '#ffffff', 2.8);
-        // Rombo de costuras capitoné en el respaldo
-        ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.8;
-        for (const bx of [-64, -22, 22, 64]) {
-          ctx.beginPath(); ctx.moveTo(x + bx - 14, y - 98); ctx.lineTo(x + bx, y - 112); ctx.lineTo(x + bx + 14, y - 98); ctx.lineTo(x + bx, y - 84); ctx.closePath(); ctx.stroke();
-          ctx.fillStyle = '#f9a8d4'; ctx.beginPath(); ctx.arc(x + bx, y - 98, 3.2, 0, TAU); ctx.fill();
-        }
-
-        // 3. Patas de madera torneadas y estructura inferior 2.5D (3 caras)
-        for (const lx of [-98, 92, 108]) {
-          roundRect(ctx, x + lx - 7, y - 16, 14, 20, 6);
-          fillStroke(ctx, '#d97706', 2.2);
-        }
-        // Cara lateral derecha en perspectiva 2.5D
-        ctx.beginPath();
-        ctx.moveTo(x + 98, y - 68); ctx.lineTo(x + 116, y - 82);
-        ctx.lineTo(x + 116, y - 22); ctx.lineTo(x + 98, y - 6);
-        ctx.closePath();
-        fillStroke(ctx, '#7dd3fc', 2.4);
-
-        // Cara superior del colchón en escorzo (sábana bajera donde se acuesta el personaje)
-        ctx.beginPath();
-        ctx.moveTo(x - 108, y - 68); ctx.lineTo(x - 88, y - 84);
-        ctx.lineTo(x + 116, y - 82); ctx.lineTo(x + 98, y - 68);
-        ctx.closePath();
-        fillStroke(ctx, '#e0f2fe', 2.4);
-
-        // 4. Almohadas ergonómicas con volantes (donde apoya la cabeza Amanda)
-        for (const [px, py, col] of [[-64, -76, '#fef9c3'], [-12, -78, '#fce7f3'], [42, -75, '#e0f2fe']]) {
+        const spr = this.sprites?.cloud_bed_back;
+        if (spr && (spr._loaded || (spr.complete && spr.naturalWidth > 0))) {
+          // Renderizado ilustrado estilo Avatar World / Sanrio (Cuerpo Digital Pintado en Capas)
+          const renderW = 240;
+          const renderH = 239;
+          const renderX = x - 120;
+          const renderY = y + 4 - renderH;
+          ctx.drawImage(spr, renderX, renderY, renderW, renderH);
+        } else {
+          // Fallback a geometría vectorial procedural
           ctx.save();
-          ctx.translate(x + px, y + py);
-          ctx.rotate(-0.06);
-          roundRect(ctx, -26, -15, 52, 30, 13);
-          fillStroke(ctx, col, 2.4);
-          ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2;
-          roundRect(ctx, -20, -10, 40, 20, 9); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(x - 88, y - 166);
+          ctx.bezierCurveTo(x - 122, y - 118, x - 118, y - 62, x - 104, y - 18);
+          ctx.lineTo(x - 76, y - 18);
+          ctx.bezierCurveTo(x - 84, y - 78, x - 52, y - 135, x, y - 156);
+          ctx.bezierCurveTo(x + 52, y - 135, x + 84, y - 78, x + 76, y - 18);
+          ctx.lineTo(x + 104, y - 18);
+          ctx.bezierCurveTo(x + 118, y - 62, x + 122, y - 118, x + 88, y - 166);
+          ctx.closePath();
+          fillStroke(ctx, 'rgba(253, 242, 248, 0.82)', 2.2);
+          this.drawBowShape(ctx, x - 94, y - 78, 0.52, '#facc15');
+          this.drawBowShape(ctx, x + 94, y - 78, 0.52, '#facc15');
+          ctx.beginPath();
+          ctx.moveTo(x - 56, y - 162); ctx.quadraticCurveTo(x, y - 184, x + 56, y - 162);
+          ctx.lineTo(x + 48, y - 150); ctx.lineTo(x - 48, y - 150); ctx.closePath();
+          fillStroke(ctx, '#fde047', 2.4);
+          ctx.fillStyle = '#f472b6'; heartPath(ctx, x, y - 162, 6); ctx.fill();
           ctx.restore();
+
+          ctx.beginPath();
+          ctx.moveTo(x - 106, y - 62);
+          ctx.lineTo(x - 106, y - 118);
+          ctx.quadraticCurveTo(x - 80, y - 146, x - 38, y - 132);
+          ctx.quadraticCurveTo(x, y - 154, x + 38, y - 132);
+          ctx.quadraticCurveTo(x + 80, y - 146, x + 106, y - 118);
+          ctx.lineTo(x + 106, y - 62);
+          ctx.closePath();
+          fillStroke(ctx, '#ffffff', 2.8);
+          ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.8;
+          for (const bx of [-64, -22, 22, 64]) {
+            ctx.beginPath(); ctx.moveTo(x + bx - 14, y - 98); ctx.lineTo(x + bx, y - 112); ctx.lineTo(x + bx + 14, y - 98); ctx.lineTo(x + bx, y - 84); ctx.closePath(); ctx.stroke();
+            ctx.fillStyle = '#f9a8d4'; ctx.beginPath(); ctx.arc(x + bx, y - 98, 3.2, 0, TAU); ctx.fill();
+          }
+
+          for (const lx of [-98, 92, 108]) {
+            roundRect(ctx, x + lx - 7, y - 16, 14, 20, 6);
+            fillStroke(ctx, '#d97706', 2.2);
+          }
+          ctx.beginPath();
+          ctx.moveTo(x + 98, y - 68); ctx.lineTo(x + 116, y - 82);
+          ctx.lineTo(x + 116, y - 22); ctx.lineTo(x + 98, y - 6);
+          ctx.closePath();
+          fillStroke(ctx, '#7dd3fc', 2.4);
+
+          ctx.beginPath();
+          ctx.moveTo(x - 108, y - 68); ctx.lineTo(x - 88, y - 84);
+          ctx.lineTo(x + 116, y - 82); ctx.lineTo(x + 98, y - 68);
+          ctx.closePath();
+          fillStroke(ctx, '#e0f2fe', 2.4);
+
+          // 4. Almohadas ergonómicas con volantes (fallback procedural)
+          for (const [px, py, col] of [[-64, -76, '#fef9c3'], [-12, -78, '#fce7f3'], [42, -75, '#e0f2fe']]) {
+            ctx.save();
+            ctx.translate(x + px, y + py);
+            ctx.rotate(-0.06);
+            roundRect(ctx, -26, -15, 52, 30, 13);
+            fillStroke(ctx, col, 2.4);
+            ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 2;
+            roundRect(ctx, -20, -10, 40, 20, 9); ctx.stroke();
+            ctx.restore();
+          }
         }
 
         // (Nota: El edredón frontal que tapa al personaje se dibuja en drawObjectFrontLayer para que quede ENCIMA de quien duerme)
@@ -3538,41 +3554,47 @@
       ctx.lineCap = 'round';
 
       if (obj.type === 'cloud_bed') {
-        // Edredón Acolchado 2.5D con Solapa Doblada de Encaje (Cubre físicamente al personaje acostado)
-        // Frente del colchón celeste
-        roundRect(ctx, x - 108, y - 58, 208, 54, [12, 12, 22, 22]);
-        fillStroke(ctx, '#bae6fd', 2.8);
+        const spr = this.sprites?.cloud_bed_front;
+        if (spr && (spr._loaded || (spr.complete && spr.naturalWidth > 0))) {
+          // Renderizado ilustrado de edredón acolchado con encaje y estrellas
+          const renderW = 239;
+          const renderH = 124;
+          const renderX = x - 119.5;
+          const renderY = y + 4 - renderH;
+          ctx.drawImage(spr, renderX, renderY, renderW, renderH);
+        } else {
+          // Fallback a geometría vectorial procedural
+          roundRect(ctx, x - 108, y - 58, 208, 54, [12, 12, 22, 22]);
+          fillStroke(ctx, '#bae6fd', 2.8);
 
-        // Cobertor acolchado rosa con caída orgánica y solapa blanca superior
-        ctx.beginPath();
-        ctx.moveTo(x - 68, y - 62);
-        ctx.quadraticCurveTo(x + 15, y - 68, x + 98, y - 62);
-        ctx.lineTo(x + 98, y - 10);
-        ctx.quadraticCurveTo(x + 98, y - 2, x + 84, y - 2);
-        ctx.lineTo(x - 54, y - 2);
-        ctx.quadraticCurveTo(x - 68, y - 2, x - 68, y - 14);
-        ctx.closePath();
-        fillStroke(ctx, '#f9a8d4', 2.8);
+          ctx.beginPath();
+          ctx.moveTo(x - 68, y - 62);
+          ctx.quadraticCurveTo(x + 15, y - 68, x + 98, y - 62);
+          ctx.lineTo(x + 98, y - 10);
+          ctx.quadraticCurveTo(x + 98, y - 2, x + 84, y - 2);
+          ctx.lineTo(x - 54, y - 2);
+          ctx.quadraticCurveTo(x - 68, y - 2, x - 68, y - 14);
+          ctx.closePath();
+          fillStroke(ctx, '#f9a8d4', 2.8);
 
-        // Solapa doblada hacia afuera (donde asoman los hombros del personaje)
-        ctx.beginPath();
-        ctx.moveTo(x - 70, y - 62);
-        ctx.quadraticCurveTo(x + 14, y - 70, x + 100, y - 62);
-        ctx.lineTo(x + 96, y - 48);
-        ctx.quadraticCurveTo(x + 14, y - 54, x - 66, y - 48);
-        ctx.closePath();
-        fillStroke(ctx, '#fff1f2', 2.4);
+          ctx.beginPath();
+          ctx.moveTo(x - 70, y - 62);
+          ctx.quadraticCurveTo(x + 14, y - 70, x + 100, y - 62);
+          ctx.lineTo(x + 96, y - 48);
+          ctx.quadraticCurveTo(x + 14, y - 54, x - 66, y - 48);
+          ctx.closePath();
+          fillStroke(ctx, '#fff1f2', 2.4);
 
-        // Costuras acolchadas y estrellas bordadas sobre el cobertor
-        ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x - 24, y - 46); ctx.lineTo(x - 24, y - 6);
-        ctx.moveTo(x + 28, y - 46); ctx.lineTo(x + 28, y - 6);
-        ctx.moveTo(x + 72, y - 46); ctx.lineTo(x + 72, y - 6);
-        ctx.stroke();
-        ctx.fillStyle = '#fef08a';
-        for (const [sx, sy] of [[-44, -28], [2, -24], [50, -30]]) {
-          starPath(ctx, x + sx, y + sy, 6.5); fillStroke(ctx, '#fef08a', 1.6);
+          ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(x - 24, y - 46); ctx.lineTo(x - 24, y - 6);
+          ctx.moveTo(x + 28, y - 46); ctx.lineTo(x + 28, y - 6);
+          ctx.moveTo(x + 72, y - 46); ctx.lineTo(x + 72, y - 6);
+          ctx.stroke();
+          ctx.fillStyle = '#fef08a';
+          for (const [sx, sy] of [[-44, -28], [2, -24], [50, -30]]) {
+            starPath(ctx, x + sx, y + sy, 6.5); fillStroke(ctx, '#fef08a', 1.6);
+          }
         }
       } else if (obj.type === 'bubble_tub') {
         // Borde frontal de porcelana de la bañera + espuma burbujeante cubriendo al personaje adentro
